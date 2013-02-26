@@ -25,8 +25,13 @@
 #include "exipConfig.h"
 #include <limits.h>
 
-#define TRUE  1
-#define FALSE 0
+enum boolean
+{
+	FALSE = 0,
+	TRUE  = 1
+};
+
+typedef enum boolean boolean;
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -96,12 +101,15 @@ typedef struct stackNode GenericStack;
  *
  * @see http://www.w3.org/TR/2011/REC-exi-20110310/#key-schemaIdOption
  */
-/**@{*/
-#define SCHEMA_ID_ABSENT 0
-#define SCHEMA_ID_SET    1
-#define SCHEMA_ID_NIL    2
-#define SCHEMA_ID_EMPTY  3
-/**@}*/
+enum SchemaIdMode
+{
+	SCHEMA_ID_ABSENT = 0,
+	SCHEMA_ID_SET    = 1,
+	SCHEMA_ID_NIL    = 2,
+	SCHEMA_ID_EMPTY  = 3
+};
+
+typedef enum SchemaIdMode SchemaIdMode;
 
 /**
  *	@name Fidelity options handling
@@ -373,12 +381,12 @@ struct dynArray {
 	 * The initial size of the dynamic array (in number of entries), 
 	 * also the chunk of number of entries to be added each expansion time
 	 */
-	uint16_t chunkEntries;
+	Index chunkEntries;
 
 	/**
 	 * The total number of entries in the array
 	 */
-	uint16_t arrayEntries; 
+	Index arrayEntries;
 };
 
 typedef struct dynArray DynArray;
@@ -422,21 +430,11 @@ typedef struct dynArray DynArray;
  *
  * @section e_codes Event codes representation
  * The event codes in a production are represented as follow: <br/>
- * For every grammar rule there are 3 arrays of grammar productions -
- * represented with GrammarRulePart type.
- * The first one is for productions with event codes with length 1 -
- * they have only one part.
- * The second one is for productions with events codes with length 2 and
- * the third for productions with three-part event codes.
- * The last production in a production array has event code
- * 0, the production before it 1 etc. - that is in reverse order.<br/>
- * For example, the third production in the first rule of G with event code
- * 1.1.0 is the only production in the GrammarRulePart for 3 parts
- * productions so the last part is 0.
- * The number of productions in the second GrammarRulePart is also 1
- * so the second part is 1.
- * The number of productions in the first GrammarRulePart is also 1
- * so the first part is 1.
+ * For every grammar rule there is an array of grammar productions.
+ * It contains the productions with event codes with length 1 (having only one part).
+ * The last production in the production array has event code
+ * 0, the production before it 1 etc. - that is they are
+ * stored in reverse order
  */
 
 /**
@@ -556,7 +554,8 @@ typedef enum EXITypeClass EXITypeClass;
 #define PROD_CONTENT_MASK 0xFFFFFF // 0b00000000111111111111111111111111
 
 #define GET_PROD_EXI_EVENT(content) (content>>24)
-#define SET_PROD_EXI_EVENT(content, eventType) (content = (content & PROD_CONTENT_MASK) | (eventType<<24))
+#define GET_PROD_EXI_EVENT_CLASS(content) GET_EVENT_CLASS((content>>24))
+#define SET_PROD_EXI_EVENT(content, eventType) (content = (content & PROD_CONTENT_MASK) | (((uint32_t) eventType)<<24))
 #define GET_PROD_NON_TERM(content) (content & PROD_CONTENT_MASK)
 #define SET_PROD_NON_TERM(content, nt) (content = (content & ~PROD_CONTENT_MASK) | (nt & PROD_CONTENT_MASK))
 
@@ -681,13 +680,15 @@ typedef struct DynGrammarRule DynGrammarRule;
 #define IS_DOCUMENT(p) 			        ((p & GR_PROP_DOCUMENT) != 0)
 #define IS_FRAGMENT(p) 			        ((p & GR_PROP_FRAGMENT) != 0)
 #define HAS_NAMED_SUB_TYPE_OR_UNION(p) 	((p & GR_PROP_NAMED_SUB_TYPE_OR_UNION) != 0)
+#define HAS_CONTENT2(p) 				((p & GR_PROP_HAS_CONTENT2) != 0)
 
 #define SET_NILLABLE_GR(p)    	            ((p) = (p) | GR_PROP_NILLABLE)
 #define SET_BUILT_IN_ELEM_GR(p)             ((p) = (p) | GR_PROP_BUILT_IN_ELEMENT)
 #define SET_SCHEMA_GR(p)    		        ((p) = (p) | GR_PROP_SCHEMA_INFORMED)
 #define SET_DOCUMENT_GR(p)    		        ((p) = (p) | GR_PROP_DOCUMENT)
 #define SET_FRAGMENT_GR(p)    		        ((p) = (p) | GR_PROP_FRAGMENT)
-#define SET_NAMED_SUB_TYPE_OR_UNION(p)  ((p) = (p) | GR_PROP_NAMED_SUB_TYPE_OR_UNION)
+#define SET_NAMED_SUB_TYPE_OR_UNION(p) 		((p) = (p) | GR_PROP_NAMED_SUB_TYPE_OR_UNION)
+#define SET_HAS_CONTENT2(p)  				((p) = (p) | GR_PROP_HAS_CONTENT2)
 
 #define GR_PROP_BUILT_IN_ELEMENT         0x1000000 // 0b00000001000000000000000000000000
 #define GR_PROP_SCHEMA_INFORMED          0x2000000 // 0b00000010000000000000000000000000
@@ -695,6 +696,9 @@ typedef struct DynGrammarRule DynGrammarRule;
 #define GR_PROP_FRAGMENT                 0x8000000 // 0b00001000000000000000000000000000
 #define GR_PROP_NILLABLE                0x10000000 // 0b00010000000000000000000000000000
 #define GR_PROP_NAMED_SUB_TYPE_OR_UNION 0x20000000 // 0b00100000000000000000000000000000
+/* There is a content2 rule if there are AT productions
+ * that point to the content grammar rule OR the content index is 0. */
+#define GR_PROP_HAS_CONTENT2            0x40000000 // 0b01000000000000000000000000000000
 
 #define GR_CONTENT_INDEX_MASK 0xFFFFFF // 0b00000000111111111111111111111111
 
@@ -810,7 +814,7 @@ struct PfxTable {
 typedef struct PfxTable PfxTable;
 
 struct LnEntry {
-	VxTable vxTable;
+	VxTable* vxTable;
 	String lnStr;
 	/** Global element grammar with uriStr:lnStr qname.
 	 *  Either Index of a global element grammar in the SchemaGrammarTable OR
@@ -877,7 +881,7 @@ typedef struct UriTable UriTable;
 #define ST_CONTENT_MASK 0xFFFFFF // 0b00000000111111111111111111111111
 
 #define GET_EXI_TYPE(content) (content>>24)
-#define SET_EXI_TYPE(content, et) (content = (content & ST_CONTENT_MASK) | (et<<24))
+#define SET_EXI_TYPE(content, et) (content = (content & ST_CONTENT_MASK) | (((uint32_t) et)<<24))
 #define HAS_TYPE_FACET(content, facet) ((content & facet) != 0)
 #define SET_TYPE_FACET(content, facet) (content = (content | facet))
 #define REMOVE_TYPE_FACET(content, facet) (content = (content & ~facet))
@@ -888,7 +892,7 @@ typedef struct UriTable UriTable;
 struct SimpleType {
 	/** The content of the simple type consists of two parts:
 	 * - 8-bits exiType such as VALUE_TYPE_STRING , VALUE_TYPE_FLOAT, VALUE_TYPE_DECIMAL etc. (most significant 8 bits)
-	 * - 24-bits facetPresenceMask - the least significant 32 bits
+	 * - 24-bits facetPresenceMask - the least significant 24 bits
 	 */
 	uint32_t content;
 	/**
@@ -1091,7 +1095,7 @@ struct StreamContext
 	unsigned int expectATData;
 
 	/** TRUE if the current grammar rule must be processed as EmptyType grammar */
-	unsigned char isNilType;
+	boolean isNilType;
 
 	/** Value type of the expected attribute */
 	Index attrTypeId;
@@ -1183,17 +1187,17 @@ typedef struct EXIOptions EXIOptions;
 struct EXIheader
 {
 	/**
-	 * Boolean value - 0 for lack of EXI cookie, otherwise 1
+	 * Boolean value - FALSE for lack of EXI cookie, otherwise TRUE
 	 */
-	unsigned char has_cookie;
+	boolean has_cookie;
 
 	/**
-	 * Boolean value - 0 for lack of EXI Options, otherwise 1
+	 * Boolean value - FALSE for lack of EXI Options, otherwise TRUE
 	 */
-	unsigned char has_options;
+	boolean has_options;
 
-	/** Boolean value - 1 preview version, 0 final version */
-	unsigned char is_preview_version;
+	/** Boolean value - TRUE preview version, FALSE final version */
+	boolean is_preview_version;
 
 	/**
 	 * EXI stream version

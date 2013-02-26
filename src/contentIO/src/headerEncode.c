@@ -23,6 +23,7 @@
 #include "EXISerializer.h"
 #include "stringManipulate.h"
 #include "bodyEncode.h"
+#include "ioUtil.h"
 
 /** This is the statically generated EXIP schema definition for the EXI Options document*/
 extern const EXIPSchema ops_schema;
@@ -86,10 +87,11 @@ errorCode encodeHeader(EXIStream* strm)
 	if(strm->header.has_options)
 	{
 		EXIStream options_strm;
-		unsigned char hasUncommon = FALSE;
-		unsigned char hasLesscommon = FALSE;
-		unsigned char hasCommon = FALSE;
+		boolean hasUncommon = FALSE;
+		boolean hasLesscommon = FALSE;
+		boolean hasCommon = FALSE;
 		EventCode tmpEvCode;
+		unsigned int ruleContext = 0;
 
 		makeDefaultOpts(&options_strm.header.opts);
 		SET_STRICT(options_strm.header.opts.enumOpt);
@@ -126,9 +128,11 @@ errorCode encodeHeader(EXIStream* strm)
 		}
 
 		// TODO: Below, provide a checks for tmp_err_code and stop the execution on an error condition
+
+		// Implicit serialize.startDocument (0 bits)
 		tmpEvCode.length = 1;
 		tmpEvCode.part[0] = 0;
-		tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startDocument
+		tmpEvCode.bits[0] = 1;
 		tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <header>
 
 		// uncommon options
@@ -149,154 +153,182 @@ errorCode encodeHeader(EXIStream* strm)
 
 		if(hasLesscommon)
 		{
-			int nonTermAdj;
 			tmpEvCode.length = 1;
 			tmpEvCode.part[0] = 0;
+			tmpEvCode.bits[0] = 2;
 			tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <lesscommon>
 			if(hasUncommon)
 			{
 				tmpEvCode.length = 1;
 				tmpEvCode.part[0] = 0;
+				tmpEvCode.bits[0] = 2;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <uncommon>
+				ruleContext = 0;
 				if(GET_ALIGNMENT(strm->header.opts.enumOpt) != BIT_PACKED)
 				{
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 3;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <alignment>
+					ruleContext = 1;
 					if(GET_ALIGNMENT(strm->header.opts.enumOpt) == BYTE_ALIGNMENT)
 					{
 						tmpEvCode.length = 1;
 						tmpEvCode.part[0] = 0;
+						tmpEvCode.bits[0] = 1;
 						tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <byte>
 					}
 					else
 					{
 						tmpEvCode.length = 1;
 						tmpEvCode.part[0] = 1;
+						tmpEvCode.bits[0] = 1;
 						tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <pre-compress>
 					}
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <byte> or <pre-compress>
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <alignment>
 				}
 				if(WITH_SELF_CONTAINED(strm->header.opts.enumOpt))
 				{
-					nonTermAdj = options_strm.context.currNonTermID - 1;
-					if(nonTermAdj < 0)
-						nonTermAdj = 0;
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 1 - nonTermAdj;
+					tmpEvCode.part[0] = 1 - ruleContext;
+					tmpEvCode.bits[0] = 3;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <selfContained>
+					ruleContext = 2;
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <selfContained>
 				}
 				if(strm->header.opts.valueMaxLength != INDEX_MAX)
 				{
-					nonTermAdj = options_strm.context.currNonTermID - 1;
-					if(nonTermAdj < 0)
-						nonTermAdj = 0;
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 2 - nonTermAdj;
+					tmpEvCode.part[0] = 2 - ruleContext;
+					tmpEvCode.bits[0] = 3 - (ruleContext == 2);
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <valueMaxLength>
+					ruleContext = 3;
 					tmp_err_code += serialize.intData(&options_strm, strm->header.opts.valueMaxLength);
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <valueMaxLength>
 				}
 				if(strm->header.opts.valuePartitionCapacity != INDEX_MAX)
 				{
-					nonTermAdj = options_strm.context.currNonTermID - 1;
-					if(nonTermAdj < 0)
-						nonTermAdj = 0;
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 3 - nonTermAdj;
+					tmpEvCode.part[0] = 3 - ruleContext;
+					tmpEvCode.bits[0] = 3 - (tmpEvCode.part[0] < 2);
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <valuePartitionCapacity>
+					ruleContext = 4;
 					tmp_err_code += serialize.intData(&options_strm, strm->header.opts.valuePartitionCapacity);
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <valuePartitionCapacity>
 				}
 				if(strm->header.opts.drMap != NULL)
 				{
-					nonTermAdj = options_strm.context.currNonTermID - 1;
-					if(nonTermAdj < 0)
-						nonTermAdj = 0;
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 4 - nonTermAdj;
+					tmpEvCode.part[0] = 4 - ruleContext;
+					tmpEvCode.bits[0] = 3 - (tmpEvCode.part[0] < 3) - (tmpEvCode.part[0] == 0);
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <datatypeRepresentationMap>
+					ruleContext = 5;
 					// TODO: not ready yet!
 					return NOT_IMPLEMENTED_YET;
 				}
 				tmpEvCode.length = 1;
-				tmpEvCode.part[0] = 6 - options_strm.context.currNonTermID;
+				tmpEvCode.part[0] = 6 - ruleContext - (ruleContext > 0);
+				tmpEvCode.bits[0] = getBitsNumber(tmpEvCode.part[0]);
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <uncommon>
 			}
 			if(strm->header.opts.preserve != 0)
 			{
 				tmpEvCode.length = 1;
-				tmpEvCode.part[0] = 1 - options_strm.context.currNonTermID;
+				tmpEvCode.part[0] = 1 - hasUncommon;
+				tmpEvCode.bits[0] = 2;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <preserve>
+				ruleContext = 0;
 				if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD))
 				{
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 3;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <dtd>
+					ruleContext = 1;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <dtd>
 				}
 				if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES))
 				{
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 1 - options_strm.context.currNonTermID;
+					tmpEvCode.part[0] = 1 - ruleContext;
+					tmpEvCode.bits[0] = 3;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <prefixes>
+					ruleContext = 2;
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <prefixes>
 				}
 				if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_LEXVALUES))
 				{
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 2 - options_strm.context.currNonTermID;
+					tmpEvCode.part[0] = 2 - ruleContext;
+					tmpEvCode.bits[0] = 3 - (ruleContext == 2);
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <lexicalValues>
+					ruleContext = 3;
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <lexicalValues>
 				}
 				if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS))
 				{
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 3 - options_strm.context.currNonTermID;
+					tmpEvCode.part[0] = 3 - ruleContext;
+					tmpEvCode.bits[0] = 3 - (tmpEvCode.part[0] < 2);
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <comments>
+					ruleContext = 4;
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <comments>
 				}
 				if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS))
 				{
 					tmpEvCode.length = 1;
-					tmpEvCode.part[0] = 4 - options_strm.context.currNonTermID;
+					tmpEvCode.part[0] = 4 - ruleContext;
+					tmpEvCode.bits[0] = 3 - (tmpEvCode.part[0] < 3) - (tmpEvCode.part[0] == 0);
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <pis>
+					ruleContext = 5;
 					tmpEvCode.length = 1;
 					tmpEvCode.part[0] = 0;
+					tmpEvCode.bits[0] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <pis>
 				}
 				tmpEvCode.length = 1;
-				tmpEvCode.part[0] = 5 - options_strm.context.currNonTermID;
+				tmpEvCode.part[0] = 5 - ruleContext;
+				tmpEvCode.bits[0] = getBitsNumber(tmpEvCode.part[0]);
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <preserve>
 			}
 			if(strm->header.opts.blockSize != 1000000)
 			{
 				tmpEvCode.length = 1;
-				tmpEvCode.part[0] = 2 - options_strm.context.currNonTermID;
+				tmpEvCode.part[0] = strm->header.opts.preserve != 0 ? 0 : (2 - hasUncommon);
+				tmpEvCode.bits[0] = 2 - (strm->header.opts.preserve != 0);
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <blockSize>
 				tmp_err_code += serialize.intData(&options_strm, strm->header.opts.blockSize);
 				tmpEvCode.length = 1;
 				tmpEvCode.part[0] = 0;
+				tmpEvCode.bits[0] = 0;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <blockSize>
 			}
 			tmpEvCode.length = 1;
-			tmpEvCode.part[0] = 3 - options_strm.context.currNonTermID;
+			tmpEvCode.part[0] = strm->header.opts.blockSize != 1000000 ? 0 : (strm->header.opts.preserve != 0 ? 1 : 3 - hasUncommon);
+			tmpEvCode.bits[0] = getBitsNumber(tmpEvCode.part[0]);
 			tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <lesscommon>
 		}
 
@@ -309,29 +341,39 @@ errorCode encodeHeader(EXIStream* strm)
 		if(hasCommon)
 		{
 			tmpEvCode.length = 1;
-			tmpEvCode.part[0] = 1 - options_strm.context.currNonTermID;
+			tmpEvCode.part[0] = 1 - hasLesscommon;
+			tmpEvCode.bits[0] = 2;
 			tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <common>
+			ruleContext = 0;
 			if(WITH_COMPRESSION(strm->header.opts.enumOpt))
 			{
 				tmpEvCode.length = 1;
 				tmpEvCode.part[0] = 0;
+				tmpEvCode.bits[0] = 2;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <compression>
+				ruleContext = 1;
+				tmpEvCode.bits[0] = 0;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <compression>
 			}
 			if(WITH_FRAGMENT(strm->header.opts.enumOpt))
 			{
 				tmpEvCode.length = 1;
-				tmpEvCode.part[0] = 1 - options_strm.context.currNonTermID;
+				tmpEvCode.part[0] = 1 - ruleContext;
+				tmpEvCode.bits[0] = 2;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <fragment>
+				ruleContext = 2;
 				tmpEvCode.length = 1;
 				tmpEvCode.part[0] = 0;
+				tmpEvCode.bits[0] = 0;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <fragment>
 			}
 			if(strm->header.opts.schemaID.length != 0) // SchemaID modes are encoded in the length part
 			{
 				tmpEvCode.length = 1;
-				tmpEvCode.part[0] = 2 - options_strm.context.currNonTermID;
+				tmpEvCode.part[0] = 2 - ruleContext;
+				tmpEvCode.bits[0] = 2 - (ruleContext == 2);
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <schemaId>
+				ruleContext = 3;
 				if(strm->header.opts.schemaID.str != NULL)
 				{
 					tmp_err_code += serialize.stringData(&options_strm, strm->header.opts.schemaID);
@@ -339,12 +381,14 @@ errorCode encodeHeader(EXIStream* strm)
 				else if(strm->header.opts.schemaID.length == SCHEMA_ID_NIL)
 				{
 					QName nil;
-					nil.uri = &strm->schema->uriTable.uri[2].uriStr;
-					nil.localName = &strm->schema->uriTable.uri[2].lnTable.ln[0].lnStr;
-					nil.prefix = &strm->schema->uriTable.uri[2].pfxTable->pfxStr[0];
+					nil.uri = &strm->schema->uriTable.uri[XML_SCHEMA_INSTANCE_ID].uriStr;
+					nil.localName = &strm->schema->uriTable.uri[XML_SCHEMA_INSTANCE_ID].lnTable.ln[XML_SCHEMA_INSTANCE_NIL_ID].lnStr;
+					nil.prefix = &strm->schema->uriTable.uri[XML_SCHEMA_INSTANCE_ID].pfxTable->pfxStr[0];
 					tmpEvCode.length = 2;
-					tmpEvCode.part[0] = 2;
+					tmpEvCode.part[0] = 1;
+					tmpEvCode.bits[0] = 1;
 					tmpEvCode.part[1] = 0;
+					tmpEvCode.bits[1] = 0;
 					tmp_err_code += serializeEvent(&options_strm, tmpEvCode, &nil); // serialize.attribute nil="true"
 					tmp_err_code += serialize.booleanData(&options_strm, TRUE);
 				}
@@ -357,29 +401,35 @@ errorCode encodeHeader(EXIStream* strm)
 
 				tmpEvCode.length = 1;
 				tmpEvCode.part[0] = 0;
+				tmpEvCode.bits[0] = 0;
 				tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <schemaId>
 			}
 			tmpEvCode.length = 1;
-			tmpEvCode.part[0] = 3 - options_strm.context.currNonTermID;
+			tmpEvCode.part[0] = 3 - ruleContext;
+			tmpEvCode.bits[0] = getBitsNumber(tmpEvCode.part[0]);
 			tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <common>
 		}
 
 		if(WITH_STRICT(strm->header.opts.enumOpt))
 		{
 			tmpEvCode.length = 1;
-			tmpEvCode.part[0] = 2 - options_strm.context.currNonTermID;
+			tmpEvCode.part[0] = hasCommon? 0 : 2 - hasLesscommon;
+			tmpEvCode.bits[0] = 2 - hasCommon;
 			tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.startElement <strict>
 			tmpEvCode.length = 1;
 			tmpEvCode.part[0] = 0;
+			tmpEvCode.bits[0] = 0;
 			tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <strict>
 		}
 
 		tmpEvCode.length = 1;
-		tmpEvCode.part[0] = 3 - options_strm.context.currNonTermID;
+		tmpEvCode.part[0] = WITH_STRICT(strm->header.opts.enumOpt)? 0 : (hasCommon? 1 : 3 - hasLesscommon);
+		tmpEvCode.bits[0] = getBitsNumber(tmpEvCode.part[0]);
 		tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endElement <header>
 
 		tmpEvCode.length = 1;
 		tmpEvCode.part[0] = 0;
+		tmpEvCode.bits[0] = 0;
 		tmp_err_code += serializeEvent(&options_strm, tmpEvCode, NULL); // serialize.endDocument
 
 		strm->buffer.bufContent = options_strm.buffer.bufContent;

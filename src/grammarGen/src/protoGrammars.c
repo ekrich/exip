@@ -63,30 +63,42 @@ errorCode convertProtoGrammar(AllocList* memlist, ProtoGrammar* pg, EXIGrammar* 
 {
 	Index ruleIter;
 	Index prodIter;
+	uint16_t attrCount;
+	boolean hasEE;
 
 	exiGrammar->props = 0;
 	SET_SCHEMA_GR(exiGrammar->props);
 	SET_CONTENT_INDEX(exiGrammar->props, pg->contentIndex);
 	exiGrammar->count = pg->count;
 
-	// #DOCUMENT# one more rule slot is created as it can be needed for addUndeclaredProductions
-	exiGrammar->rule = (GrammarRule*) memManagedAllocate(memlist, sizeof(GrammarRule)*(pg->count + 1));
+	exiGrammar->rule = (GrammarRule*) memManagedAllocate(memlist, sizeof(GrammarRule)*(pg->count));
 	if(exiGrammar->rule == NULL)
 		return MEMORY_ALLOCATION_ERROR;
 
 	for(ruleIter = 0; ruleIter < pg->count; ruleIter++)
 	{
-		/* Part 1 */
+		attrCount = 0;
+		hasEE = FALSE;
+
 		exiGrammar->rule[ruleIter].production = (Production*) memManagedAllocate(memlist, sizeof(Production)*pg->rule[ruleIter].count);
 		if(exiGrammar->rule[ruleIter].production == NULL)
 			return MEMORY_ALLOCATION_ERROR;
 
 		exiGrammar->rule[ruleIter].pCount = pg->rule[ruleIter].count;
+		exiGrammar->rule[ruleIter].meta = 0;
 
 		for(prodIter = 0; prodIter < pg->rule[ruleIter].count; prodIter++)
 		{
+			if(GET_PROD_EXI_EVENT_CLASS(pg->rule[ruleIter].prod[prodIter].content) == EVENT_AT_CLASS)
+				attrCount++;
+			else if(GET_PROD_EXI_EVENT(pg->rule[ruleIter].prod[prodIter].content) == EVENT_EE)
+				hasEE = TRUE;
 			exiGrammar->rule[ruleIter].production[prodIter] = pg->rule[ruleIter].prod[prodIter];
 		}
+
+		RULE_SET_AT_COUNT(exiGrammar->rule[ruleIter].meta, attrCount);
+		if(hasEE)
+			RULE_SET_CONTAIN_EE(exiGrammar->rule[ruleIter].meta);
 	}
 
 	return ERR_OK;
@@ -131,3 +143,102 @@ void destroyProtoGrammar(ProtoGrammar* pg)
 	}
 	destroyDynArray(&pg->dynArray);
 }
+
+#if EXIP_DEBUG == ON && DEBUG_GRAMMAR_GEN == ON
+
+errorCode printProtoGrammarRule(SmallIndex nonTermID, ProtoRuleEntry* rule)
+{
+	Index j = 0;
+	Production* tmpProd;
+
+	DEBUG_MSG(INFO, EXIP_DEBUG, ("\n>RULE\n"));
+	DEBUG_MSG(INFO, EXIP_DEBUG, ("NT-%u:", (unsigned int) nonTermID));
+
+	DEBUG_MSG(INFO, EXIP_DEBUG, ("\n"));
+
+	for(j = 0; j < rule->count; j++)
+	{
+		tmpProd = &rule->prod[j];
+		DEBUG_MSG(INFO, EXIP_DEBUG, ("\t"));
+
+		switch(GET_PROD_EXI_EVENT(tmpProd->content))
+		{
+			case EVENT_SD:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("SD                    "));
+				break;
+			case EVENT_ED:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("ED                    "));
+				break;
+			case EVENT_SE_QNAME:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("SE (qname: %u:%u)     ", (unsigned int) tmpProd->qnameId.uriId, (unsigned int) tmpProd->qnameId.lnId));
+				break;
+			case EVENT_SE_URI:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("SE (uri)              "));
+				break;
+			case EVENT_SE_ALL:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("SE (*)                "));
+				break;
+			case EVENT_EE:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("EE                    "));
+				break;
+			case EVENT_AT_QNAME:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (qname %u:%u) [%d] ", (unsigned int) tmpProd->qnameId.uriId, (unsigned int) tmpProd->qnameId.lnId, (unsigned int) tmpProd->typeId));
+				break;
+			case EVENT_AT_URI:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (uri)              "));
+				break;
+			case EVENT_AT_ALL:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (*)                "));
+				break;
+			case EVENT_CH:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("CH [%d]               ", (unsigned int) tmpProd->typeId));
+				break;
+			case EVENT_NS:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("NS                    "));
+				break;
+			case EVENT_CM:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("CM                    "));
+				break;
+			case EVENT_PI:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("PI                    "));
+				break;
+			case EVENT_DT:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("DT                    "));
+				break;
+			case EVENT_ER:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("ER                    "));
+				break;
+			case EVENT_SC:
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("SC                    "));
+				break;
+			case EVENT_VOID:
+				DEBUG_MSG(INFO, EXIP_DEBUG, (" "));
+				break;
+			default:
+				return UNEXPECTED_ERROR;
+		}
+		if(GET_PROD_NON_TERM(tmpProd->content) != GR_VOID_NON_TERMINAL)
+		{
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("NT-%u", (unsigned int) GET_PROD_NON_TERM(tmpProd->content)));
+		}
+
+		DEBUG_MSG(INFO, EXIP_DEBUG, ("\n"));
+	}
+	return ERR_OK;
+}
+
+errorCode printProtoGrammar(ProtoGrammar* pgr)
+{
+	Index j;
+
+	DEBUG_MSG(INFO, EXIP_DEBUG, ("\nProtoGrammar (%d):\n", pgr->contentIndex));
+
+	for(j = 0; j < pgr->count; j++)
+	{
+		printProtoGrammarRule(j, &pgr->rule[j]);
+	}
+
+	return ERR_OK;
+}
+
+#endif // EXIP_DEBUG

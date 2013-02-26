@@ -100,11 +100,11 @@ errorCode createBuiltInElementGrammar(EXIGrammar* elementGrammar, EXIStream* str
  * @param[in] evnt event type
  * @param[in] nonTermID unique identifier of right-hand side Non-terminal
  * @param[in] qname qname identifier of the Event Type corresponding to the inserted production
- * @param[in] hasSecondLevelProd 0 if there are no second level productions (only possible in Fragment Grammar);
- * otherwise 1
+ * @param[in] hasSecondLevelProd FALSE if there are no second level productions (only possible in Fragment Grammar);
+ * otherwise TRUE
  * @return Error handling code
  */
-errorCode insertZeroProduction(DynGrammarRule* rule, EventType evnt, SmallIndex nonTermID, QNameID* qname, unsigned char hasSecondLevelProd);
+errorCode insertZeroProduction(DynGrammarRule* rule, EventType evnt, SmallIndex nonTermID, QNameID* qname, boolean hasSecondLevelProd);
 
 /**
  * @brief For a given grammar and a rule from it, returns the number of bits needed to encode a production from that rule
@@ -112,9 +112,10 @@ errorCode insertZeroProduction(DynGrammarRule* rule, EventType evnt, SmallIndex 
  * @param[in] grammar a grammar object
  * @param[in] currentRule the concrete grammar rule
  * @param[in] currentRuleIndx the index of the concrete grammar rule
+ * @param[in] isNilType whether a xsi:nil=TRUE is in the current context
  * @return number of bits needed to encode a production
  */
-unsigned int getBitsFirstPartCode(EXIOptions opts, EXIGrammar* grammar, GrammarRule* currentRule, SmallIndex currentRuleIndx);
+unsigned int getBitsFirstPartCode(EXIOptions opts, EXIGrammar* grammar, GrammarRule* currentRule, SmallIndex currentRuleIndx, boolean isNilType);
 
 #if EXIP_DEBUG == ON
 /**

@@ -95,7 +95,7 @@ static void parseSchema(const char* fileName, EXIPSchema* schema)
 		buffer.ioStrm.readWriteToStream = NULL;
 		buffer.ioStrm.stream = NULL;
 
-		tmp_err_code = generateSchemaInformedGrammars(&buffer, 1, SCHEMA_FORMAT_XSD_EXI, schema);
+		tmp_err_code = generateSchemaInformedGrammars(&buffer, 1, SCHEMA_FORMAT_XSD_EXI, NULL, schema);
 
 		if(tmp_err_code != ERR_OK)
 		{
@@ -326,14 +326,12 @@ START_TEST (test_acceptance_for_A_01)
 	testParser.handler.floatData     = sample_floatData;
 	
 	// IV: Parse the header of the stream
-	tmp_err_code = parseHeader(&testParser);
+	tmp_err_code = parseHeader(&testParser, FALSE);
 	fail_unless (tmp_err_code == ERR_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	// V: Parse the body of the EXI stream
 	while(tmp_err_code == ERR_OK)
 	{
-		tmp_err_code = parseNext(&testParser);
-		
 		switch (parsingData.eventCount)
 		{
 			case 0:
@@ -407,13 +405,17 @@ START_TEST (test_acceptance_for_A_01)
 				break;
 			default:
 				// Unexpected event count caught below.
-				;
+				break;
 		}
+		tmp_err_code = parseNext(&testParser);
+
 		parsingData.eventCount++;
 				
 	}
 	
-	fail_unless(parsingData.eventCount == 19, 
+	fail_unless(stringEqualToAscii(parsingData.eventCode, "ED"));
+
+	fail_unless(parsingData.eventCount == 18,
 	            "Unexpected event count: %u", parsingData.eventCount);
 
 	// VI: Free the memory allocated by the parser object
@@ -483,14 +485,12 @@ START_TEST (test_acceptance_for_A_01_exip1)
 	testParser.handler.floatData     = sample_floatData;
 	
 	// IV: Parse the header of the stream
-	tmp_err_code = parseHeader(&testParser);
+	tmp_err_code = parseHeader(&testParser, FALSE);
 	fail_unless (tmp_err_code == ERR_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	// V: Parse the body of the EXI stream
 	while(tmp_err_code == ERR_OK)
 	{
-		tmp_err_code = parseNext(&testParser);
-		
 		switch (parsingData.eventCount)
 		{
 			case 0:
@@ -512,12 +512,16 @@ START_TEST (test_acceptance_for_A_01_exip1)
 				break;
 			default:
 				// Unexpected event count caught below.
-				;
+				break;
 		}
+
+		tmp_err_code = parseNext(&testParser);
 		parsingData.eventCount++;
 	}
 	
-	fail_unless(parsingData.eventCount == 5, 
+	fail_unless(stringEqualToAscii(parsingData.eventCode, "ED"));
+
+	fail_unless(parsingData.eventCount == 4,
 	            "Unexpected event count: %u", parsingData.eventCount);
 
 	// VI: Free the memory allocated by the parser object
@@ -546,6 +550,7 @@ START_TEST (test_acceptance_for_A_01b)
 	char buf[OUTPUT_BUFFER_SIZE];
 	const char *schemafname = "testStates/acceptance-xsd.exi";
 	errorCode tmp_err_code = UNEXPECTED_ERROR;
+	EXITypeClass valueType;
 	
 	const String NS_STR = {"urn:foo", 7};
 	const String ELEM_A = {"A", 1};
@@ -588,28 +593,28 @@ START_TEST (test_acceptance_for_A_01b)
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_A;
-	tmp_err_code += serialize.startElement(&testStrm, qname);
+	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == ERR_OK, "serialization returns an error code %d", tmp_err_code);
 
 	qname.localName = &ELEM_AB;
-	tmp_err_code += serialize.startElement(&testStrm, qname);
+	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	tmp_err_code += serialize.stringData(&testStrm, CH);
 	tmp_err_code += serialize.endElement(&testStrm);
 	fail_unless (tmp_err_code == ERR_OK, "serialization returns an error code %d", tmp_err_code);
 
 	qname.localName = &ELEM_AC;
-	tmp_err_code += serialize.startElement(&testStrm, qname);
+	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	tmp_err_code += serialize.stringData(&testStrm, CH);
 	tmp_err_code += serialize.endElement(&testStrm);
 	fail_unless (tmp_err_code == ERR_OK, "serialization returns an error code %d", tmp_err_code);
 	
-	tmp_err_code += serialize.startElement(&testStrm, qname);
+	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	tmp_err_code += serialize.stringData(&testStrm, CH);
 	tmp_err_code += serialize.endElement(&testStrm);
 	fail_unless (tmp_err_code == ERR_OK, "serialization returns an error code %d", tmp_err_code);
 	
 	/* Expect failure when start third AC element */
-	tmp_err_code += serialize.startElement(&testStrm, qname);
+	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == INCONSISTENT_PROC_STATE, 
 	    "Expected INCONSISTENT_PROC_STATE, but returns an error code %d", tmp_err_code);
 
@@ -751,8 +756,8 @@ static char lkab_startElement_desc(QName qname, void* app_data);
 static char lkab_endElement(void* app_data);
 static char lkab_stringData_io(const String value, void* app_data);
 static char lkab_stringData_desc(const String value, void* app_data);
-static char lkab_booleanData_io(unsigned char bool_val, void* app_data);
-static char lkab_booleanData_desc(unsigned char bool_val, void* app_data);
+static char lkab_booleanData_io(boolean bool_val, void* app_data);
+static char lkab_booleanData_desc(boolean bool_val, void* app_data);
 static char lkab_dateTimeData(EXIPDateTime dt_val, void* app_data);
 
 /**
@@ -809,6 +814,7 @@ static error_code serializeIOMsg(char* buf, unsigned int buf_size, unsigned int*
 	EXIPDateTime dt;
 	EXIPSchema lkab_schema;
 	const char *schemafname = "SchemaStrict/lkab-devices-xsd.exi";
+	EXITypeClass valueType;
 
 	buffer.buf = buf;
 	buffer.bufLen = buf_size;
@@ -842,11 +848,11 @@ static error_code serializeIOMsg(char* buf, unsigned int buf_size, unsigned int*
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_BOOL_VAL_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <BoolValue>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <BoolValue>
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_TIMESTAMP_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <timeStamp>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <timeStamp>
 
 	dt.presenceMask = 0;
 	dt.presenceMask = dt.presenceMask | YEAR_PRESENCE;
@@ -872,7 +878,7 @@ static error_code serializeIOMsg(char* buf, unsigned int buf_size, unsigned int*
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_QUAL_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <quality>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <quality>
 
 	tmp_err_code += serialize.stringData(&strm, ENUM_DATA_QUALITY[val.quality]); // quality
 
@@ -880,7 +886,7 @@ static error_code serializeIOMsg(char* buf, unsigned int buf_size, unsigned int*
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_VALUE_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <value>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <value>
 
 	tmp_err_code += serialize.booleanData(&strm, val.val);
 
@@ -912,6 +918,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 	BinaryBuffer buffer;
 	EXIPSchema lkab_schema;
 	const char *schemafname = "SchemaStrict/lkab-devices-xsd.exi";
+	EXITypeClass valueType;
 
 	buffer.buf = buf;
 	buffer.bufLen = buf_size;
@@ -945,11 +952,11 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_DEV_DESC_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <DeviceDescription>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <DeviceDescription>
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_ID_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <id>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <id>
 
 	ch.str = devDesc.id;
 	ch.length = strlen(devDesc.id);
@@ -959,7 +966,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_NAME_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <name>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <name>
 
 	ch.str = devDesc.name;
 	ch.length = strlen(devDesc.name);
@@ -969,7 +976,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_TYPE_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <type>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <type>
 
 	ch.str = devDesc.type;
 	ch.length = strlen(devDesc.type);
@@ -979,7 +986,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_LOCATION_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <location>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <location>
 
 	ch.str = devDesc.location;
 	ch.length = strlen(devDesc.location);
@@ -989,11 +996,11 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_PROSS_VAL_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <processValues>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <processValues>
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_NAME_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <name>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <name>
 
 	ch.str = devDesc.processValue.name;
 	ch.length = strlen(devDesc.processValue.name);
@@ -1003,7 +1010,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_TYPE_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <type>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <type>
 
 	tmp_err_code += serialize.stringData(&strm, ENUM_DATA_VAL_TYPE[devDesc.processValue.type]); // processValues type
 
@@ -1011,7 +1018,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_IS_READONLY_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <isReadOnly>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <isReadOnly>
 
 	tmp_err_code += serialize.booleanData(&strm, 0); // processValues isReadOnly
 
@@ -1019,7 +1026,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 
 	qname.uri = &NS_STR;
 	qname.localName = &ELEM_DESC_STR;
-	tmp_err_code += serialize.startElement(&strm, qname); // <description>
+	tmp_err_code += serialize.startElement(&strm, qname, &valueType); // <description>
 
 	ch.str = devDesc.processValue.description;
 	ch.length = strlen(devDesc.processValue.description);
@@ -1092,7 +1099,7 @@ static error_code parseIOMsg(char* buf, unsigned int buf_size, BoolValue *val)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&lkabParser);
+	tmp_err_code = parseHeader(&lkabParser, FALSE);
 
 	// V: Parse the body of the EXI stream
 
@@ -1162,7 +1169,7 @@ static error_code parseDevDescMsg(char* buf, unsigned int buf_size, DevDescribti
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&lkabParser);
+	tmp_err_code = parseHeader(&lkabParser, FALSE);
 
 	// V: Parse the body of the EXI stream
 
@@ -1357,7 +1364,7 @@ static char lkab_stringData_desc(const String value, void* app_data)
 	return EXIP_HANDLER_OK;
 }
 
-static char lkab_booleanData_io(unsigned char bool_val, void* app_data)
+static char lkab_booleanData_io(boolean bool_val, void* app_data)
 {
 	struct appDataLKAB* appD = (struct appDataLKAB*) app_data;
 
@@ -1371,7 +1378,7 @@ static char lkab_booleanData_io(unsigned char bool_val, void* app_data)
 	return EXIP_HANDLER_OK;
 }
 
-static char lkab_booleanData_desc(unsigned char bool_val, void* app_data)
+static char lkab_booleanData_desc(boolean bool_val, void* app_data)
 {
 	struct appDataLKAB* appD = (struct appDataLKAB*) app_data;
 

@@ -309,20 +309,12 @@
 				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
-			<target name="mulle" path="build/gcc" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+			<target name="contiki" path="build/gcc" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments>target=mulle</buildArguments>
+				<buildArguments>TARGET=contiki</buildArguments>
 				<buildTarget>clean all</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-			<target name="lib" path="build/gcc" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildArguments/>
-				<buildTarget>lib</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
 			<target name="dynlib" path="build/gcc" targetID="org.eclipse.cdt.build.MakeTargetBuilder">

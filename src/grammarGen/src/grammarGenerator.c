@@ -30,7 +30,7 @@ static int compareUri(const void* uriRow1, const void* uriRow2);
  */
 static void sortUriTable(UriTable* uriTable);
 
-errorCode generateSchemaInformedGrammars(BinaryBuffer* buffers, unsigned int bufCount, unsigned char schemaFormat, EXIPSchema* schema)
+errorCode generateSchemaInformedGrammars(BinaryBuffer* buffers, unsigned int bufCount, SchemaFormat schemaFormat, EXIOptions* opt, EXIPSchema* schema)
 {
 	errorCode tmp_err_code = UNEXPECTED_ERROR;
 	TreeTable* treeT;
@@ -58,12 +58,12 @@ errorCode generateSchemaInformedGrammars(BinaryBuffer* buffers, unsigned int buf
 
 	for(i = 0; i < bufCount; i++)
 	{
-		tmp_err_code = generateTreeTable(buffers[i], schemaFormat, &treeT[i], schema);
+		tmp_err_code = generateTreeTable(buffers[i], schemaFormat, opt, &treeT[i], schema);
 		if(tmp_err_code != ERR_OK)
 			return tmp_err_code;
 	}
 
-#if DEBUG_GRAMMAR_GEN == ON
+#if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	{
 		unsigned int j;
 		for(i = 0; i < bufCount; i++)
@@ -113,7 +113,7 @@ errorCode generateSchemaInformedGrammars(BinaryBuffer* buffers, unsigned int buf
 	if(tmp_err_code != ERR_OK)
 		return tmp_err_code;
 
-#if DEBUG_GRAMMAR_GEN == ON
+#if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	{
 		unsigned int j;
 

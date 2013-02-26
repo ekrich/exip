@@ -43,7 +43,7 @@ struct TreeTableParsingData
 	 * - 2 the properties are all set ([schema] attr. parsed)
 	 */
 	unsigned char propsStat; 
-	unsigned char expectingAttr;
+	boolean expectingAttr;
 	/** Pointer to the expected character data */
 	String* charDataPtr;
 	/**
@@ -73,7 +73,7 @@ static char xsd_startElement(QName qname, void* app_data);
 static char xsd_endElement(void* app_data);
 static char xsd_attribute(QName qname, void* app_data);
 static char xsd_stringData(const String value, void* app_data);
-static char xsd_namespaceDeclaration(const String ns, const String prefix, unsigned char isLocalElementNS, void* app_data);
+static char xsd_namespaceDeclaration(const String ns, const String prefix, boolean isLocalElementNS, void* app_data);
 
 //////////// Helper functions
 
@@ -143,7 +143,7 @@ static const char* attrStrings[] =
 	"mixed"
 };
 
-errorCode generateTreeTable(BinaryBuffer buffer, unsigned char schemaFormat, TreeTable* treeT, EXIPSchema* schema)
+errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema)
 {
 	errorCode tmp_err_code = UNEXPECTED_ERROR;
 	Parser xsdParser;
@@ -180,11 +180,19 @@ errorCode generateTreeTable(BinaryBuffer buffer, unsigned char schemaFormat, Tre
 
 	// Parse the EXI stream
 
-	SET_PRESERVED(xsdParser.strm.header.opts.preserve, PRESERVE_PREFIXES);
-
-	tmp_err_code = parseHeader(&xsdParser);
-	if(tmp_err_code != ERR_OK)
-		return tmp_err_code;
+	if(opt != NULL)
+	{
+		xsdParser.strm.header.opts = *opt;
+		tmp_err_code = parseHeader(&xsdParser, TRUE);
+		if(tmp_err_code != ERR_OK)
+			return tmp_err_code;
+	}
+	else
+	{
+		tmp_err_code = parseHeader(&xsdParser, FALSE);
+		if(tmp_err_code != ERR_OK)
+			return tmp_err_code;
+	}
 
 	if(IS_PRESERVED(xsdParser.strm.header.opts.preserve, PRESERVE_PREFIXES) == FALSE)
 	{
@@ -387,8 +395,9 @@ static char xsd_startElement(QName qname, void* app_data)
 		if (i == (int) ELEMENT_VOID)
 		{
 			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, (">Ignored schema element\n"));
-#if EXIP_DEBUG == ON
+#if EXIP_DEBUG == ON && DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL <= WARNING
 			printString(qname.localName);
+			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, ("\n"));
 #endif
 			return EXIP_HANDLER_STOP;
 		}
@@ -610,8 +619,9 @@ static char xsd_attribute(QName qname, void* app_data)
 		else
 		{
 			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, (">Ignored <schema> attribute\n"));
-#if EXIP_DEBUG == ON
+#if EXIP_DEBUG == ON && DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL <= WARNING
 			printString(qname.localName);
+			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, ("\n"));
 #endif
 		}
 	}
@@ -636,8 +646,9 @@ static char xsd_attribute(QName qname, void* app_data)
 		if (i == ATTRIBUTE_CONTEXT_ARRAY_SIZE)
 		{
 			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, (">Ignored element attribute\n"));
-#if EXIP_DEBUG == ON
+#if EXIP_DEBUG == ON && DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL <= WARNING
 			printString(qname.localName);
+			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, ("\n"));
 #endif
 		}
 	}
@@ -655,7 +666,7 @@ static char xsd_stringData(const String value, void* app_data)
 
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, (">String data:\n"));
 
-#if	DEBUG_GRAMMAR_GEN == ON
+#if	DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	printString(&value);
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\n"));
 #endif
@@ -686,7 +697,7 @@ static char xsd_stringData(const String value, void* app_data)
 	return EXIP_HANDLER_OK;
 }
 
-static char xsd_namespaceDeclaration(const String ns, const String pfx, unsigned char isLocalElementNS, void* app_data)
+static char xsd_namespaceDeclaration(const String ns, const String pfx, boolean isLocalElementNS, void* app_data)
 {
 	errorCode tmp_err_code = UNEXPECTED_ERROR;
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
@@ -697,7 +708,7 @@ static char xsd_namespaceDeclaration(const String ns, const String pfx, unsigned
 		return EXIP_HANDLER_OK;
 
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, (">Namespace declaration\n"));
-#if DEBUG_GRAMMAR_GEN == ON
+#if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("  pfx: "));
 	printString(&pfx);
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("  ns: "));
@@ -740,8 +751,8 @@ static void initEntryContext(TreeTableEntry* entry)
 	}
 }
 
-#if DEBUG_GRAMMAR_GEN == ON
-// TODO: consider add in debug mode only
+#if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
+
 static void printNameTypeBase(String *attrPtrs, char* indent)
 {
 	if(attrPtrs[ATTRIBUTE_NAME].str != NULL)
@@ -766,7 +777,6 @@ static void printNameTypeBase(String *attrPtrs, char* indent)
 
 #define FULL_EXPANSION
 
-// TODO: consider add in debug mode only
 void printTreeTableEntry(TreeTableEntry* treeTableEntryIn, int indentIdx, char *prefix)
 {
 	char indent[101] = "                                                                                                    ";

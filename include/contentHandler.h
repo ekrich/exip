@@ -40,17 +40,18 @@ struct ContentHandler
 
 	// For handling the data
 	char (*intData)(Integer int_val, void* app_data);
-	char (*booleanData)(unsigned char bool_val, void* app_data);
+	char (*booleanData)(boolean bool_val, void* app_data);
 	char (*stringData)(const String str_val, void* app_data);
 	char (*floatData)(Float float_val, void* app_data);
 	char (*binaryData)(const char* binary_val, Index nbytes, void* app_data);
 	char (*dateTimeData)(EXIPDateTime dt_val, void* app_data);
 	char (*decimalData)(Decimal dec_val, void* app_data);
 	char (*listData)(EXITypeClass exiType, unsigned int itemCount, void* app_data);
+	char (*qnameData)(const QName qname, void* app_data); // xsi:type value only
 
 	// Miscellaneous
 	char (*processingInstruction)(void* app_data); // TODO: define the parameters!
-	char (*namespaceDeclaration)(const String ns, const String prefix, unsigned char isLocalElementNS, void* app_data);
+	char (*namespaceDeclaration)(const String ns, const String prefix, boolean isLocalElementNS, void* app_data);
 
 	// For error handling
 	char (*warning)(const char code, const char* msg, void* app_data);

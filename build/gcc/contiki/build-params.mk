@@ -1,6 +1,9 @@
 # Specify compiler to be used
 COMPILER = m32c-elf-gcc
 
+# Specify ar tool to be used
+ARCHIVER = m32c-elf-ar
+
 # Debug flags if any
 DEBUGGING = #-O0 -g
 
@@ -8,7 +11,7 @@ DEBUGGING = #-O0 -g
 WARNING = -Wpacked -Wall
 
 # Add aditional CFLAGS if any 
-ADDITIONAL_CFLAGS = -mcpu=m16c -falign-functions=2 -nostartfiles -DROMSTART -Imulle -D__SIZE_MAX__=-1
+ADDITIONAL_CFLAGS = -mcpu=m16c -falign-functions=2 -nostartfiles -DROMSTART
 
 # Whether to include the grammar generation module in the build
 INCLUDE_GRAMMAR_GENERATION = false

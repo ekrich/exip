@@ -44,6 +44,7 @@ errorCode initParser(Parser* parser, BinaryBuffer buffer, EXIPSchema* schema, vo
 	parser->strm.context.attrTypeId = INDEX_MAX;
 	parser->strm.gStack = NULL;
 	parser->strm.valueTable.value = NULL;
+	parser->strm.valueTable.count = 0;
 	parser->app_data = app_data;
 	parser->strm.schema = schema;
     makeDefaultOpts(&parser->strm.header.opts);
@@ -57,11 +58,11 @@ errorCode initParser(Parser* parser, BinaryBuffer buffer, EXIPSchema* schema, vo
 	return ERR_OK;
 }
 
-errorCode parseHeader(Parser* parser)
+errorCode parseHeader(Parser* parser, boolean outOfBandOpts)
 {
 	errorCode tmp_err_code = UNEXPECTED_ERROR;
 
-	tmp_err_code = decodeHeader(&parser->strm);
+	tmp_err_code = decodeHeader(&parser->strm, outOfBandOpts);
 	if(tmp_err_code != ERR_OK)
 		return tmp_err_code;
 

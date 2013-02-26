@@ -19,11 +19,19 @@
 #include "sTables.h"
 #include "grammars.h"
 
-#define DEFAULT_GRAMMAR_TABLE        300
-#define DEFAULT_SIMPLE_GRAMMAR_TABLE  75
-#define DEFAULT_ENUM_TABLE             5
+#ifndef DEFAULT_GRAMMAR_TABLE
+# define DEFAULT_GRAMMAR_TABLE         300
+#endif
 
-errorCode initSchema(EXIPSchema* schema, unsigned char initializationType)
+#ifndef DEFAULT_SIMPLE_GRAMMAR_TABLE
+# define DEFAULT_SIMPLE_GRAMMAR_TABLE   75
+#endif
+
+#ifndef DEFAULT_ENUM_TABLE
+# define DEFAULT_ENUM_TABLE              5
+#endif
+
+errorCode initSchema(EXIPSchema* schema, InitSchemaType initializationType)
 {
 	errorCode tmp_err_code = UNEXPECTED_ERROR;
 

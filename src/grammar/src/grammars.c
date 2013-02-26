@@ -103,7 +103,7 @@ errorCode createDocGrammar(EXIPSchema* schema, QNameID* elQnameArr, Index qnameC
 	 */
 	tmp_rule = &schema->docGrammar.rule[GR_DOC_END];
 
-	// TODO: consider ignoring this rule as well.
+	// TODO: consider ignoring this rule as well. In exipg generation as well ...
 
 	/* Part 1 */
 	tmp_rule->production = (Production*) memManagedAllocate(&schema->memList, sizeof(Production));
@@ -297,7 +297,7 @@ errorCode createFragmentGrammar(EXIPSchema* schema, QNameID* elQnameArr, Index q
 	return ERR_OK;
 }
 
-errorCode insertZeroProduction(DynGrammarRule* rule, EventType eventType, SmallIndex nonTermID, QNameID* qnameId, unsigned char hasSecondLevelProd)
+errorCode insertZeroProduction(DynGrammarRule* rule, EventType eventType, SmallIndex nonTermID, QNameID* qnameId, boolean hasSecondLevelProd)
 {
 	if(rule->pCount == rule->prodDim) // The dynamic array rule->production needs to be resized
 	{
@@ -318,7 +318,7 @@ errorCode insertZeroProduction(DynGrammarRule* rule, EventType eventType, SmallI
 	return ERR_OK;
 }
 
-unsigned int getBitsFirstPartCode(EXIOptions opts, EXIGrammar* grammar, GrammarRule* currentRule, SmallIndex currentRuleIndx)
+unsigned int getBitsFirstPartCode(EXIOptions opts, EXIGrammar* grammar, GrammarRule* currentRule, SmallIndex currentRuleIndx, boolean isNilType)
 {
 	unsigned char secondLevelExists = 0;
 
@@ -348,28 +348,81 @@ unsigned int getBitsFirstPartCode(EXIOptions opts, EXIGrammar* grammar, GrammarR
 	else
 	{
 		// Schema-informed element/type grammar
+		Index prodCount;
+
+		if(isNilType == FALSE)
+			prodCount = currentRule->pCount;
+		else
+			prodCount = RULE_GET_AT_COUNT(currentRule->meta) + RULE_CONTAIN_EE(currentRule->meta);
 
 		if(WITH_STRICT(opts.enumOpt))
 		{
 			// Strict mode
-			if(currentRuleIndx == 0 && (HAS_NAMED_SUB_TYPE_OR_UNION(grammar->props) || IS_NILLABLE(grammar->props)))
+			if(isNilType == FALSE && currentRuleIndx == 0 && (HAS_NAMED_SUB_TYPE_OR_UNION(grammar->props) || IS_NILLABLE(grammar->props)))
 				secondLevelExists = 1;
-			return getBitsNumber(currentRule->pCount - 1 + secondLevelExists);
+			return getBitsNumber(prodCount - 1 + secondLevelExists);
 		}
 		else // Non-strict mode
 		{
 			// There is always a second level production
-			return getBitsNumber(currentRule->pCount);
+			return getBitsNumber(prodCount);
 		}
 	}
 }
 
 #if EXIP_DEBUG == ON
 
+static void writeValueTypeString(EXIType exiType)
+{
+	switch(exiType)
+	{
+		case VALUE_TYPE_NONE:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[N/A]"));
+			break;
+		case VALUE_TYPE_STRING:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[str]"));
+			break;
+		case VALUE_TYPE_FLOAT:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[float]"));
+			break;
+		case VALUE_TYPE_DECIMAL:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[dec]"));
+			break;
+		case VALUE_TYPE_DATE_TIME:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[date]"));
+			break;
+		case VALUE_TYPE_BOOLEAN:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[bool]"));
+			break;
+		case VALUE_TYPE_BINARY:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[bin]"));
+			break;
+		case VALUE_TYPE_LIST:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[list]"));
+			break;
+		case VALUE_TYPE_QNAME:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[qname]"));
+			break;
+		case VALUE_TYPE_UNTYPED:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[untyped]"));
+			break;
+		case VALUE_TYPE_INTEGER:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[int]"));
+			break;
+		case VALUE_TYPE_SMALL_INTEGER:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[short]"));
+			break;
+		case VALUE_TYPE_NON_NEGATIVE_INT:
+			DEBUG_MSG(INFO, EXIP_DEBUG, ("[uint]"));
+			break;
+	}
+}
+
 errorCode printGrammarRule(SmallIndex nonTermID, GrammarRule* rule, EXIPSchema *schema)
 {
 	Index j = 0;
 	Production* tmpProd;
+	EXIType exiType = VALUE_TYPE_NONE;
 
 	DEBUG_MSG(INFO, EXIP_DEBUG, ("\n>RULE\n"));
 	DEBUG_MSG(INFO, EXIP_DEBUG, ("NT-%u:", (unsigned int) nonTermID));
@@ -381,6 +434,12 @@ errorCode printGrammarRule(SmallIndex nonTermID, GrammarRule* rule, EXIPSchema *
 		String *localName = NULL;
 		tmpProd = &rule->production[rule->pCount - 1 - j];
 		DEBUG_MSG(INFO, EXIP_DEBUG, ("\t"));
+
+		if(GET_PROD_EXI_EVENT(tmpProd->content) != EVENT_SE_QNAME && tmpProd->typeId != INDEX_MAX)
+			exiType = GET_EXI_TYPE(schema->simpleTypeTable.sType[tmpProd->typeId].content);
+		else
+			exiType = VALUE_TYPE_NONE;
+
 		switch(GET_PROD_EXI_EVENT(tmpProd->content))
 		{
 			case EVENT_SD:
@@ -409,17 +468,20 @@ errorCode printGrammarRule(SmallIndex nonTermID, GrammarRule* rule, EXIPSchema *
 			{
 				QNameID *qname = &tmpProd->qnameId;
 				localName = &(GET_LN_URI_P_QNAME(schema->uriTable, qname).lnStr);
-				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (qname %u:%u) [%u]", (unsigned int) tmpProd->qnameId.uriId, (unsigned int) tmpProd->qnameId.lnId, (unsigned int) tmpProd->typeId));
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (qname %u:%u) ", (unsigned int) tmpProd->qnameId.uriId, (unsigned int) tmpProd->qnameId.lnId));
+				writeValueTypeString(exiType);
 				break;
 			}
 			case EVENT_AT_URI:
 				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (uri) "));
 				break;
 			case EVENT_AT_ALL:
-				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (*) [%u]", (unsigned int) tmpProd->typeId));
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("AT (*) "));
+				writeValueTypeString(exiType);
 				break;
 			case EVENT_CH:
-				DEBUG_MSG(INFO, EXIP_DEBUG, ("CH [%u]", (unsigned int) tmpProd->typeId));
+				DEBUG_MSG(INFO, EXIP_DEBUG, ("CH "));
+				writeValueTypeString(exiType);
 				break;
 			case EVENT_NS:
 				DEBUG_MSG(INFO, EXIP_DEBUG, ("NS "));
