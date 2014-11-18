@@ -41,7 +41,7 @@ struct EXIParser
 	errorCode (*parseHeader)(Parser* parser, boolean outOfBandOpts);
 	errorCode (*setSchema)(Parser* parser, EXIPSchema* schema);
 	errorCode (*parseNext)(Parser* parser);
-	errorCode (*pushEXIData)(char* inBuf, unsigned int bufSize, Parser* parser);
+	errorCode (*pushEXIData)(char* inBuf, unsigned int bufSize, unsigned int* bytesRead, Parser* parser);
 	void (*destroyParser)(Parser* parser);
 };
 
@@ -102,7 +102,12 @@ errorCode parseNext(Parser* parser);
  *
  * This function is used to implement push-parsing interface.
  * After parseNext() returns EXIP_BUFFER_END_REACHED use this
- * function to add more data to the parsing buffer.
+ * function to add more data to the parsing buffer. Currently
+ * this non-blocking parsing interface works only in EXI
+ * schema mode without any deviations. Otherwise the grammars and
+ * the string tables needs also to be backuped and then restored
+ * in case of EXIP_BUFFER_END_REACHED which is very complicated
+ * procedure.
  *
  * @warning Padding bits to fill a byte when in bit-packed mode
  * should not be used as they will be interpreted as if being part
@@ -111,11 +116,13 @@ errorCode parseNext(Parser* parser);
  *
  * @param[in] inBuf the next EXI stream chunk to be parsed
  * @param[in] bufSize the size in bytes of the inBuf
- * @param[in] parser the parser object
+ * @param[out] bytesRead how many bytes have been read from inBuf and written
+ * to the Parser internal binary buffer.
+ * @param[in, out] parser the parser object
  *
  * @return Error handling code
  */
-errorCode pushEXIData(char* inBuf, unsigned int bufSize, Parser* parser);
+errorCode pushEXIData(char* inBuf, unsigned int bufSize, unsigned int* bytesRead, Parser* parser);
 
 /**
  * @brief Free any memroy allocated by parser object

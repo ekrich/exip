@@ -191,7 +191,7 @@ errorCode parseNext(Parser* parser)
 
 	if(tmp_err_code != EXIP_OK)
 	{
-		DEBUG_MSG(ERROR, EXIP_DEBUG, ("\n>Error %s:%d at %s, line %d", GET_ERR_STRING(tmp_err_code), tmp_err_code, __FILE__, __LINE__)); \
+		DEBUG_MSG(ERROR, EXIP_DEBUG, ("\n>Error %s:%d at %s, line %d", GET_ERR_STRING(tmp_err_code), tmp_err_code, __FILE__, __LINE__));
 		return tmp_err_code;
 	}
 
@@ -211,24 +211,28 @@ errorCode parseNext(Parser* parser)
 	return EXIP_OK;
 }
 
-errorCode pushEXIData(char* inBuf, unsigned int bufSize, Parser* parser)
+errorCode pushEXIData(char* inBuf, unsigned int bufSize, unsigned int* bytesRead, Parser* parser)
 {
 	Index bytesCopied = parser->strm.buffer.bufContent - parser->strm.context.bufferIndx;
 
-	if(bufSize > parser->strm.buffer.bufLen - bytesCopied)
-		return EXIP_OUT_OF_BOUND_BUFFER;
+	*bytesRead = parser->strm.buffer.bufLen - bytesCopied;
+	if(*bytesRead > bufSize)
+		*bytesRead = bufSize;
 
 	/* Checks for possible overlaps when copying the left Over Bits,
 	 * normally should not happen when the size of strm->buffer is set
-	 * reasonably (16 bytes or higher) */
+	 * reasonably and not too small */
 	if(2*bytesCopied > parser->strm.buffer.bufLen)
+	{
+		DEBUG_MSG(ERROR, DEBUG_CONTENT_IO, ("\n> The size of strm->buffer is too small! Set to at least: %d", 2*bytesCopied));
 		return EXIP_INCONSISTENT_PROC_STATE;
+	}
 
 	memcpy(parser->strm.buffer.buf, parser->strm.buffer.buf + parser->strm.context.bufferIndx, bytesCopied);
-	memcpy(parser->strm.buffer.buf + bytesCopied, inBuf, bufSize);
+	memcpy(parser->strm.buffer.buf + bytesCopied, inBuf, *bytesRead);
 
 	parser->strm.context.bufferIndx = 0;
-	parser->strm.buffer.bufContent = bytesCopied + bufSize;
+	parser->strm.buffer.bufContent = bytesCopied + *bytesRead;
 
 	return EXIP_OK;
 }

@@ -53,7 +53,7 @@ struct EXISerializer
 	void (*initHeader)(EXIStream* strm);
 	errorCode (*initStream)(EXIStream* strm, BinaryBuffer buffer, EXIPSchema* schema);
 	errorCode (*closeEXIStream)(EXIStream* strm);
-	errorCode (*flushEXIData)(EXIStream* strm);
+	errorCode (*flushEXIData)(EXIStream* strm, char* outBuf, unsigned int bufSize, unsigned int* bytesFlush);
 };
 
 typedef struct EXISerializer EXISerializer;
@@ -289,11 +289,17 @@ errorCode closeEXIStream(EXIStream* strm);
  * @remark The proper use of this function is as follows:
  * When building the EXI body, before each call to serialize.*() functions
  * the context of the EXI stream needs to be saved to a vairable e.g.,
- * StreamContext savedContext = parser->strm.context;
+ * StreamContext savedContext = strm.context; and also the grammar state:
+ * SmallIndex savedNonTerminalIndex = strm.gStack->currNonTermID;
  * if the serialize.*() returns EXIP_BUFFER_END_REACHED the state needs to
- * be restored with: parser->strm.context = savedContext;
+ * be restored with: strm.context = savedContext; and then
+ * testStrm.gStack->currNonTermID = savedNonTerminalIndex;
  * Then the flushEXIData() function must be called to flush the
  * buffer after which the failed serialize.*() call needs to be repeated.
+ * This non-blocking buffer flushing works only in EXI
+ * schema mode without any deviations. Otherwise the grammars and
+ * the string tables needs also to be backuped before each call of
+ * serialize.*() and then restored in case of EXIP_BUFFER_END_REACHED
  *
  * @param[in, out] strm EXI stream object
  * @param[out] outBuf the next EXI stream chunk to be parsed

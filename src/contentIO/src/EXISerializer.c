@@ -51,7 +51,8 @@ const EXISerializer serialize ={startDocument,
 								selfContained,
 								initHeader,
 								initStream,
-								closeEXIStream};
+								closeEXIStream,
+								flushEXIData};
 
 #if EXI_PROFILE_DEFAULT
 
@@ -1028,9 +1029,10 @@ errorCode flushEXIData(EXIStream* strm, char* outBuf, unsigned int bufSize, unsi
 	memcpy(outBuf, strm->buffer.buf, strm->context.bufferIndx);
 
 	strm->buffer.buf[0] = leftOverBits;
-	strm->context.bufferIndx = 0;
 
 	*bytesFlush = strm->context.bufferIndx;
+
+	strm->context.bufferIndx = 0;
 
 	return EXIP_OK;
 }

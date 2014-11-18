@@ -108,9 +108,12 @@ errorCode readEXIChunkForParsing(EXIStream* strm, unsigned int numBytesToBeRead)
 
 	/* Checks for possible overlaps when copying the left Over Bits,
 	 * normally should not happen when the size of strm->buffer is set
-	 * reasonably (16 bytes or higher) */
+	 * reasonably and not too small */
 	if(2*bytesCopied > strm->buffer.bufLen)
+	{
+		DEBUG_MSG(ERROR, DEBUG_STREAM_IO, ("\n> The size of strm->buffer is too small! Set to at least: %d", 2*bytesCopied));
 		return EXIP_INCONSISTENT_PROC_STATE;
+	}
 
 	memcpy(strm->buffer.buf, strm->buffer.buf + strm->context.bufferIndx, bytesCopied);
 

@@ -850,7 +850,6 @@ errorCode encodeWithDynamicTypes(char* buf, int buf_size, int *strmSize)
 	return EXIP_OK;
 }
 
-
 /* END: SchemaLess tests */
 
 #define OUTPUT_BUFFER_SIZE_LARGE_DOC 20000
@@ -1291,6 +1290,606 @@ START_TEST (test_substitution_groups)
 }
 END_TEST
 
+errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf_size, int *strmSize, unsigned char alignment);
+
+START_TEST (test_non_blocking_streaming)
+{
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	char flushBuf[OUTPUT_BUFFER_SIZE];
+	int strmSize = 0;
+	BinaryBuffer buffer;
+	Parser testParser;
+	char* schemafname[1] = {"exip/NonBlockingStreaming-xsd.exi"};
+	EXIPSchema schema;
+	char tmpBuf[40];
+	unsigned int flushMarker;
+	unsigned int bytesRead;
+
+	parseSchema(schemafname, 1, &schema);
+
+	tmp_err_code = encodeNonBlockingStreaming(&schema, flushBuf, OUTPUT_BUFFER_SIZE, &strmSize, BIT_PACKED);
+	fail_unless(tmp_err_code == EXIP_OK, "There is an error in the encoding of non blocking EXI stream");
+	fail_unless(strmSize > 0, "Encoding using non blocking flushing produces empty streams.");
+
+	flushMarker = 20;
+	memcpy(tmpBuf, flushBuf, flushMarker);
+
+	buffer.bufContent = flushMarker;
+	buffer.buf = tmpBuf;
+	buffer.bufLen = 40;
+	buffer.ioStrm.readWriteToStream = NULL;
+	buffer.ioStrm.stream = NULL;
+
+	// Parsing steps:
+
+	// I: First, define an external stream for the input to the parser if any
+
+	// II: Second, initialize the parser object
+	tmp_err_code = parse.initParser(&testParser, buffer, NULL);
+	fail_unless (tmp_err_code == EXIP_OK, "initParser returns an error code %d", tmp_err_code);
+
+	// III: Initialize the parsing data and hook the callback handlers to the parser object
+
+	// IV: Parse the header of the stream
+
+	tmp_err_code = parse.parseHeader(&testParser, FALSE);
+	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
+
+	tmp_err_code = parse.setSchema(&testParser, &schema);
+	fail_unless (tmp_err_code == EXIP_OK, "setSchema() returns an error code %d", tmp_err_code);
+
+	// V: Parse the body of the EXI stream
+
+	while(tmp_err_code == EXIP_OK)
+	{
+		tmp_err_code = parse.parseNext(&testParser);
+	}
+
+	while (tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		tmp_err_code = parse.pushEXIData(flushBuf + flushMarker, strmSize - flushMarker, &bytesRead, &testParser);
+		if(tmp_err_code != EXIP_OK)
+			break;
+		flushMarker += bytesRead;
+
+		while(tmp_err_code == EXIP_OK)
+		{
+			tmp_err_code = parse.parseNext(&testParser);
+		}
+	}
+
+	// VI: Free the memory allocated by the parser object
+
+	parse.destroyParser(&testParser);
+	fail_unless (tmp_err_code == EXIP_PARSING_COMPLETE, "Error during parsing of the EXI body %d", tmp_err_code);
+}
+END_TEST
+
+errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf_size, int *strmSize, unsigned char alignment)
+{
+	const String NS_EMPTY_STR = {NULL, 0};
+	const String NS_URN_STR = {"non:blocking:check", 18};
+
+	const String ELEM_TEST = {"test", 4};
+	const String ELEM_LONG_TEST = {"long-test", 9};
+
+	const String ATTR_SAMPLE = {"sample", 6};
+	const String ATTR_SAMPLE_2 = {"sample-2", 8};
+
+	const String LONG_DATA_STR = {"Test data.", 10};
+	const String SHORT_DATA_STR = {"echo-echoo-echooo", 17};
+	const String LT1_DATA_STR = {"long-test 1 data", 16};
+	const String LT2_DATA_STR = {"long-test 2 data", 16};
+	const String LT3_DATA_STR = {"long-test 3 data", 16};
+
+	const String SCHEMA_ID_STR = {"schemaID=test", 13};
+
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	EXIStream testStrm;
+	BinaryBuffer buffer;
+	String uri;
+	String ln;
+	QName qname = {&uri, &ln, NULL};
+	EXITypeClass valueType;
+	char smallBuf[40];
+	StreamContext savedContext;
+	SmallIndex savedNonTerminalIndex;
+	unsigned int bytesFlushed = 0;
+
+	buffer.buf = smallBuf;
+	buffer.bufLen = 40;
+	buffer.bufContent = 0;
+
+	*strmSize = 0;
+
+	// Serialization steps:
+	// I: First initialize the header of the stream
+	serialize.initHeader(&testStrm);
+
+	// II: Set any options in the header (including schemaID and schemaIDMode), if different from the defaults.
+	testStrm.header.has_options = TRUE;
+	SET_ALIGNMENT(testStrm.header.opts.enumOpt, alignment);
+	testStrm.header.opts.schemaIDMode = SCHEMA_ID_SET;
+	testStrm.header.opts.schemaID = SCHEMA_ID_STR;
+
+	// III: Define an external stream for the output if any, otherwise set to NULL
+	buffer.ioStrm.readWriteToStream = NULL;
+	buffer.ioStrm.stream = NULL;
+
+	// IV: Initialize the stream
+	TRY_CATCH_ENCODE(serialize.initStream(&testStrm, buffer, schema));
+
+	// V: Start building the stream step by step: header, document, element etc...
+	TRY_CATCH_ENCODE(serialize.exiHeader(&testStrm));
+
+	TRY_CATCH_ENCODE(serialize.startDocument(&testStrm));
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_URN_STR;
+	qname.localName = &ELEM_TEST;
+	tmp_err_code = serialize.startElement(&testStrm, qname, &valueType); // <test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // redo the <test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ATTR_SAMPLE;
+	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample="
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample="
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, SHORT_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, SHORT_DATA_STR)); // redo SHORT_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ELEM_LONG_TEST;
+	tmp_err_code = serialize.startElement(&testStrm, qname, &valueType); // <long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // redo the <long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ATTR_SAMPLE_2;
+	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, SHORT_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, SHORT_DATA_STR)); // redo SHORT_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, LONG_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, LONG_DATA_STR)); // redo LONG_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endElement(&testStrm); // </long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // redo the </long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	// ***************************
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ELEM_LONG_TEST;
+	tmp_err_code = serialize.startElement(&testStrm, qname, &valueType); // <long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // redo the <long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ATTR_SAMPLE_2;
+	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, SHORT_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, SHORT_DATA_STR)); // redo SHORT_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, LT1_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, LT1_DATA_STR)); // redo LT1_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endElement(&testStrm); // </long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // redo the </long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	// *************************
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ELEM_LONG_TEST;
+	tmp_err_code = serialize.startElement(&testStrm, qname, &valueType); // <long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // redo the <long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ATTR_SAMPLE_2;
+	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, SHORT_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, SHORT_DATA_STR)); // redo SHORT_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, LT2_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, LT2_DATA_STR)); // redo LT2_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endElement(&testStrm); // </long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // redo the </long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	// ********************************************
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ELEM_LONG_TEST;
+	tmp_err_code = serialize.startElement(&testStrm, qname, &valueType); // <long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // redo the <long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ATTR_SAMPLE_2;
+	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, SHORT_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, SHORT_DATA_STR)); // redo SHORT_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, LT3_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, LT3_DATA_STR)); // redo LT2_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endElement(&testStrm); // </long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // redo the </long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	// ************************
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ELEM_LONG_TEST;
+	tmp_err_code = serialize.startElement(&testStrm, qname, &valueType); // <long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // redo the <long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	qname.uri = &NS_EMPTY_STR;
+	qname.localName = &ATTR_SAMPLE_2;
+	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, SHORT_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, LONG_DATA_STR)); // redo SHORT_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.stringData(&testStrm, LONG_DATA_STR);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, LONG_DATA_STR)); // redo LONG_DATA_STR encoding
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endElement(&testStrm); // </long-test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // redo the </long-test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	// ************************
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endElement(&testStrm); // </test>
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // redo the </test>
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	savedContext = testStrm.context;
+	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
+	tmp_err_code = serialize.endDocument(&testStrm);
+	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
+	{
+		testStrm.context = savedContext;
+		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
+		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
+		*strmSize += bytesFlushed;
+		TRY_CATCH_ENCODE(serialize.endDocument(&testStrm));
+	}
+	else if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	if(buf_size - *strmSize < testStrm.buffer.bufContent)
+		return EXIP_UNEXPECTED_ERROR;
+
+	memcpy(flushBuf + *strmSize, testStrm.buffer.buf, testStrm.buffer.bufContent);
+	*strmSize += testStrm.buffer.bufContent;
+
+	// VI: Free the memory allocated by the EXI stream object
+	TRY_CATCH_ENCODE(serialize.closeEXIStream(&testStrm));
+
+	return EXIP_OK;
+}
+
 
 /* END: Schema-mode tests */
 
@@ -1325,6 +1924,7 @@ static void parseSchema(char** xsdList, int count, EXIPSchema* schema)
 		if(!schemaFile)
 		{
 			fail("Unable to open file %s", exipath);
+			return;
 		}
 		else
 		{
@@ -1384,6 +1984,7 @@ Suite* exip_suite(void)
 		TCase *tc_Schema = tcase_create ("Schema-mode");
 		tcase_add_test (tc_Schema, test_large_doc_str_pattern);
 		tcase_add_test (tc_Schema, test_substitution_groups);
+		tcase_add_test (tc_Schema, test_non_blocking_streaming);
 		suite_add_tcase (s, tc_Schema);
 	}
 
