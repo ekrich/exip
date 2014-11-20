@@ -76,6 +76,17 @@ errorCode initSchema(EXIPSchema* schema, InitSchemaType initializationType)
 	return tmp_err_code;
 }
 
+errorCode initDeviations(SchemaDeviations* deviations)
+{
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	/* Create and initialize initial string table entries */
+	TRY(createDynArray(&deviations->uriTable.dynArray, sizeof(UriEntry), DEFAULT_URI_ENTRIES_NUMBER));
+
+	/* Create the schema grammar table */
+	return createDynArray(&deviations->grammarTable.dynArray, sizeof(EXIGrammar), DEFAULT_GRAMMAR_TABLE);
+}
+
 errorCode generateBuiltInTypesGrammars(EXIPSchema* schema)
 {
 	unsigned int i;

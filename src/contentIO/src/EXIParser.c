@@ -52,6 +52,7 @@ errorCode initParser(Parser* parser, BinaryBuffer buffer, void* app_data)
 	parser->strm.valueTable.count = 0;
 	parser->app_data = app_data;
 	parser->strm.schema = NULL;
+	parser->strm.deviations = NULL;
     makeDefaultOpts(&parser->strm.header.opts);
 
 	initContentHandler(&parser->handler);
@@ -138,6 +139,13 @@ errorCode setSchema(Parser* parser, EXIPSchema* schema)
 		else
 		{
 			parser->strm.schema = schema;
+
+			// Allow for possible deviations from the schema
+			parser->strm.deviations = memManagedAllocate(&parser->strm.memList, sizeof(EXIPSchema));
+			if(parser->strm.schema == NULL)
+				return EXIP_MEMORY_ALLOCATION_ERROR;
+
+			TRY(initDeviations(parser->strm.deviations));
 		}
 	}
 

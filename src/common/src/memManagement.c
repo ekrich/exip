@@ -124,6 +124,56 @@ void freeAllMem(EXIStream* strm)
 		}
 	}
 
+	if(strm->deviations != NULL)
+	{
+		// Free the memory for any deviations
+#if VALUE_CROSSTABLE_USE
+		// Freeing the value cross tables
+		{
+		Index j;
+		for(i = 0; i < strm->deviations->uriTable.count; i++)
+		{
+			for(j = 0; j < strm->deviations->uriTable.uri[i].lnTable.count; j++)
+			{
+				if(GET_LN_URI_IDS(strm->deviations->uriTable, i, j).vxTable != NULL)
+				{
+					assert(GET_LN_URI_IDS(strm->deviations->uriTable, i, j).vxTable->vx);
+					destroyDynArray(&GET_LN_URI_IDS(strm->deviations->uriTable, i, j).vxTable->dynArray);
+					GET_LN_URI_IDS(strm->deviations->uriTable, i, j).vxTable = NULL;
+				}
+			}
+		}
+		}
+#endif
+		// Free the dynamic grammars
+		{
+		Index g;
+		DynGrammarRule* tmp_rule;
+		// Explicitly free the memory for any build-in grammars
+		for(g = 0; g < strm->deviations->grammarTable.count; g++)
+		{
+			for(i = 0; i < strm->deviations->grammarTable.grammar[g].count; i++)
+			{
+				tmp_rule = &((DynGrammarRule*) strm->deviations->grammarTable.grammar[g].rule)[i];
+				if(tmp_rule->production != NULL)
+					EXIP_MFREE(tmp_rule->production);
+			}
+			EXIP_MFREE(strm->deviations->grammarTable.grammar[g].rule);
+		}
+		}
+
+		for(i = 0; i < strm->deviations->uriTable.count; i++)
+		{
+			if(strm->deviations->uriTable.uri[i].pfxTable != NULL)
+				EXIP_MFREE(strm->deviations->uriTable.uri[i].pfxTable);
+
+			destroyDynArray(&strm->deviations->uriTable.uri[i].lnTable.dynArray);
+		}
+
+		destroyDynArray(&strm->deviations->uriTable.dynArray);
+		destroyDynArray(&strm->deviations->grammarTable.dynArray);
+	}
+
 	// Hash tables are freed separately
 	// #DOCUMENT#
 #if HASH_TABLE_USE

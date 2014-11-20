@@ -1120,6 +1120,26 @@ struct EXIPSchema
 
 typedef struct EXIPSchema EXIPSchema;
 
+/**
+ * Dynamic structures for handling schema deviations
+ * in case of statically defined EXI grammars and
+ * string tables
+ */
+struct SchemaDeviations
+{
+	/**
+	 * New Qnames
+	 */
+	UriTable uriTable;
+
+	/**
+	 * New built-in element grammars
+	 */
+	SchemaGrammarTable grammarTable;
+};
+
+typedef struct SchemaDeviations SchemaDeviations;
+
 struct StreamContext
 {
 	/**
@@ -1325,6 +1345,11 @@ struct EXIStream
 	 * It contains the string tables and possibly schema-informed EXI grammars.
 	 */
 	EXIPSchema* schema;
+
+	/**
+	 * Dynamyc schema data and schema deviations
+	 */
+	SchemaDeviations* deviations;
 };
 
 typedef struct EXIStream EXIStream;

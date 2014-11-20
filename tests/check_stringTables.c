@@ -154,11 +154,14 @@ START_TEST (test_addValueEntry)
 	EXIStream testStrm;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	String testStr = {"TEST-007", 8};
+	EXIGrammarStack gStack;
 
 	// IV: Initialize the stream
 	{
 		tmp_err_code = initAllocList(&(testStrm.memList));
-
+		gStack.nextInStack = NULL;
+		gStack.grammar = NULL;
+		testStrm.gStack = &gStack;
 		testStrm.context.bitPointer = 0;
 		testStrm.buffer.bufLen = 0;
 		testStrm.buffer.bufContent = 0;

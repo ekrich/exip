@@ -143,6 +143,7 @@ errorCode decodeHeader(EXIStream* strm, boolean outOfBandOpts)
 		optionsParser.strm.context.bitPointer = strm->context.bitPointer;
 		optionsParser.strm.context.bufferIndx = strm->context.bufferIndx;
 		optionsParser.strm.gStack = NULL;
+		optionsParser.strm.deviations = NULL;
 
 		makeDefaultOpts(&optionsParser.strm.header.opts);
 		SET_STRICT(optionsParser.strm.header.opts.enumOpt);
