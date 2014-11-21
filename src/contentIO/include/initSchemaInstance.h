@@ -75,12 +75,4 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
  */
 errorCode initSchema(EXIPSchema* schema, InitSchemaType initializationType);
 
-/**
- * @brief Initialize the SchemaDeviations object
- *
- * @param[in, out] deviations a resulting deviations container
- * @return Error handling code
- */
-errorCode initDeviations(SchemaDeviations* deviations);
-
 #endif /* INITSCHEMAINSTANCE_H_ */

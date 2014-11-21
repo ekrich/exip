@@ -85,7 +85,6 @@ errorCode encodeHeader(EXIStream* strm)
 		options_strm.context.attrTypeId = 0;
 		options_strm.gStack = NULL;
 		options_strm.schema = (EXIPSchema*) &ops_schema;
-		options_strm.deviations = NULL;
 
 		TRY_CATCH(createValueTable(&options_strm.valueTable), closeOptionsStream(&options_strm));
 		TRY_CATCH(pushGrammar(&options_strm.gStack, emptyQnameID, (EXIGrammar*) &ops_schema.docGrammar), closeOptionsStream(&options_strm));

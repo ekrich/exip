@@ -93,7 +93,6 @@ errorCode initStream(EXIStream* strm, BinaryBuffer buffer, EXIPSchema* schema)
 	strm->valueTable.value = NULL;
 	strm->valueTable.count = 0;
 	strm->schema = NULL;
-	strm->deviations = NULL;
 
 	if(strm->header.opts.valuePartitionCapacity > 0)
 	{
@@ -157,13 +156,6 @@ errorCode initStream(EXIStream* strm, BinaryBuffer buffer, EXIPSchema* schema)
 		else
 		{
 			strm->schema = schema;
-
-			// Allow for possible deviations from the schema
-			strm->deviations = memManagedAllocate(&strm->memList, sizeof(EXIPSchema));
-			if(strm->schema == NULL)
-				return EXIP_MEMORY_ALLOCATION_ERROR;
-
-			TRY(initDeviations(strm->deviations));
 		}
 	}
 

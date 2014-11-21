@@ -12,7 +12,7 @@
  * @date Nov 5, 2012
  * @author Rumen Kyusakov
  * @version 0.5
- * @par[Revision] $Id: exipg.c 328 2013-10-30 16:00:10Z kjussakov $
+ * @par[Revision] $Id$
  */
 
 #include "createGrammars.h"
