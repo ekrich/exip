@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="non:blocking:check"
+		xmlns:tns="non:blocking:check"
+		elementFormDefault="unqualified">
+		
+	<element name="test">
+		<complexType>
+			<sequence>
+				<element name="long-test" maxOccurs="unbounded">
+					<complexType>
+						<simpleContent>
+							<extension base="string">
+								<attribute name="sample-2" type="string"/>
+							</extension>
+						</simpleContent>
+					</complexType>
+				</element>
+			</sequence>
+			<attribute name="sample" type="string"/>
+		</complexType>
+	</element>
+</schema>

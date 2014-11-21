@@ -65,7 +65,7 @@ errorCode toText(EXIPSchema* schemaPtr, FILE *outfile)
 	return EXIP_OK;
 }
 
-errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
+errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviations dvis)
 {
 	time_t now;
     Index count;
@@ -76,12 +76,6 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
 
 	time(&now);
 	fprintf(outfile, "/** AUTO-GENERATED: %.24s\n  * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU\n  * $Id$ */\n\n",  ctime(&now));
-
-	// TODO: revise this comments!
-	// NOTE: Do not use without option mask! Also when strict == FALSE the memPairs are NULL which will create errors
-	// When there is no mask specified this is not correct if the schema is used more than once
-	// There is extra rule slot for each grammar to be use if
-	// strict == FALSE by addUndeclaredProductions() when no mask is specified
 
 	fprintf(outfile, "#include \"procTypes.h\"\n\n");
 	fprintf(outfile, "#define CONST\n\n");
@@ -95,7 +89,7 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
 	}
 
 	/* The array of schema-informed EXI grammars in the EXIPSchema object */
-	fprintf(outfile, "static CONST EXIGrammar %sgrammarTable[%u] =\n{\n", prefix, (unsigned int) schemaPtr->grammarTable.count);
+	fprintf(outfile, "static CONST EXIGrammar %sgrammarTable[%u] =\n{\n", prefix, (unsigned int) schemaPtr->grammarTable.count + dvis.grammar);
 	for(grIter = 0; grIter < schemaPtr->grammarTable.count; grIter++)
 	{
 		tmpGrammar = &schemaPtr->grammarTable.grammar[grIter];
@@ -104,6 +98,11 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
 				(unsigned int) grIter,
 				(unsigned int) tmpGrammar->props,
 				(unsigned int) tmpGrammar->count);
+	}
+	// Reserving space for built-in grammar deviations
+	for(grIter = 0; grIter < dvis.grammar; grIter++)
+	{
+		fprintf(outfile,"   {NULL, 0, 0},\n");
 	}
 
 	fprintf(outfile, "};\n\n");
@@ -118,7 +117,7 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
 	}
 
 	/* Build the URI table structure */
-	staticUriTableOutput(&schemaPtr->uriTable, prefix, outfile);
+	staticUriTableOutput(&schemaPtr->uriTable, prefix, outfile, dvis);
 
 	/* Build the document grammar */
 	staticDocGrammarOutput(&schemaPtr->docGrammar, prefix, outfile);
@@ -156,7 +155,7 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
 	fprintf(outfile,
             "    {{sizeof(UriEntry), %u, %u}, %suriEntry, %u},\n",
             (unsigned int) count,
-            (unsigned int) count,
+            (unsigned int) count + dvis.url,
             prefix,
             (unsigned int) count);
 
@@ -178,7 +177,7 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile)
 	fprintf(outfile,
             "    {{sizeof(EXIGrammar), %u, %u}, %sgrammarTable, %u},\n    %u,\n",
             (unsigned int) count,
-            (unsigned int) count,
+            (unsigned int) count + dvis.grammar,
             prefix,
             (unsigned int) count,
             (unsigned int) count);

@@ -18,6 +18,7 @@
 #define SCHEMABUILDUTILS_H_
 
 #include "procTypes.h"
+#include "createGrammars.h"
 
 // Maximum number of characters in a variable name buffer
 #define VAR_BUFFER_MAX_LENGTH 200
@@ -120,9 +121,10 @@ void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, FILE* out)
  * @brief Builds all the URI entries in the UriTable as a static code representation and stores it in out
  * @param[in] uriTbl the UriTable instance
  * @param[in] prefix prefix for the definitions
+ * @param[in] dvis the number of deviations in url, ln and grammars
  * @param[out] out output stream
  */
-void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out);
+void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out, Deviations dvis);
 
 /**
  * @brief Builds all the Enumeration definitions

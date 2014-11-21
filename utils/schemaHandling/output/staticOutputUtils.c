@@ -261,10 +261,10 @@ void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, FILE* out)
 	} /* END if(lnTableSize > 0) */
 }
 
-void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out)
+void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out, Deviations dvis)
 {
 	Index uriIter;
-	fprintf(out, "static CONST UriEntry %suriEntry[%u] =\n{\n", prefix, (unsigned int) uriTbl->count);
+	fprintf(out, "static CONST UriEntry %suriEntry[%u] =\n{\n", prefix, (unsigned int) uriTbl->count + dvis.url);
 
 	for(uriIter = 0; uriIter < uriTbl->count; uriIter++)
 	{
@@ -273,14 +273,14 @@ void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out)
 			fprintf(out,
                     "    {\n        {{sizeof(LnEntry), %u, %u}, %sLnEntry_%u, %u},\n",
                     (unsigned int) uriTbl->uri[uriIter].lnTable.count,
-                    (unsigned int) uriTbl->uri[uriIter].lnTable.count,
+                    (unsigned int) uriTbl->uri[uriIter].lnTable.count + dvis.ln,
                     prefix,
                     (unsigned int) uriIter,
                     (unsigned int) uriTbl->uri[uriIter].lnTable.count);
         }
 		else
         {
-			fprintf(out, "    {\n        {{sizeof(LnEntry), 0, 0}, NULL, 0},\n");
+			fprintf(out, "    {\n        {{sizeof(LnEntry), %d, %d}, NULL, 0},\n", dvis.ln, dvis.ln);
         }
 
 		if(uriTbl->uri[uriIter].pfxTable != NULL)
@@ -294,9 +294,16 @@ void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out)
 
 		if(uriTbl->uri[uriIter].uriStr.length > 0)
 			fprintf(out, "        {%sURI_%u, %u}%s", prefix, (unsigned int) uriIter, (unsigned int) uriTbl->uri[uriIter].uriStr.length,
-                uriIter==(uriTbl->count-1)?"\n    }\n};\n\n":"\n    },\n");
+                uriIter==(uriTbl->count-1) + dvis.url?"\n    }\n};\n\n":"\n    },\n");
 		else
-			fprintf(out, "        {NULL, 0}%s", uriIter==(uriTbl->count-1)?"\n    }\n};\n\n":"\n    },\n");
+			fprintf(out, "        {NULL, 0}%s", uriIter==(uriTbl->count-1) + dvis.url?"\n    }\n};\n\n":"\n    },\n");
+	}
+
+	for(uriIter = 0; uriIter < dvis.url; uriIter++)
+	{
+		fprintf(out, "    {\n        {{sizeof(LnEntry), %d, %d}, NULL, 0},\n", dvis.ln, dvis.ln);
+		fprintf(out, "        NULL,\n");
+		fprintf(out, "        {NULL, 0}%s", uriIter==dvis.url - 1?"\n    }\n};\n\n":"\n    },\n");
 	}
 }
 

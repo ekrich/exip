@@ -19,9 +19,16 @@
 
 #include "procTypes.h"
 
+typedef struct
+{
+	unsigned int url;
+	unsigned int ln;
+	unsigned int grammar;
+} Deviations;
+
 errorCode toText(EXIPSchema* schemaPtr, FILE *outfile);
 
-errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile);
+errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviations dvis);
 
 errorCode toDynSrc(EXIPSchema* schemaPtr, FILE *outfile);
 
