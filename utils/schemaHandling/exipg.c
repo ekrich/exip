@@ -80,16 +80,15 @@ int main(int argc, char *argv[])
 			   argv[argIndex][6] == 'c')
 	{
 		outputFormat = OUT_SRC_STAT;
-		argIndex++;
-
 		if(strlen(argv[argIndex]) >= 13 && argv[argIndex][7] == '=' )
 		{
 			char * pEnd;
 
 			dvis.url = (int) strtol (argv[argIndex] + 8, &pEnd, 10);
-			dvis.ln = (int) strtol (pEnd, &pEnd, 10);
-			dvis.grammar = (int) strtol (pEnd, NULL, 10);
+			dvis.ln = (int) strtol (pEnd + 1, &pEnd, 10);
+			dvis.grammar = (int) strtol (pEnd + 1, NULL, 10);
 		}
+		argIndex++;
 	}
 
 	if(argc <= argIndex)
