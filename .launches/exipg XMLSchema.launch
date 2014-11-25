@@ -32,7 +32,7 @@
 <stringAttribute key="org.eclipse.cdt.launch.FORMAT" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&lt;contentList&gt;&lt;content id=&quot;str-null-handleSimpleTypeEl-(cast_to_array)&quot; val=&quot;0:6&quot;/&gt;&lt;/contentList&gt;"/>
 <stringAttribute key="org.eclipse.cdt.launch.GLOBAL_VARIABLES" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;globalVariableList/&gt;&#10;"/>
 <stringAttribute key="org.eclipse.cdt.launch.MEMORY_BLOCKS" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;&#10;&lt;memoryBlockExpressionList/&gt;&#10;"/>
-<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="-static=10:0:1:0 -pfx=xmlscm_  -schema=src/grammarGen/xmlSchema/XMLSchema-xsd.exi,src/grammarGen/xmlSchema/xml-xsd.exi src/grammarGen/xmlSchema/staticXmlSchema.c"/>
+<stringAttribute key="org.eclipse.cdt.launch.PROGRAM_ARGUMENTS" value="-static=10:0:1:5 -pfx=xmlscm_  -schema=src/grammarGen/xmlSchema/XMLSchema-xsd.exi,src/grammarGen/xmlSchema/xml-xsd.exi src/grammarGen/xmlSchema/staticXmlSchema.c"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROGRAM_NAME" value="bin/utils/exipg"/>
 <stringAttribute key="org.eclipse.cdt.launch.PROJECT_ATTR" value="exip"/>
 <booleanAttribute key="org.eclipse.cdt.launch.PROJECT_BUILD_CONFIG_AUTO_ATTR" value="true"/>

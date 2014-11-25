@@ -1,4 +1,4 @@
-/** AUTO-GENERATED: Tue Nov 25 16:45:59 2014
+/** AUTO-GENERATED: Tue Nov 25 17:49:15 2014
   * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU
   * $Id$ */
 
@@ -7,7 +7,7 @@
   * URLs: 10
   * Local names: 0
   * Prefixes: 1
-  * Built-in grammars: 0 */
+  * Built-in grammars: 5 */
 
 #include "procTypes.h"
 
@@ -13719,7 +13719,7 @@ static CONST GrammarRule xmlscm_rule_111[8] =
     {xmlscm_prod_111_7, 1, 1}
 };
 
-static CONST EXIGrammar xmlscm_grammarTable[112] =
+static CONST EXIGrammar xmlscm_grammarTable[117] =
 {
    {xmlscm_rule_0, 33554432, 2},
    {xmlscm_rule_1, 570425344, 2},
@@ -13833,6 +13833,11 @@ static CONST EXIGrammar xmlscm_grammarTable[112] =
    {xmlscm_rule_109, 1644167173, 10},
    {xmlscm_rule_110, 1644167171, 8},
    {xmlscm_rule_111, 1644167171, 8},
+   {NULL, 0, 0},
+   {NULL, 0, 0},
+   {NULL, 0, 0},
+   {NULL, 0, 0},
+   {NULL, 0, 0},
 };
 
 static CONST String xmlscm_PfxEntry_0[2] =
@@ -15548,7 +15553,7 @@ CONST EXIPSchema xmlscm_schema =
     {{sizeof(UriEntry), 4, 14}, xmlscm_uriEntry, 4},
     {xmlscm_docGrammarRule, 100663296, 2},
     {{sizeof(SimpleType), 62, 62}, xmlscm_simpleTypes, 62},
-    {{sizeof(EXIGrammar), 112, 112}, xmlscm_grammarTable, 112},
+    {{sizeof(EXIGrammar), 112, 117}, xmlscm_grammarTable, 112},
     112,
     {{sizeof(EnumDefinition), 12, 12}, xmlscm_enumTable, 12}
 };
