@@ -1,6 +1,9 @@
-/** AUTO-GENERATED: Wed Oct 16 17:11:20 2013
+/** AUTO-GENERATED: Mon Nov 24 15:44:10 2014
   * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU
   * $Id$ */
+
+/** Compilation parameters:
+  * Compiled for no deviations from the schema! (lower memory usage) */
 
 #include "procTypes.h"
 
@@ -2001,26 +2004,14 @@ static CONST EXIGrammar ops_grammarTable[75] =
    {ops_rule_74, 1107296256, 2},
 };
 
-static CONST PfxTable ops_pfxTable_0 =
+static CONST String ops_PfxEntry_0[1] =
 {
-    1,
-    {
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0}
-    }
+    {NULL, 0}
 };
 
-static CONST PfxTable ops_pfxTable_1 =
+static CONST String ops_PfxEntry_1[1] =
 {
-    1,
-    {
-        {ops_PFX_1_0, 3},
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0}
-    }
+    {ops_PFX_1_0, 3}
 };
 
 static CONST LnEntry ops_LnEntry_1[4] =
@@ -2055,15 +2046,9 @@ static CONST LnEntry ops_LnEntry_1[4] =
     }
 };
 
-static CONST PfxTable ops_pfxTable_2 =
+static CONST String ops_PfxEntry_2[1] =
 {
-    1,
-    {
-        {ops_PFX_2_0, 3},
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0}
-    }
+    {ops_PFX_2_0, 3}
 };
 
 static CONST LnEntry ops_LnEntry_2[2] =
@@ -2691,27 +2676,27 @@ static CONST UriEntry ops_uriEntry[5] =
 {
     {
         {{sizeof(LnEntry), 0, 0}, NULL, 0},
-        &ops_pfxTable_0,
+        {{sizeof(String), 1, 1}, ops_PfxEntry_0, 1},
         {NULL, 0}
     },
     {
         {{sizeof(LnEntry), 4, 4}, ops_LnEntry_1, 4},
-        &ops_pfxTable_1,
+        {{sizeof(String), 1, 1}, ops_PfxEntry_1, 1},
         {ops_URI_1, 36}
     },
     {
         {{sizeof(LnEntry), 2, 2}, ops_LnEntry_2, 2},
-        &ops_pfxTable_2,
+        {{sizeof(String), 1, 1}, ops_PfxEntry_2, 1},
         {ops_URI_2, 41}
     },
     {
         {{sizeof(LnEntry), 46, 46}, ops_LnEntry_3, 46},
-        NULL,
+        {{sizeof(String), 1, 0}, NULL, 0},
         {ops_URI_3, 32}
     },
     {
         {{sizeof(LnEntry), 39, 39}, ops_LnEntry_4, 39},
-        NULL,
+        {{sizeof(String), 1, 0}, NULL, 0},
         {ops_URI_4, 26}
     }
 };
