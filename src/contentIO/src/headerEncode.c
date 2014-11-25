@@ -386,7 +386,7 @@ static errorCode serializeOptionsStream(EXIStream* options_strm, EXIOptions* opt
 				QName nil;
 				nil.uri = &uriTbl->uri[XML_SCHEMA_INSTANCE_ID].uriStr;
 				nil.localName = &uriTbl->uri[XML_SCHEMA_INSTANCE_ID].lnTable.ln[XML_SCHEMA_INSTANCE_NIL_ID].lnStr;
-				nil.prefix = &uriTbl->uri[XML_SCHEMA_INSTANCE_ID].pfxTable->pfxStr[0];
+				nil.prefix = &uriTbl->uri[XML_SCHEMA_INSTANCE_ID].pfxTable.pfx[0];
 				tmpEvCode.length = 2;
 				tmpEvCode.part[0] = 1;
 				tmpEvCode.bits[0] = 1;

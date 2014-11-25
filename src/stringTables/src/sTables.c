@@ -158,18 +158,6 @@ errorCode createValueTable(ValueTable* valueTable)
 	return EXIP_OK;
 }
 
-errorCode createPfxTable(PfxTable** pfxTable)
-{
-	// Due to the small size of the prefix table, there is no need to 
-	// use a DynArray
-	(*pfxTable) = (PfxTable*) EXIP_MALLOC(sizeof(PfxTable));
-	if(*pfxTable == NULL)
-		return EXIP_MEMORY_ALLOCATION_ERROR;
-
-	(*pfxTable)->count = 0;
-	return EXIP_OK;
-}
-
 errorCode addUriEntry(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId)
 {
 	errorCode tmp_err_code;
@@ -180,10 +168,11 @@ errorCode addUriEntry(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId)
 
 	// Fill in URI entry
 	uriEntry->uriStr = uriStr;
-	// Prefix table is created independently
-	uriEntry->pfxTable = NULL;
+
+	// Create an empty prefix table
+	TRY(createDynArray(&uriEntry->pfxTable.dynArray, sizeof(String), DEFAULT_PFX_ENTRIES_NUMBER));
+
 	// Create local names table for this URI
-	// TODO RCC 20120201: Should this be separate (empty string URI has no local names)?
 	TRY(createDynArray(&uriEntry->lnTable.dynArray, sizeof(LnEntry), DEFAULT_LN_ENTRIES_NUMBER));
 
 	*uriEntryId = (SmallIndex)uriLEntryId;
@@ -303,12 +292,14 @@ errorCode addValueEntry(EXIStream* strm, String valueStr, QNameID qnameID)
 
 errorCode addPfxEntry(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId)
 {
-	if(pfxTable->count >= MAXIMUM_NUMBER_OF_PREFIXES_PER_URI)
-		return EXIP_TOO_MANY_PREFIXES_PER_URI;
+	errorCode tmp_err_code;
+	String* strEntry;
 
-	pfxTable->pfxStr[pfxTable->count].length = pfxStr.length;
-	pfxTable->pfxStr[pfxTable->count].str = pfxStr.str;
-	*pfxEntryId = pfxTable->count++;
+	TRY(addEmptyDynEntry(&pfxTable->dynArray, (void**)&strEntry, pfxEntryId));
+
+	// Fill in local names entry
+	strEntry->length = pfxStr.length;
+	strEntry->str = pfxStr.str;
 
 	return EXIP_OK;
 }
@@ -328,12 +319,11 @@ errorCode createUriTableEntry(UriTable* uriTable, const String uri, int createPf
 	// Get ptr. to URI Entry
 	uriEntry = &uriTable->uri[uriEntryId];
 
+	// Create an empty prefix table
+	TRY(createDynArray(&uriEntry->pfxTable.dynArray, sizeof(String), DEFAULT_PFX_ENTRIES_NUMBER));
+
 	if(createPfx)
-	{
-		// Create the URI's prefix table and add the default prefix
-		TRY(createPfxTable(&uriEntry->pfxTable));
-		TRY(addPfxEntry(uriEntry->pfxTable, pfx, &pfxEntryId));
-	}
+		TRY(addPfxEntry(&uriEntry->pfxTable, pfx, &pfxEntryId));
 
 	for(i = 0; i < lnSize; i++)
 	{
@@ -427,12 +417,9 @@ boolean lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId)
 {
 	SmallIndex i;
 
-	if(pfxTable == NULL)
-		return FALSE;
-
 	for(i = 0; i < pfxTable->count; i++)
 	{
-		if(stringEqual(pfxTable->pfxStr[i], pfxStr))
+		if(stringEqual(pfxTable->pfx[i], pfxStr))
 		{
 			*pfxEntryId = i;
 			return TRUE;

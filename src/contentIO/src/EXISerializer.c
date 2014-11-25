@@ -966,10 +966,6 @@ errorCode namespaceDeclaration(EXIStream* strm, const String ns, const String pr
 		TRY(writeEventCode(strm, tmpEvCode));
 		// serialize  NS event content
 		TRY(encodeUri(strm, (String*) &ns, &uriId));
-		if(strm->schema->uriTable.uri[uriId].pfxTable == NULL)
-		{
-			TRY(createPfxTable(&strm->schema->uriTable.uri[uriId].pfxTable));
-		}
 		TRY(encodePfx(strm, uriId, (String*) &prefix));
 		// Leave the current grammar NULL
 		return encodeBoolean(strm, isLocalElementNS);
@@ -983,10 +979,6 @@ errorCode namespaceDeclaration(EXIStream* strm, const String ns, const String pr
 	TRY(encodeProduction(strm, EVENT_NS_CLASS, FALSE, NULL, VALUE_TYPE_NONE_CLASS, &prodHit));
 	TRY(encodeUri(strm, (String*) &ns, &uriId));
 
-	if(strm->schema->uriTable.uri[uriId].pfxTable == NULL)
-	{
-		TRY(createPfxTable(&strm->schema->uriTable.uri[uriId].pfxTable));
-	}
 	TRY(encodePfx(strm, uriId, (String*) &prefix));
 
 	return encodeBoolean(strm, isLocalElementNS);

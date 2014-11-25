@@ -1,4 +1,4 @@
-/** AUTO-GENERATED: Mon Nov 24 15:44:10 2014
+/** AUTO-GENERATED: Tue Nov 25 16:32:10 2014
   * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU
   * $Id$ */
 
@@ -2691,12 +2691,12 @@ static CONST UriEntry ops_uriEntry[5] =
     },
     {
         {{sizeof(LnEntry), 46, 46}, ops_LnEntry_3, 46},
-        {{sizeof(String), 1, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
         {ops_URI_3, 32}
     },
     {
         {{sizeof(LnEntry), 39, 39}, ops_LnEntry_4, 39},
-        {{sizeof(String), 1, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
         {ops_URI_4, 26}
     }
 };

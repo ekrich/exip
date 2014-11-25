@@ -42,22 +42,6 @@ START_TEST (test_createValueTable)
 }
 END_TEST
 
-START_TEST (test_createPfxTable)
-{
-	PfxTable* pfxTable;
-	errorCode err = EXIP_UNEXPECTED_ERROR;
-
-	err = createPfxTable(&pfxTable);
-
-	fail_unless (err == EXIP_OK, "createPfxTable returns error code %d", err);
-	fail_unless (pfxTable->count == 0,
-				"createPfxTable populates the pfxTable with count: %d", pfxTable->count);
-	fail_if(pfxTable->pfxStr == NULL);
-
-	EXIP_MFREE(pfxTable);
-}
-END_TEST
-
 START_TEST (test_addUriEntry)
 {
 	errorCode err = EXIP_UNEXPECTED_ERROR;
@@ -202,7 +186,6 @@ Suite * tables_suite (void)
 	  /* Table test case */
 	  TCase *tc_tables = tcase_create ("Tables");
 	  tcase_add_test (tc_tables, test_createValueTable);
-	  tcase_add_test (tc_tables, test_createPfxTable);
 	  tcase_add_test (tc_tables, test_addUriEntry);
 	  tcase_add_test (tc_tables, test_addLnEntry);
 	  tcase_add_test (tc_tables, test_addValueEntry);

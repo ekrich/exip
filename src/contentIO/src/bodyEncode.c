@@ -702,17 +702,17 @@ errorCode encodePfxQName(EXIStream* strm, QName* qname, EventType eventT, SmallI
 	if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES) == FALSE)
 		return EXIP_OK;
 
-	if(strm->schema->uriTable.uri[uriId].pfxTable == NULL || strm->schema->uriTable.uri[uriId].pfxTable->count == 0)
+	if(strm->schema->uriTable.uri[uriId].pfxTable.count == 0)
 		return EXIP_OK;
 
-	prefixBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable->count - 1);
+	prefixBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable.count - 1);
 
 	if(prefixBits > 0)
 	{
 		if(qname == NULL)
 			return EXIP_NULL_POINTER_REF;
 
-		if(lookupPfx(strm->schema->uriTable.uri[uriId].pfxTable, *qname->prefix, &prefixID) == TRUE)
+		if(lookupPfx(&strm->schema->uriTable.uri[uriId].pfxTable, *qname->prefix, &prefixID) == TRUE)
 		{
 			TRY(encodeNBitUnsignedInteger(strm, prefixBits, (unsigned int) prefixID));
 		}
@@ -732,9 +732,9 @@ errorCode encodePfx(EXIStream* strm, SmallIndex uriId, String* prefix)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	SmallIndex pfxId;
-	unsigned char pfxBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable->count);
+	unsigned char pfxBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable.count);
 
-	if(lookupPfx(strm->schema->uriTable.uri[uriId].pfxTable, *prefix, &pfxId)) // prefix hit
+	if(lookupPfx(&strm->schema->uriTable.uri[uriId].pfxTable, *prefix, &pfxId)) // prefix hit
 	{
 		TRY(encodeNBitUnsignedInteger(strm, pfxBits, pfxId + 1));
 	}
@@ -744,7 +744,7 @@ errorCode encodePfx(EXIStream* strm, SmallIndex uriId, String* prefix)
 		TRY(encodeNBitUnsignedInteger(strm, pfxBits, 0));
 		TRY(encodeString(strm, prefix));
 		TRY(cloneStringManaged(prefix, &copiedPrefix, &strm->memList));
-		TRY(addPfxEntry(strm->schema->uriTable.uri[uriId].pfxTable, copiedPrefix, &pfxId));
+		TRY(addPfxEntry(&strm->schema->uriTable.uri[uriId].pfxTable, copiedPrefix, &pfxId));
 	}
 
 	return EXIP_OK;

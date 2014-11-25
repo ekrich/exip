@@ -110,9 +110,7 @@ void freeAllMem(EXIStream* strm)
 
 			for(i = 0; i < strm->schema->uriTable.count; i++)
 			{
-				if(strm->schema->uriTable.uri[i].pfxTable != NULL)
-					EXIP_MFREE(strm->schema->uriTable.uri[i].pfxTable);
-
+				destroyDynArray(&strm->schema->uriTable.uri[i].pfxTable.dynArray);
 				destroyDynArray(&strm->schema->uriTable.uri[i].lnTable.dynArray);
 			}
 
@@ -121,6 +119,23 @@ void freeAllMem(EXIStream* strm)
 			if(strm->schema->simpleTypeTable.sType != NULL)
 				destroyDynArray(&strm->schema->simpleTypeTable.dynArray);
 			freeAllocList(&strm->schema->memList);
+		}
+		else
+		{
+			// Possible additions of string table entries must be removed
+			for(i = 0; i < strm->schema->uriTable.dynArray.chunkEntries; i++)
+			{
+				strm->schema->uriTable.uri[i].pfxTable.count = strm->schema->uriTable.uri[i].pfxTable.dynArray.chunkEntries;
+				strm->schema->uriTable.uri[i].lnTable.count = strm->schema->uriTable.uri[i].lnTable.dynArray.chunkEntries;
+			}
+
+			for(i = strm->schema->uriTable.dynArray.chunkEntries; i < strm->schema->uriTable.count; i++)
+			{
+				destroyDynArray(&strm->schema->uriTable.uri[i].pfxTable.dynArray);
+				destroyDynArray(&strm->schema->uriTable.uri[i].lnTable.dynArray);
+			}
+
+			strm->schema->uriTable.count = strm->schema->uriTable.dynArray.chunkEntries;
 		}
 	}
 

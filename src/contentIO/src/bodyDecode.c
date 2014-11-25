@@ -813,20 +813,20 @@ errorCode decodePfxQname(EXIStream* strm, QName* qname, SmallIndex uriId)
 	if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES) == FALSE)
 		return EXIP_OK;
 
-	if(strm->schema->uriTable.uri[uriId].pfxTable == NULL || strm->schema->uriTable.uri[uriId].pfxTable->count == 0)
+	if(strm->schema->uriTable.uri[uriId].pfxTable.count == 0)
 		return EXIP_OK;
 
-	prefixBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable->count - 1);
+	prefixBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable.count - 1);
 
 	if(prefixBits > 0)
 	{
 		TRY(decodeNBitUnsignedInteger(strm, prefixBits, &prefixID));
 
-		if(prefixID >= strm->schema->uriTable.uri[uriId].pfxTable->count)
+		if(prefixID >= strm->schema->uriTable.uri[uriId].pfxTable.count)
 			return EXIP_INVALID_EXI_INPUT;
 	}
 
-	qname->prefix = &strm->schema->uriTable.uri[uriId].pfxTable->pfxStr[prefixID];
+	qname->prefix = &strm->schema->uriTable.uri[uriId].pfxTable.pfx[prefixID];
 
 	return EXIP_OK;
 }
@@ -835,7 +835,7 @@ errorCode decodePfx(EXIStream* strm, SmallIndex uriId, SmallIndex* pfxId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int tmp_val_buf = 0;
-	unsigned char prfxBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable->count);
+	unsigned char prfxBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable.count);
 
 	TRY(decodeNBitUnsignedInteger(strm, prfxBits, &tmp_val_buf));
 
@@ -844,13 +844,13 @@ errorCode decodePfx(EXIStream* strm, SmallIndex uriId, SmallIndex* pfxId)
 		String str;
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix miss\n"));
 		TRY(decodeString(strm, &str));
-		TRY(addPfxEntry(strm->schema->uriTable.uri[uriId].pfxTable, str, pfxId));
+		TRY(addPfxEntry(&strm->schema->uriTable.uri[uriId].pfxTable, str, pfxId));
 	}
 	else // prefix hit
 	{
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix hit\n"));
 		*pfxId = tmp_val_buf-1;
-		if(*pfxId >= strm->schema->uriTable.uri[uriId].pfxTable->count)
+		if(*pfxId >= strm->schema->uriTable.uri[uriId].pfxTable.count)
 			return EXIP_INVALID_EXI_INPUT;
 	}
 
@@ -1237,17 +1237,12 @@ errorCode decodeNSEvent(EXIStream* strm, ContentHandler* handler, SmallIndex* no
 
 	TRY(decodeUri(strm, &ns_uriId));
 
-	if(strm->schema->uriTable.uri[ns_uriId].pfxTable == NULL)
-	{
-		TRY(createPfxTable(&strm->schema->uriTable.uri[ns_uriId].pfxTable));
-	}
-
 	TRY(decodePfx(strm, ns_uriId, &pfxId));
 	TRY(decodeBoolean(strm, &bool));
 
 	if(handler->namespaceDeclaration != NULL)  // Invoke handler method
 	{
-		TRY(handler->namespaceDeclaration(strm->schema->uriTable.uri[ns_uriId].uriStr, strm->schema->uriTable.uri[ns_uriId].pfxTable->pfxStr[pfxId], bool, app_data));
+		TRY(handler->namespaceDeclaration(strm->schema->uriTable.uri[ns_uriId].uriStr, strm->schema->uriTable.uri[ns_uriId].pfxTable.pfx[pfxId], bool, app_data));
 	}
 	return EXIP_OK;
 }

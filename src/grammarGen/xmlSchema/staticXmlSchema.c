@@ -1,6 +1,13 @@
-/** AUTO-GENERATED: Tue Jul 23 16:16:44 2013
+/** AUTO-GENERATED: Tue Nov 25 16:45:59 2014
   * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU
   * $Id$ */
+
+/** Compilation parameters:
+  * Compiled for possible deviations from the schema:
+  * URLs: 10
+  * Local names: 0
+  * Prefixes: 1
+  * Built-in grammars: 0 */
 
 #include "procTypes.h"
 
@@ -13760,7 +13767,7 @@ static CONST EXIGrammar xmlscm_grammarTable[112] =
    {xmlscm_rule_43, 570425344, 2},
    {xmlscm_rule_44, 570425344, 2},
    {xmlscm_rule_45, 570425344, 2},
-   {xmlscm_rule_46, 1107296256, 1},
+   {xmlscm_rule_46, 1644167168, 1},
    {xmlscm_rule_47, 1107296257, 3},
    {xmlscm_rule_48, 1107296258, 4},
    {xmlscm_rule_49, 1107296257, 4},
@@ -13777,7 +13784,7 @@ static CONST EXIGrammar xmlscm_grammarTable[112] =
    {xmlscm_rule_60, 1107296257, 6},
    {xmlscm_rule_61, 1107296258, 5},
    {xmlscm_rule_62, 1107296258, 5},
-   {xmlscm_rule_63, 1107296259, 5},
+   {xmlscm_rule_63, 1644167171, 5},
    {xmlscm_rule_64, 1107296259, 5},
    {xmlscm_rule_65, 1107296259, 5},
    {xmlscm_rule_66, 1107296258, 4},
@@ -13785,7 +13792,7 @@ static CONST EXIGrammar xmlscm_grammarTable[112] =
    {xmlscm_rule_68, 1107296258, 4},
    {xmlscm_rule_69, 1644167168, 2},
    {xmlscm_rule_70, 1107296259, 8},
-   {xmlscm_rule_71, 1107296264, 11},
+   {xmlscm_rule_71, 1644167176, 11},
    {xmlscm_rule_72, 1107296258, 4},
    {xmlscm_rule_73, 1644167168, 2},
    {xmlscm_rule_74, 1107296259, 5},
@@ -13802,12 +13809,12 @@ static CONST EXIGrammar xmlscm_grammarTable[112] =
    {xmlscm_rule_85, 1107296258, 7},
    {xmlscm_rule_86, 1107296259, 8},
    {xmlscm_rule_87, 1644167168, 2},
-   {xmlscm_rule_88, 1107296267, 18},
-   {xmlscm_rule_89, 1107296259, 10},
+   {xmlscm_rule_88, 1644167179, 18},
+   {xmlscm_rule_89, 1644167171, 10},
    {xmlscm_rule_90, 1107296261, 7},
    {xmlscm_rule_91, 1107296267, 18},
    {xmlscm_rule_92, 1107296258, 11},
-   {xmlscm_rule_93, 1107296258, 11},
+   {xmlscm_rule_93, 1644167170, 11},
    {xmlscm_rule_94, 1107296262, 17},
    {xmlscm_rule_95, 1107296257, 4},
    {xmlscm_rule_96, 1107296257, 8},
@@ -13823,20 +13830,15 @@ static CONST EXIGrammar xmlscm_grammarTable[112] =
    {xmlscm_rule_106, 1644167170, 24},
    {xmlscm_rule_107, 1644167182, 21},
    {xmlscm_rule_108, 1644167173, 13},
-   {xmlscm_rule_109, 1107296261, 10},
+   {xmlscm_rule_109, 1644167173, 10},
    {xmlscm_rule_110, 1644167171, 8},
    {xmlscm_rule_111, 1644167171, 8},
 };
 
-static CONST PfxTable xmlscm_pfxTable_0 =
+static CONST String xmlscm_PfxEntry_0[2] =
 {
-    1,
-    {
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0}
-    }
+    {NULL, 0},
+    {NULL, 0}
 };
 
 static CONST LnEntry xmlscm_LnEntry_0[34] =
@@ -14081,15 +14083,10 @@ static CONST LnEntry xmlscm_LnEntry_0[34] =
     }
 };
 
-static CONST PfxTable xmlscm_pfxTable_1 =
+static CONST String xmlscm_PfxEntry_1[2] =
 {
-    1,
-    {
-        {xmlscm_PFX_1_0, 3},
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0}
-    }
+    {xmlscm_PFX_1_0, 3},
+    {NULL, 0}
 };
 
 static CONST LnEntry xmlscm_LnEntry_1[5] =
@@ -14131,15 +14128,10 @@ static CONST LnEntry xmlscm_LnEntry_1[5] =
     }
 };
 
-static CONST PfxTable xmlscm_pfxTable_2 =
+static CONST String xmlscm_PfxEntry_2[2] =
 {
-    1,
-    {
-        {xmlscm_PFX_2_0, 3},
-        {NULL, 0},
-        {NULL, 0},
-        {NULL, 0}
-    }
+    {xmlscm_PFX_2_0, 3},
+    {NULL, 0}
 };
 
 static CONST LnEntry xmlscm_LnEntry_2[2] =
@@ -15144,27 +15136,77 @@ static CONST LnEntry xmlscm_LnEntry_3[140] =
     }
 };
 
-static CONST UriEntry xmlscm_uriEntry[4] =
+static CONST UriEntry xmlscm_uriEntry[14] =
 {
     {
         {{sizeof(LnEntry), 34, 34}, xmlscm_LnEntry_0, 34},
-        &xmlscm_pfxTable_0,
+        {{sizeof(String), 1, 2}, xmlscm_PfxEntry_0, 1},
         {NULL, 0}
     },
     {
         {{sizeof(LnEntry), 5, 5}, xmlscm_LnEntry_1, 5},
-        &xmlscm_pfxTable_1,
+        {{sizeof(String), 1, 2}, xmlscm_PfxEntry_1, 1},
         {xmlscm_URI_1, 36}
     },
     {
         {{sizeof(LnEntry), 2, 2}, xmlscm_LnEntry_2, 2},
-        &xmlscm_pfxTable_2,
+        {{sizeof(String), 1, 2}, xmlscm_PfxEntry_2, 1},
         {xmlscm_URI_2, 41}
     },
     {
         {{sizeof(LnEntry), 140, 140}, xmlscm_LnEntry_3, 140},
-        NULL,
+        {{sizeof(String), 0, 0}, NULL, 0},
         {xmlscm_URI_3, 32}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
+    },
+    {
+        {{sizeof(LnEntry), 0, 0}, NULL, 0},
+        {{sizeof(String), 0, 0}, NULL, 0},
+        {NULL, 0}
     }
 };
 
@@ -15330,17 +15372,17 @@ static CONST SimpleType xmlscm_simpleTypes[62] =
     {1006632960, 0, 0x0000000000000000, 0x0000000000000000},
     {838860800, 0, 0x0000000000000000, 0x0000000000000000},
     {1526727232, 0, 0x000000000000007F, 0x00000000FFFFFF80},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
+    {704643072, 0, 0x0000000000000000, 0x0000000000000000},
     {671088640, 0, 0x0000000000000000, 0x0000000000000000},
     {503320576, 0, 0x0000000000000000, 0x0000000000000000},
     {335544320, 0, 0x0000000000000000, 0x0000000000000000},
     {167772160, 0, 0x0000000000000000, 0x0000000000000000},
     {335544320, 0, 0x0000000000000000, 0x0000000000000000},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
+    {721420288, 0, 0x0000000000000000, 0x0000000000000000},
+    {721420288, 0, 0x0000000000000000, 0x0000000000000000},
+    {721420288, 0, 0x0000000000000000, 0x0000000000000000},
+    {687865856, 0, 0x0000000000000000, 0x0000000000000000},
+    {704643072, 0, 0x0000000000000000, 0x0000000000000000},
     {1006632960, 0, 0x0000000000000000, 0x0000000000000000},
     {1509953536, 0, 0x0000000000000000, 0x0000000000000000},
     {1509953536, 0, 0x0000000000000000, 0x0000000000000000},
@@ -15353,7 +15395,7 @@ static CONST SimpleType xmlscm_simpleTypes[62] =
     {1543504384, 0, 0x0000000000000000, 0x0000000000000001},
     {1509954112, 0, 0x0000000000007FFF, 0x00000000FFFF8000},
     {167776256, 0, 0x0000000000000000, 0x0000000000000000},
-    {671088640, 0, 0x0000000000000000, 0x0000000000000000},
+    {738197504, 0, 0x0000000000000000, 0x0000000000000000},
     {167776256, 0, 0x0000000000000000, 0x0000000000000000},
     {1526727232, 0, 0x00000000000000FF, 0x0000000000000000},
     {1543508480, 0, 0x0000000000000000, 0x0000000000000000},
@@ -15503,7 +15545,7 @@ static CONST EnumDefinition xmlscm_enumTable[12] = {
 CONST EXIPSchema xmlscm_schema =
 {
     {NULL, NULL},
-    {{sizeof(UriEntry), 4, 4}, xmlscm_uriEntry, 4},
+    {{sizeof(UriEntry), 4, 14}, xmlscm_uriEntry, 4},
     {xmlscm_docGrammarRule, 100663296, 2},
     {{sizeof(SimpleType), 62, 62}, xmlscm_simpleTypes, 62},
     {{sizeof(EXIGrammar), 112, 112}, xmlscm_grammarTable, 112},

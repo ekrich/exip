@@ -22,7 +22,7 @@
 
 #define DEFAULT_VALUE_ENTRIES_NUMBER 50
 #define DEFAULT_URI_ENTRIES_NUMBER   4
-#define DEFAULT_PFX_ENTRIES_NUMBER   2
+#define DEFAULT_PFX_ENTRIES_NUMBER   1
 #define DEFAULT_LN_ENTRIES_NUMBER    10
 #define DEFAULT_VX_ENTRIES_NUMBER    10
 
@@ -52,14 +52,6 @@
  * @return Error handling code
  */
 errorCode createValueTable(ValueTable* valueTable);
-
-/**
- * @brief Creates fresh empty PfxTable (prefix partition of EXI string table)
- * This operation includes allocation of memory for DEFAULT_PFX_ENTRIES_NUMBER number of prefix entries
- * @param[out] pfxTable Prefix string table partition
- * @return Error handling code
- */
-errorCode createPfxTable(PfxTable** pfxTable);
 
 /**
  * @brief Add new row into the URI string table

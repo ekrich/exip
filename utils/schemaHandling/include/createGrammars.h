@@ -24,6 +24,7 @@ typedef struct
 	unsigned int url;
 	unsigned int ln;
 	unsigned int grammar;
+	unsigned int pfx;
 } Deviations;
 
 errorCode toText(EXIPSchema* schemaPtr, FILE *outfile);

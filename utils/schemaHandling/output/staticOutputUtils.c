@@ -16,6 +16,7 @@
 
 #include "schemaOutputUtils.h"
 #include "hashtable.h"
+#include "sTables.h"
 
 static void setProdStrings(IndexStrings *indexStrings, Production *prod)
 {
@@ -84,13 +85,10 @@ void staticStringTblDefsOutput(UriTable* uriTbl, char* prefix, FILE* out)
 		staticStringDefOutput(&uriTbl->uri[uriIter].uriStr, varName, out);
 
 		// Printing of a pfx strings if any
-		if(uriTbl->uri[uriIter].pfxTable != NULL)
+		for(pfxIter = 0; pfxIter < uriTbl->uri[uriIter].pfxTable.count; pfxIter++)
 		{
-			for(pfxIter = 0; pfxIter < uriTbl->uri[uriIter].pfxTable->count; pfxIter++)
-			{
-				sprintf(varName, "%sPFX_%u_%u", prefix, (unsigned int) uriIter, (unsigned int) pfxIter);
-				staticStringDefOutput(&uriTbl->uri[uriIter].pfxTable->pfxStr[pfxIter], varName, out);
-			}
+			sprintf(varName, "%sPFX_%u_%u", prefix, (unsigned int) uriIter, (unsigned int) pfxIter);
+			staticStringDefOutput(&uriTbl->uri[uriIter].pfxTable.pfx[pfxIter], varName, out);
 		}
 
 		// Printing of all local names for that uri
@@ -208,36 +206,38 @@ void staticDocGrammarOutput(EXIGrammar* docGr, char* prefix, FILE* out)
     {%s, 1, 0}\n};\n\n", varNameContent, (unsigned int) docGr->rule[GR_DOC_CONTENT].pCount, varNameEnd);
 }
 
-void staticPrefixOutput(PfxTable* pfxTbl, char* prefix, Index uriId, FILE* out)
+void staticPrefixOutput(PfxTable* pfxTbl, char* prefix, Index uriId, Deviations dvis, FILE* out)
 {
 	Index pfxIter;
-	if(pfxTbl != NULL)
+	if(pfxTbl->count > 0)
 	{
-		fprintf(out, "static CONST PfxTable %spfxTable_%u =\n{\n    %u,\n    {\n", prefix, (unsigned int) uriId, (unsigned int) pfxTbl->count);
+		fprintf(out, "static CONST String %sPfxEntry_%u[%u] =\n{\n", prefix, (unsigned int) uriId, (unsigned int) pfxTbl->count + dvis.pfx);
 
 		for(pfxIter = 0; pfxIter < pfxTbl->count; pfxIter++)
 		{
-			if(pfxTbl->pfxStr[pfxIter].length > 0)
-				fprintf(out, "        {%sPFX_%u_%u, %u},\n", prefix, (unsigned int) uriId, (unsigned int) pfxIter, (unsigned int) pfxTbl->pfxStr[pfxIter].length);
+			if(pfxTbl->pfx[pfxIter].length > 0)
+				fprintf(out, "    {%sPFX_%u_%u, %u}%s", prefix, (unsigned int) uriId, (unsigned int) pfxIter, (unsigned int) pfxTbl->pfx[pfxIter].length,
+						pfxIter==pfxTbl->count + dvis.pfx - 1?"\n};\n\n" : ",\n");
 			else
-				fprintf(out, "        {NULL, 0},\n");
+				fprintf(out, "    {NULL, 0}%s", pfxIter==pfxTbl->count + dvis.pfx - 1?"\n};\n\n" : ",\n");
 		}
-		for(; pfxIter < MAXIMUM_NUMBER_OF_PREFIXES_PER_URI; pfxIter++)
+
+		for(pfxIter = 0; pfxIter < dvis.pfx; pfxIter++)
 		{
-			fprintf(out, "        {NULL, 0}%s", pfxIter==MAXIMUM_NUMBER_OF_PREFIXES_PER_URI-1 ? "\n    }\n};\n\n" : ",\n");
+			fprintf(out, "    {NULL, 0}%s", pfxIter==dvis.pfx - 1?"\n};\n\n" : ",\n");
 		}
 	}
 }
 
-void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, FILE* out)
+void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, Deviations dvis, FILE* out)
 {
 	Index lnIter;
 	char elemGrammar[20];
 	char typeGrammar[20];
 
-	if(lnTbl->count > 0)
+	if(lnTbl->count + dvis.ln> 0)
 	{
-		fprintf(out, "static CONST LnEntry %sLnEntry_%u[%u] =\n{\n", prefix, (unsigned int) uriId, (unsigned int) lnTbl->count);
+		fprintf(out, "static CONST LnEntry %sLnEntry_%u[%u] =\n{\n", prefix, (unsigned int) uriId, (unsigned int) lnTbl->count  + dvis.ln);
 
 		for(lnIter = 0; lnIter < lnTbl->count; lnIter++)
 		{
@@ -256,12 +256,22 @@ void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, FILE* out)
 				fprintf(out, "        {%sLN_%u_%u, %u},\n        %s, %s\n", prefix, (unsigned int) uriId, (unsigned int) lnIter, (unsigned int) lnTbl->ln[lnIter].lnStr.length, elemGrammar, typeGrammar);
 			else
 				fprintf(out, "        {NULL, 0},\n        %s, %s\n", elemGrammar, typeGrammar);
-			fprintf(out, "%s", lnIter==(lnTbl->count-1)?"    }\n};\n\n":"    },\n");
+			fprintf(out, "%s", lnIter==(lnTbl->count-1) + dvis.ln?"    }\n};\n\n":"    },\n");
+		}
+
+		strcpy(elemGrammar, "INDEX_MAX");
+		strcpy(typeGrammar, "INDEX_MAX");
+
+		for(lnIter = 0; lnIter < dvis.ln; lnIter++)
+		{
+			fprintf(out, "    {\n#if VALUE_CROSSTABLE_USE\n         NULL,\n#endif\n");
+			fprintf(out, "        {NULL, 0},\n        %s, %s\n", elemGrammar, typeGrammar);
+			fprintf(out, "%s", lnIter==dvis.ln - 1?"    }\n};\n\n":"    },\n");
 		}
 	} /* END if(lnTableSize > 0) */
 }
 
-void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out, Deviations dvis)
+void staticUriTableOutput(UriTable* uriTbl, char* prefix, Deviations dvis, FILE* out)
 {
 	Index uriIter;
 	fprintf(out, "static CONST UriEntry %suriEntry[%u] =\n{\n", prefix, (unsigned int) uriTbl->count + dvis.url);
@@ -280,16 +290,21 @@ void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out, Deviations 
         }
 		else
         {
-			fprintf(out, "    {\n        {{sizeof(LnEntry), %d, %d}, NULL, 0},\n", dvis.ln, dvis.ln);
+			fprintf(out, "    {\n        {{sizeof(LnEntry), %d, %d}, NULL, 0},\n", 0, 0);
         }
 
-		if(uriTbl->uri[uriIter].pfxTable != NULL)
+		if(uriTbl->uri[uriIter].pfxTable.count > 0)
 		{
-			fprintf(out, "        &%spfxTable_%u,\n", prefix, (unsigned int) uriIter);
+			fprintf(out, "        {{sizeof(String), %u, %u}, %sPfxEntry_%u, %u},\n",
+					(unsigned int) uriTbl->uri[uriIter].pfxTable.count,
+					(unsigned int) uriTbl->uri[uriIter].pfxTable.count + dvis.pfx,
+					prefix,
+					(unsigned int) uriIter,
+					(unsigned int) uriTbl->uri[uriIter].pfxTable.count);
 		}
 		else
 		{
-			fprintf(out, "        NULL,\n");
+			fprintf(out, "        {{sizeof(String), %d, %d}, NULL, 0},\n", 0, 0);
 		}
 
 		if(uriTbl->uri[uriIter].uriStr.length > 0)
@@ -302,7 +317,7 @@ void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out, Deviations 
 	for(uriIter = 0; uriIter < dvis.url; uriIter++)
 	{
 		fprintf(out, "    {\n        {{sizeof(LnEntry), %d, %d}, NULL, 0},\n", dvis.ln, dvis.ln);
-		fprintf(out, "        NULL,\n");
+		fprintf(out, "        {{sizeof(String), %d, %d}, NULL, 0},\n", 0, 0);
 		fprintf(out, "        {NULL, 0}%s", uriIter==dvis.url - 1?"\n    }\n};\n\n":"\n    },\n");
 	}
 }

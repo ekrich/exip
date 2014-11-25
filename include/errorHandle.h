@@ -159,20 +159,17 @@ enum errorCode
 	 /** Buffer end reached  */
 	 EXIP_BUFFER_END_REACHED                     =10,
 	 EXIP_PARSING_COMPLETE                       =11,
-     /** The number MAXIMUM_NUMBER_OF_PREFIXES_PER_URI
-      * is reached - must be increased in the build */
-	 EXIP_TOO_MANY_PREFIXES_PER_URI              =12,
      /** The information passed to
       * the EXIP API is invalid */
-	 EXIP_INVALID_EXIP_CONFIGURATION             =13,
+	 EXIP_INVALID_EXIP_CONFIGURATION             =12,
      /** When encoding XML Schema in EXI the prefixes must be preserved:
       * When qualified namesNS are used in the values of AT or CH events in an EXI Stream,
       * the Preserve.prefixes fidelity option SHOULD be turned on to enable the preservation of
       * the NS prefix declarations used by these values. Note, in particular among other cases,
       * that this practice applies to the use of xsi:type attributes in EXI streams when Preserve.lexicalValues
       * fidelity option is set to true. */
-	 EXIP_NO_PREFIXES_PRESERVED_XML_SCHEMA       =14,
-	 EXIP_INVALID_STRING_OPERATION               =15,
+	 EXIP_NO_PREFIXES_PRESERVED_XML_SCHEMA       =13,
+	 EXIP_INVALID_STRING_OPERATION               =14,
 	 /** Mismatch in the header options.
 	  * This error can be due to:
 	  * 1) The "alignment" element MUST NOT appear in an EXI options document when the "compression" element is present;
@@ -185,12 +182,12 @@ enum errorCode
 	  * fidelity option is true (see 6.3 Fidelity Options), or when the EXI stream is a schema-less EXI stream.
 	  * 5) Presence Bit for EXI Options not set and no out-of-band options set
 	  */
-	 EXIP_HEADER_OPTIONS_MISMATCH                =16,
+	 EXIP_HEADER_OPTIONS_MISMATCH                =15,
 	 /**
 	  * Send a signal to the EXIP parser from a content handler callback
 	  * for gracefully stopping the EXI stream parsing.
 	  */
-	 EXIP_HANDLER_STOP                           =17
+	 EXIP_HANDLER_STOP                           =16
 };
 
 typedef enum errorCode errorCode;

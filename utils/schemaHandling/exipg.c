@@ -80,12 +80,13 @@ int main(int argc, char *argv[])
 			   argv[argIndex][6] == 'c')
 	{
 		outputFormat = OUT_SRC_STAT;
-		if(strlen(argv[argIndex]) >= 13 && argv[argIndex][7] == '=' )
+		if(strlen(argv[argIndex]) >= 15 && argv[argIndex][7] == '=' )
 		{
 			char * pEnd;
 
 			dvis.url = (int) strtol (argv[argIndex] + 8, &pEnd, 10);
 			dvis.ln = (int) strtol (pEnd + 1, &pEnd, 10);
+			dvis.pfx = (int) strtol (pEnd + 1, &pEnd, 10);
 			dvis.grammar = (int) strtol (pEnd + 1, NULL, 10);
 		}
 		argIndex++;
@@ -227,9 +228,10 @@ static void printfHelp()
     printf("           -dynamic     :   Create C code for the grammars defined. The output is a C function that dynamically generates the grammars\n");
     printf("           -static      :   Create C code for the grammars defined. The output is C structures describing the grammars\n");
     printf("           deviations   :   When static C code is chosen for the output, this defines a static size of the possible extensions\n");
-    printf("                            for URI, Local names and build-in grammars. The format is: <uri>:<ln>:<grammars>\n");
-    printf("                            For example deviations -static=2:5:10 will allow for two non-schema namespaces, 5 new local names\n");
-    printf("                            per each schema namespace and 10 new built-in grammars. The larger deviations the more memory is required.\n");
+    printf("                            for URI, Local names, prefixes, and build-in grammars. The format is: <uri>:<ln>:<pfx>:<grammars>\n");
+    printf("                            For example deviations -static=2:5:1:10 will allow for two non-schema namespaces, 5 new local names\n");
+    printf("                            per each schema namespace, 1 additional prefix per namespace, and 10 new built-in grammars.\n");
+    printf("                            The larger deviations the more memory is required.\n");
     printf("           -pfx         :   When in -dynamic or -static mode, this option allows you to specify a unique prefix for the\n");
     printf("                            generated global types. The default is \"prfx_\"\n");
     printf("           ops_mask     :   The format is: <STRICT><SELF_CONTAINED><dtd><prefixes><lexicalValues><comments><pis> := <0|1><0|1><0|1><0|1><0|1><0|1><0|1>\n");

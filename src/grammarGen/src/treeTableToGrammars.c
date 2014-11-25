@@ -381,6 +381,17 @@ errorCode convertTreeTablesToExipSchema(TreeTable* treeT, unsigned int count, EX
 	schema->staticGrCount = schema->grammarTable.count;
 	freeAllocList(&ctx.tmpMemList);
 
+	// Assign the chunkEntries for URL and LN tables to their entries count
+	// so it is known how many are the static ones from the schema
+	// after more are added.
+	schema->uriTable.dynArray.chunkEntries = schema->uriTable.count;
+
+	for(i = 0; i < schema->uriTable.count; i++)
+	{
+		schema->uriTable.uri[i].lnTable.dynArray.chunkEntries = schema->uriTable.uri[i].lnTable.count;
+		schema->uriTable.uri[i].pfxTable.dynArray.chunkEntries = schema->uriTable.uri[i].pfxTable.count;
+	}
+
 	return tmp_err_code;
 }
 
@@ -851,7 +862,23 @@ static errorCode handleSimpleTypeEl(BuildContext* ctx, QualifiedTreeTableEntry* 
 		{
 			QNameID baseTypeQnameId;
 
-			TRY(getTypeQName(ctx->schema, stEntry->entry->child.treeT, stEntry->entry->child.entry->attributePointers[ATTRIBUTE_BASE], &baseTypeQnameId));
+			if(isStringEmpty(&stEntry->entry->child.entry->attributePointers[ATTRIBUTE_BASE]))
+			{
+				/* In case of derivation by list (e.g., IDREFS and ENTITIES in XML Schema) the base
+				   type is not an attribute of <xs:restriction>. Rather it is given as a
+				   "itemType" attribte of the <xs:list> element which is subelement of <xs:simpleType> */
+
+				if(stEntry->entry->child.entry->child.entry != NULL &&
+						stEntry->entry->child.entry->child.entry->child.entry != NULL &&
+						stEntry->entry->child.entry->child.entry->child.entry->element == ELEMENT_LIST) // simpleType->restriction->simpleType->list exists
+				{
+					TRY(getTypeQName(ctx->schema, stEntry->entry->child.entry->child.entry->child.treeT, stEntry->entry->child.entry->child.entry->child.entry->attributePointers[ATTRIBUTE_ITEM_TYPE], &baseTypeQnameId));
+				}
+				else
+					return EXIP_UNEXPECTED_ERROR;
+			}
+			else
+				TRY(getTypeQName(ctx->schema, stEntry->entry->child.treeT, stEntry->entry->child.entry->attributePointers[ATTRIBUTE_BASE], &baseTypeQnameId));
 
 			SET_NAMED_SUB_TYPE_OR_UNION((GET_TYPE_GRAMMAR_QNAMEID(ctx->schema, baseTypeQnameId))->props);
 		}

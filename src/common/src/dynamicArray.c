@@ -47,12 +47,24 @@ errorCode addEmptyDynEntry(DynArray* dynArray, void** entry, Index* entryID)
 	count = (Index*)(base + 1);
 	if(dynArray->arrayEntries == *count)   // The dynamic array must be extended first
 	{
-		void* ptr = EXIP_REALLOC(*base, dynArray->entrySize * (*count + dynArray->chunkEntries));
-		if(ptr == NULL)
-			return EXIP_MEMORY_ALLOCATION_ERROR;
+		size_t addedEntries;
 
-		*base = ptr;
-		dynArray->arrayEntries = dynArray->arrayEntries + dynArray->chunkEntries;
+		addedEntries = (dynArray->chunkEntries == 0)?DEFAULT_NUMBER_CHUNK_ENTRIES:dynArray->chunkEntries;
+
+		if(*base == NULL)
+		{
+			*base = EXIP_MALLOC(dynArray->entrySize * addedEntries);
+			if(*base == NULL)
+				return EXIP_MEMORY_ALLOCATION_ERROR;
+		}
+		else
+		{
+			*base = EXIP_REALLOC(*base, dynArray->entrySize * (*count + addedEntries));
+			if(*base == NULL)
+				return EXIP_MEMORY_ALLOCATION_ERROR;
+		}
+
+		dynArray->arrayEntries = dynArray->arrayEntries + addedEntries;
 	}
 
 	*entry = (void*)((unsigned char *)(*base) + (*count * dynArray->entrySize));

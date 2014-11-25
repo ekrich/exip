@@ -134,16 +134,6 @@ typedef enum SchemaIdMode SchemaIdMode;
 /**@}*/
 
 /**
- * The maximum allowed prefixes per namespace.
- * If there is a possibility that a document defines more than 4 prefixes per namespace
- * i.e. weird XML, MAXIMUM_NUMBER_OF_PREFIXES_PER_URI should be increased
- * @note This will require many changes - for example statically generated grammars from XML schemas needs to be rebuilt
- */
-#ifndef MAXIMUM_NUMBER_OF_PREFIXES_PER_URI
-# define MAXIMUM_NUMBER_OF_PREFIXES_PER_URI 4
-#endif
-
-/**
  * Fractional seconds = value * 10^-(offset+1) seconds;
  * Example:
  * offset = 4
@@ -401,7 +391,9 @@ struct dynArray {
 
 	/**
 	 * The initial size of the dynamic array (in number of entries), 
-	 * also the chunk of number of entries to be added each expansion time
+	 * also the chunk of number of entries to be added each expansion time.
+	 * This field holds the initial size of the url and local name
+	 * partitions in the EXIPSchema object.
 	 */
 	Index chunkEntries;
 
@@ -853,9 +845,11 @@ typedef struct ValueTable ValueTable;
 #endif
 
 struct PfxTable {
-	/** The number of entries */
-	SmallIndex count;
-	String pfxStr[MAXIMUM_NUMBER_OF_PREFIXES_PER_URI];
+#if DYN_ARRAY_USE == ON
+	DynArray dynArray;
+#endif
+	String* pfx;
+	Index count;
 };
 
 typedef struct PfxTable PfxTable;
@@ -891,7 +885,7 @@ typedef struct LnTable LnTable;
 
 struct UriEntry {
 	LnTable lnTable;
-	PfxTable* pfxTable;
+	PfxTable pfxTable;
 	String uriStr;
 };
 

@@ -78,9 +78,10 @@ void staticStringTblDefsOutput(UriTable* uriTbl, char* prefix, FILE* out);
  * @param[in] pfxTbl prefix string table to be stored
  * @param[in] prefix prefix for the definitions
  * @param[in] uriId uriId of the prefix
+ * @param[in] dvis the number of deviations in url, ln, pfx and grammars
  * @param[out] out output stream
  */
-void staticPrefixOutput(PfxTable* pfxTbl, char* prefix, Index uriId, FILE* out);
+void staticPrefixOutput(PfxTable* pfxTbl, char* prefix, Index uriId, Deviations dvis, FILE* out);
 
 /**
  * @brief Builds all grammar productions for a grammar as a static code representation and stores it in out
@@ -113,18 +114,19 @@ void staticDocGrammarOutput(EXIGrammar* docGr, char* prefix, FILE* out);
  * @param[in] lnTbl the LnTable instance
  * @param[in] prefix prefix for the definitions
  * @param[in] uriId uriId for that LnTable
+ * @param[in] dvis the number of deviations in url, ln, pfx and grammars
  * @param[out] out output stream
  */
-void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, FILE* out);
+void staticLnEntriesOutput(LnTable* lnTbl, char* prefix, Index uriId, Deviations dvis, FILE* out);
 
 /**
  * @brief Builds all the URI entries in the UriTable as a static code representation and stores it in out
  * @param[in] uriTbl the UriTable instance
  * @param[in] prefix prefix for the definitions
- * @param[in] dvis the number of deviations in url, ln and grammars
+ * @param[in] dvis the number of deviations in url, ln, pfx and grammars
  * @param[out] out output stream
  */
-void staticUriTableOutput(UriTable* uriTbl, char* prefix, FILE* out, Deviations dvis);
+void staticUriTableOutput(UriTable* uriTbl, char* prefix, Deviations dvis, FILE* out);
 
 /**
  * @brief Builds all the Enumeration definitions

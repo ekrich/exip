@@ -35,6 +35,11 @@
 #define DYN_ARRAY_SIZE (sizeof(DynArray) + sizeof(void*) + sizeof(Index))
 
 /**
+ * When the chunkEntries == 0 this will be used to create the new array and later extend it
+ */
+#define DEFAULT_NUMBER_CHUNK_ENTRIES 5
+
+/**
  * @brief Creates fresh empty Untyped Dynamic Array
  * This operation includes allocation of memory for DEFAULT_VALUE_ROWS_NUMBER number of value rows.
  * For every created array, destroyDynArray() must be invoked to release the allocated memory.

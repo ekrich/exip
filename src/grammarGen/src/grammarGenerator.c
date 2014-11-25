@@ -156,9 +156,7 @@ void destroySchema(EXIPSchema* schema)
 
 	for(i = 0; i < schema->uriTable.count; i++)
 	{
-		if(schema->uriTable.uri[i].pfxTable != NULL)
-			EXIP_MFREE(schema->uriTable.uri[i].pfxTable);
-
+		destroyDynArray(&schema->uriTable.uri[i].pfxTable.dynArray);
 		destroyDynArray(&schema->uriTable.uri[i].lnTable.dynArray);
 	}
 

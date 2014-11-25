@@ -77,6 +77,15 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviat
 	time(&now);
 	fprintf(outfile, "/** AUTO-GENERATED: %.24s\n  * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU\n  * $Id$ */\n\n",  ctime(&now));
 
+	fprintf(outfile, "/** Compilation parameters:\n");
+	if(dvis.grammar != 0 || dvis.ln != 0 || dvis.url != 0 || dvis.pfx != 0)
+	{
+		fprintf(outfile, "  * Compiled for possible deviations from the schema:\n  * URLs: %d\n  * Local names: %d\n  * Prefixes: %d\n  * Built-in grammars: %d */\n\n", dvis.url, dvis.ln, dvis.pfx, dvis.grammar);
+	}
+	else
+		fprintf(outfile, "  * Compiled for no deviations from the schema! (lower memory usage) */\n\n");
+
+
 	fprintf(outfile, "#include \"procTypes.h\"\n\n");
 	fprintf(outfile, "#define CONST\n\n");
 
@@ -111,13 +120,13 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviat
 	for(uriId = 0; uriId < schemaPtr->uriTable.count; uriId++)
 	{
 		/* Prefix table */
-		staticPrefixOutput(schemaPtr->uriTable.uri[uriId].pfxTable, prefix, uriId, outfile);
+		staticPrefixOutput(&schemaPtr->uriTable.uri[uriId].pfxTable, prefix, uriId, dvis, outfile);
 		/* Ln table */
-		staticLnEntriesOutput(&schemaPtr->uriTable.uri[uriId].lnTable, prefix, uriId, outfile);
+		staticLnEntriesOutput(&schemaPtr->uriTable.uri[uriId].lnTable, prefix, uriId, dvis, outfile);
 	}
 
 	/* Build the URI table structure */
-	staticUriTableOutput(&schemaPtr->uriTable, prefix, outfile, dvis);
+	staticUriTableOutput(&schemaPtr->uriTable, prefix, dvis, outfile);
 
 	/* Build the document grammar */
 	staticDocGrammarOutput(&schemaPtr->docGrammar, prefix, outfile);
