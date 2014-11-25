@@ -319,9 +319,6 @@ errorCode createUriTableEntry(UriTable* uriTable, const String uri, int createPf
 	// Get ptr. to URI Entry
 	uriEntry = &uriTable->uri[uriEntryId];
 
-	// Create an empty prefix table
-	TRY(createDynArray(&uriEntry->pfxTable.dynArray, sizeof(String), DEFAULT_PFX_ENTRIES_NUMBER));
-
 	if(createPfx)
 		TRY(addPfxEntry(&uriEntry->pfxTable, pfx, &pfxEntryId));
 
