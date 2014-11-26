@@ -1131,6 +1131,44 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 			Decimal decVal;
 
 			TRY(decodeDecimalValue(strm, &decVal));
+
+			// TODO: make conditional, not all use cases need Schema type validation
+			/// BEGIN type validation
+			if(HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content, TYPE_FACET_TOTAL_DIGITS))
+			{
+				unsigned int totalDigits = 0;
+
+				if(decVal.exponent != 0 && decVal.mantissa != 0)
+				{
+					int64_t mantissa = decVal.mantissa;
+					while(mantissa)
+					{
+						mantissa /= 10;
+						totalDigits++;
+					}
+
+					if(decVal.exponent > 0)
+						totalDigits += decVal.exponent;
+				}
+				else
+					totalDigits = 1;
+
+				if(totalDigits > (strm->schema->simpleTypeTable.sType[typeId].length >> 16))
+					return EXIP_INVALID_EXI_INPUT;
+			}
+
+			if(HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content, TYPE_FACET_FRACTION_DIGITS))
+			{
+				unsigned int fractionDigits = 0;
+
+				if(decVal.exponent < 0 && decVal.mantissa != 0)
+					fractionDigits = -decVal.exponent;
+
+				if(fractionDigits > (strm->schema->simpleTypeTable.sType[typeId].length & 0xFFFF))
+					return EXIP_INVALID_EXI_INPUT;
+			}
+			/// END type validation
+
 			if(handler->decimalData != NULL)  // Invoke handler method
 			{
 				TRY(handler->decimalData(decVal, app_data));

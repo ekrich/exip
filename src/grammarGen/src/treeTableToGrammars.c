@@ -1757,22 +1757,24 @@ static errorCode getRestrictionSimpleProtoGrammar(BuildContext* ctx, QualifiedTr
 		}
 		else if(tmpEntry->element == ELEMENT_TOTAL_DIGITS)
 		{
+			int totalDigits = 0;
 			SET_TYPE_FACET(newSimpleType.content, TYPE_FACET_TOTAL_DIGITS);
-			#if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
-				DEBUG_MSG(ERROR, EXIP_DEBUG, ("\n>Total digits type facet constraint checks not implemented: at %s, line %d. Ignore by commenting EXIP_NOT_IMPLEMENTED_YET error.", __FILE__, __LINE__));
-			#endif
-			//return EXIP_NOT_IMPLEMENTED_YET;
+			TRY(stringToInteger(&tmpEntry->attributePointers[ATTRIBUTE_VALUE], &totalDigits));
+			newSimpleType.length = newSimpleType.length | (((uint32_t) totalDigits) << 16);
 		}
 		else if(tmpEntry->element == ELEMENT_FRACTION_DIGITS)
 		{
+			int fractionDigits = 0;
 			SET_TYPE_FACET(newSimpleType.content, TYPE_FACET_FRACTION_DIGITS);
-			return EXIP_NOT_IMPLEMENTED_YET;
+			TRY(stringToInteger(&tmpEntry->attributePointers[ATTRIBUTE_VALUE], &fractionDigits));
+			newSimpleType.length = newSimpleType.length | ((uint16_t) fractionDigits);
 		}
 		else if(tmpEntry->element == ELEMENT_PATTERN)
 		{
 			SET_TYPE_FACET(newSimpleType.content, TYPE_FACET_PATTERN);
 			// TODO: needs to be implemented. It is also needed for the XML Schema grammars
 			// COMMENT #SCHEMA#: ignore for now
+			DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\n>Type facet pattern is not implemented: at %s, line %d.", __FILE__, __LINE__));
 //			return EXIP_NOT_IMPLEMENTED_YET;
 		}
 		else if(tmpEntry->element == ELEMENT_WHITE_SPACE)

@@ -830,6 +830,43 @@ errorCode decimalData(EXIStream* strm, Decimal dec_val)
 
 	if(exiType == VALUE_TYPE_DECIMAL)
 	{
+		// TODO: make conditional, not all use cases need Schema type validation
+		/// BEGIN type validation
+		if(HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content, TYPE_FACET_TOTAL_DIGITS))
+		{
+			unsigned int totalDigits = 0;
+
+			if(dec_val.exponent != 0 && dec_val.mantissa != 0)
+			{
+				int64_t mantissa = dec_val.mantissa;
+				while(mantissa)
+				{
+					mantissa /= 10;
+					totalDigits++;
+				}
+
+				if(dec_val.exponent > 0)
+					totalDigits += dec_val.exponent;
+			}
+			else
+				totalDigits = 1;
+
+			if(totalDigits > (strm->schema->simpleTypeTable.sType[typeId].length >> 16))
+				return EXIP_INVALID_EXI_INPUT;
+		}
+
+		if(HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content, TYPE_FACET_FRACTION_DIGITS))
+		{
+			unsigned int fractionDigits = 0;
+
+			if(dec_val.exponent < 0 && dec_val.mantissa != 0)
+				fractionDigits = -dec_val.exponent;
+
+			if(fractionDigits > (strm->schema->simpleTypeTable.sType[typeId].length & 0xFFFF))
+				return EXIP_INVALID_EXI_INPUT;
+		}
+		/// END type validation
+
 		return encodeDecimalValue(strm, dec_val);
 	}
 	else if(exiType == VALUE_TYPE_STRING || exiType == VALUE_TYPE_UNTYPED || exiType == VALUE_TYPE_NONE)
