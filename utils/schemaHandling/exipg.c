@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 	dvis.grammar = 0;
 	dvis.ln = 0;
 	dvis.url = 0;
+	dvis.pfx = 0;
 	makeDefaultOpts(&maskOpt);
 
 	if(argc == 1)

@@ -274,7 +274,7 @@ void printString(const String* inStr)
 	if(inStr->length == 0)
 		return;
 
-	DEBUG_OUTPUT(("%.*s", inStr->length, inStr->str));
+	DEBUG_OUTPUT(("%.*s", (int) inStr->length, inStr->str));
 }
 
 #endif /* EXIP_DEBUG */

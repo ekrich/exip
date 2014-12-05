@@ -111,7 +111,7 @@ errorCode readEXIChunkForParsing(EXIStream* strm, unsigned int numBytesToBeRead)
 	 * reasonably and not too small */
 	if(2*bytesCopied > strm->buffer.bufLen)
 	{
-		DEBUG_MSG(ERROR, DEBUG_STREAM_IO, ("\n> The size of strm->buffer is too small! Set to at least: %d", 2*bytesCopied));
+		DEBUG_MSG(ERROR, DEBUG_STREAM_IO, ("\n> The size of strm->buffer is too small! Set to at least: %d", 2*((int) bytesCopied)));
 		return EXIP_INCONSISTENT_PROC_STATE;
 	}
 
