@@ -22,9 +22,9 @@
 #include <math.h>
 
 
-errorCode encodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned int int_val)
+errorCode encodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned long int_val)
 {
-	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> %d [0x%X] (%u bits)", int_val, int_val, n));
+	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> %lu [0x%lX] (%u bits)", int_val, int_val, n));
 	if(WITH_COMPRESSION(strm->header.opts.enumOpt) == FALSE && GET_ALIGNMENT(strm->header.opts.enumOpt) == BIT_PACKED)
 	{
 		return writeNBits(strm, n, int_val);
@@ -251,7 +251,7 @@ errorCode encodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime dt_v
 	if(dtType == VALUE_TYPE_DATE_TIME || dtType == VALUE_TYPE_TIME)
 	{
 		/* Time component */
-		unsigned int timeVal = 0;
+		unsigned long timeVal = 0;
 
 		timeVal += dt_val.dateTime.tm_hour;
 		timeVal = timeVal * 64;

@@ -37,6 +37,6 @@ errorCode readNextBit(EXIStream* strm, boolean* bit_val);
  * @param[out] bits_val resulting bits value
  * @return Error handling code
  */
-errorCode readBits(EXIStream* strm, unsigned char n, unsigned int* bits_val);
+errorCode readBits(EXIStream* strm, unsigned char n, unsigned long* bits_val);
 
 #endif /* STREAMREADER_H_ */

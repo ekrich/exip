@@ -53,7 +53,7 @@ struct ops_AppData
 errorCode decodeHeader(EXIStream* strm, boolean outOfBandOpts)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned int bits_val = 0;
+	unsigned long bits_val = 0;
 	boolean boolVal = FALSE;
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Start EXI header decoding\n"));

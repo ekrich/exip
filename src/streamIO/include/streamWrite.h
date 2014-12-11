@@ -36,6 +36,6 @@ errorCode writeNextBit(EXIStream* strm, boolean bit_val);
  * @param[in] nbits number of bits
  * @param[in] bits_val resulting bits value
  */
-errorCode writeNBits(EXIStream* strm, unsigned char nbits, unsigned int bits_val);
+errorCode writeNBits(EXIStream* strm, unsigned char nbits, unsigned long bits_val);
 
 #endif /* STREAMWRITE_H_ */

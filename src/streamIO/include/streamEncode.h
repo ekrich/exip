@@ -29,7 +29,7 @@
  * @param[in] int_val n-bit unsigned integer value
  * @return Error handling code
  */
-errorCode encodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned int int_val);
+errorCode encodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned long int_val);
 
 /**
  * @brief Encode EXI Boolean

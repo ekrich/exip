@@ -49,7 +49,7 @@ errorCode readNextBit(EXIStream* strm, boolean* bit_val)
 	return EXIP_OK;
 }
 
-errorCode readBits(EXIStream* strm, unsigned char n, unsigned int* bits_val)
+errorCode readBits(EXIStream* strm, unsigned char n, unsigned long* bits_val)
 {
 	unsigned int numBytesToBeRead = 1 + ((n + strm->context.bitPointer - 1) / 8);
 	unsigned int byteIndx = 1;
@@ -69,13 +69,13 @@ errorCode readBits(EXIStream* strm, unsigned char n, unsigned int* bits_val)
 
 	while(byteIndx < numBytesToBeRead)
 	{
-		*bits_val += (unsigned int) (buf[byteIndx])<<((numBytesToBeRead-byteIndx-1)*8);
+		*bits_val += (unsigned long) (buf[byteIndx])<<((numBytesToBeRead-byteIndx-1)*8);
 		byteIndx++;
 	}
 
 	*bits_val = *bits_val >> (numBytesToBeRead*8 - n - strm->context.bitPointer);
 
-	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> %d [0x%X] (%u bits)", *bits_val, *bits_val, n));
+	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> %lu [0x%lX] (%u bits)", *bits_val, *bits_val, n));
 
 	n += strm->context.bitPointer;
 	strm->context.bufferIndx += n / 8;

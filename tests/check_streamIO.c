@@ -90,7 +90,7 @@ START_TEST (test_readBits)
 {
   EXIStream testStream;
   char buf[2];
-  unsigned int bits_val = 0;
+  unsigned long bits_val = 0;
   errorCode err = EXIP_UNEXPECTED_ERROR;
 
   testStream.context.bitPointer = 0;
@@ -245,7 +245,7 @@ START_TEST (test_decodeNBitUnsignedInteger)
   EXIStream testStream;
 
   char buf[2];
-  unsigned int bit_val = 0;
+  unsigned long bit_val = 0;
   errorCode err = EXIP_UNEXPECTED_ERROR;
 
   testStream.context.bitPointer = 0;

@@ -32,7 +32,7 @@ errorCode processNextProduction(EXIStream* strm, SmallIndex* nonTermID_out, Cont
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int bitCount;
-	unsigned int tmp_bits_val = 0;
+	unsigned long tmp_bits_val = 0;
 	GrammarRule* currentRule;
 	Index prodCount;
 	SmallIndex currNonTermID = strm->gStack->currNonTermID;
@@ -165,7 +165,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int prodCnt = 0;
-	unsigned int tmp_bits_val = 0;
+	unsigned long tmp_bits_val = 0;
 
 	if(IS_BUILT_IN_ELEM(strm->gStack->grammar->props))
 	{
@@ -177,7 +177,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 		 * The state depends on the input event code from the stream and the
 		 * available productions at level 2.
 		 * (Note this is the state for level 2 productions) */
-		unsigned int state = 0;
+		unsigned long state = 0;
 
 		/* The state mask stores the availability of the productions on level 2.
 		 * They are encoded ordered:
@@ -435,7 +435,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			{
 				/* There are 2 possible states to exit the state machine: AT(xsi:type) and AT(xsi:nil)
 				 * (Note this is the state for level 2 productions) */
-				unsigned int state = 1;
+				unsigned long state = 1;
 				boolean nil;
 
 				*nonTermID_out = GR_START_TAG_CONTENT;
@@ -743,7 +743,7 @@ errorCode decodeQName(EXIStream* strm, QName* qname, QNameID* qnameID)
 errorCode decodeUri(EXIStream* strm, SmallIndex* uriId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned int tmp_val_buf = 0;
+	unsigned long tmp_val_buf = 0;
 	unsigned char uriBits = getBitsNumber(strm->schema->uriTable.count);
 
 	TRY(decodeNBitUnsignedInteger(strm, uriBits, &tmp_val_buf));
@@ -757,7 +757,7 @@ errorCode decodeUri(EXIStream* strm, SmallIndex* uriId)
 	else // uri hit
 	{
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">URI hit\n"));
-		*uriId = tmp_val_buf - 1;
+		*uriId = (SmallIndex) (tmp_val_buf - 1);
 		if(*uriId >= strm->schema->uriTable.count)
 			return EXIP_INVALID_EXI_INPUT;
 	}
@@ -774,14 +774,14 @@ errorCode decodeLn(EXIStream* strm, Index uriId, Index* lnId)
 
 	if(tmpVar == 0) // local-name table hit
 	{
-		unsigned int l_lnId;
+		unsigned long l_lnId;
 		unsigned char lnBits = getBitsNumber((unsigned int)(strm->schema->uriTable.uri[uriId].lnTable.count - 1));
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">local-name table hit\n"));
 		TRY(decodeNBitUnsignedInteger(strm, lnBits, &l_lnId));
 
 		if(l_lnId >= strm->schema->uriTable.uri[uriId].lnTable.count)
 			return EXIP_INVALID_EXI_INPUT;
-		*lnId = l_lnId;
+		*lnId = (Index) l_lnId;
 	}
 	else // local-name table miss
 	{
@@ -806,7 +806,7 @@ errorCode decodePfxQname(EXIStream* strm, QName* qname, SmallIndex uriId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned char prefixBits = 0;
-	unsigned int prefixID = 0;
+	unsigned long prefixID = 0;
 
 	qname->prefix = NULL;
 
@@ -834,7 +834,7 @@ errorCode decodePfxQname(EXIStream* strm, QName* qname, SmallIndex uriId)
 errorCode decodePfx(EXIStream* strm, SmallIndex uriId, SmallIndex* pfxId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned int tmp_val_buf = 0;
+	unsigned long tmp_val_buf = 0;
 	unsigned char prfxBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable.count);
 
 	TRY(decodeNBitUnsignedInteger(strm, prfxBits, &tmp_val_buf));
@@ -849,7 +849,7 @@ errorCode decodePfx(EXIStream* strm, SmallIndex uriId, SmallIndex* pfxId)
 	else // prefix hit
 	{
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix hit\n"));
-		*pfxId = tmp_val_buf-1;
+		*pfxId = (SmallIndex) (tmp_val_buf-1);
 		if(*pfxId >= strm->schema->uriTable.uri[uriId].pfxTable.count)
 			return EXIP_INVALID_EXI_INPUT;
 	}
@@ -866,7 +866,7 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 	if(tmpVar == 0) // "local" value partition table hit
 	{
 #if VALUE_CROSSTABLE_USE
-		unsigned int vxEntryId = 0;
+		unsigned long vxEntryId = 0;
 		unsigned char vxBits;
 		VxTable* vxTable;
 
@@ -883,7 +883,7 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 	}
 	else if(tmpVar == 1)// global value partition table hit
 	{
-		unsigned int valueEntryID = 0;
+		unsigned long valueEntryID = 0;
 		unsigned char valueBits;
 		
 		valueBits = getBitsNumber(strm->valueTable.count - 1);
@@ -1047,8 +1047,8 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		break;
 		case VALUE_TYPE_SMALL_INTEGER:
 		{
-			unsigned int uintVal;
-			int base;
+			unsigned long uintVal;
+			int64_t base;
 			int64_t upLimit;
 
 			if(typeId >= strm->schema->simpleTypeTable.count)
@@ -1231,7 +1231,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 				// There is enumeration defined
 				EnumDefinition eDefSearch;
 				EnumDefinition* eDefFound;
-				unsigned int indx;
+				unsigned long indx;
 
 				eDefSearch.typeId = typeId;
 				eDefFound = bsearch(&eDefSearch, strm->schema->enumTable.enumDef, strm->schema->enumTable.count, sizeof(EnumDefinition), compareEnumDefs);
