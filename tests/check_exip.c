@@ -1170,6 +1170,7 @@ START_TEST (test_large_doc_str_pattern)
 //                total += ((end.tv_sec * SEC2NANO) + end.tv_nsec) - ((start.tv_sec * SEC2NANO) + start.tv_nsec);
 
     fclose(outfile);
+    destroySchema(&schema);
 
     /* DECODE */
     {
@@ -1287,6 +1288,7 @@ START_TEST (test_substitution_groups)
 	destroyParser(&testParser);
 	fclose(infile);
 	fail_unless (tmp_err_code == EXIP_PARSING_COMPLETE, "Error during parsing of the EXI body %d", tmp_err_code);
+	destroySchema(&schema);
 }
 END_TEST
 
@@ -1362,6 +1364,7 @@ START_TEST (test_non_blocking_streaming)
 
 	parse.destroyParser(&testParser);
 	fail_unless (tmp_err_code == EXIP_PARSING_COMPLETE, "Error during parsing of the EXI body %d", tmp_err_code);
+	destroySchema(&schema);
 }
 END_TEST
 
@@ -1435,6 +1438,7 @@ START_TEST (test_non_blocking_streaming_bytealigned)
 
 	parse.destroyParser(&testParser);
 	fail_unless (tmp_err_code == EXIP_PARSING_COMPLETE, "Error during parsing of the EXI body %d", tmp_err_code);
+	destroySchema(&schema);
 }
 END_TEST
 
@@ -2598,6 +2602,7 @@ START_TEST (test_various_senml)
 	}
 
 	tmp_err_code = decodeSenML(&schema, buf, OUTPUT_BUFFER_SIZE, &senMLParsed);
+	destroySchema(&schema);
 	fail_unless(tmp_err_code == EXIP_OK, "There is an error in the decoding of an EXI SenML stream");
 	fail_unless(!strcmp(senMLParsed.bn, senML_instance.bn), "SenML BN value error");
 	fail_unless(senMLParsed.bt == senML_instance.bt, "SenML BT value error");
@@ -2734,7 +2739,7 @@ int main (int argc, char *argv[])
 	}
 
 	dataDir = argv[1];
-
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

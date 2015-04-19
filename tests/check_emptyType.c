@@ -294,6 +294,8 @@ START_TEST (test_default_options)
 
 	destroyParser(&testParser);
 	fail_unless (tmp_err_code == EXIP_PARSING_COMPLETE, "Error during parsing of the EXI body %d", tmp_err_code);
+	destroySchema(&schema);
+	fclose(infile);
 }
 END_TEST
 
@@ -367,6 +369,8 @@ START_TEST (test_strict_option)
 
 	destroyParser(&testParser);
 	fail_unless (tmp_err_code == EXIP_PARSING_COMPLETE, "Error during parsing of the EXI body %d", tmp_err_code);
+	destroySchema(&schema);
+	fclose(infile);
 }
 END_TEST
 
@@ -408,6 +412,7 @@ int main (int argc, char *argv[])
 	int number_failed;
 	Suite *s = exip_suite();
 	SRunner *sr = srunner_create (s);
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

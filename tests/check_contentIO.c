@@ -41,7 +41,6 @@ START_TEST (test_decodeHeader)
 	testStream.buffer.bufContent = 3;
 	testStream.buffer.ioStrm.readWriteToStream = NULL;
 	testStream.buffer.ioStrm.stream = NULL;
-	initAllocList(&testStream.memList);
 	makeDefaultOpts(&testStream.header.opts);
 
 	err = decodeHeader(&testStream, TRUE);
@@ -71,6 +70,7 @@ START_TEST (test_decodeHeader)
 	testStream2.buffer.bufContent = 7;
 	testStream2.buffer.ioStrm.readWriteToStream = NULL;
 	testStream2.buffer.ioStrm.stream = NULL;
+	makeDefaultOpts(&testStream2.header.opts);
 
 	err = decodeHeader(&testStream2, TRUE);
 	fail_unless (err == EXIP_OK, "decodeHeader returns error code %d", err);
@@ -103,6 +103,7 @@ int main (void)
 	int number_failed;
 	Suite *s = contentio_suite();
 	SRunner *sr = srunner_create (s);
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

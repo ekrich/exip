@@ -169,6 +169,7 @@ int main (int argc, char *argv[])
 	int number_failed;
 	Suite *s = exip_suite();
 	SRunner *sr = srunner_create (s);
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

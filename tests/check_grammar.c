@@ -49,6 +49,7 @@ START_TEST (test_createDocGrammar)
 	fail_unless (err == EXIP_OK, "createDocGrammar returns an error code %d", err);
 
 	freeAllocList(&schema.memList);
+	freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -74,6 +75,7 @@ START_TEST (test_processNextProduction)
 	err = processNextProduction(&strm, &nonTermID_out, &handler, NULL);
 	fail_unless (err == EXIP_INCONSISTENT_PROC_STATE, "processNextProduction does not return the correct error code");
 
+	popGrammar(&strm.gStack);
 	freeAllocList(&strm.memList);
 	freeAllocList(&schema.memList);
 }
@@ -109,6 +111,8 @@ START_TEST (test_pushGrammar)
 	fail_if(testGrStack->nextInStack->grammar != &testElementGrammar1);
 
 	freeAllocList(&strm.memList);
+	popGrammar(&testGrStack);
+	popGrammar(&testGrStack);
 }
 END_TEST
 
@@ -139,8 +143,10 @@ START_TEST (test_popGrammar)
 	fail_unless (err == EXIP_OK, "pushGrammar returns error code %d", err);
 	fail_if(testGrStack->nextInStack == NULL);
 
+	freeAllocList(&strm.memList);
 	popGrammar(&testGrStack);
 	fail_if(testGrStack->nextInStack != NULL);
+	popGrammar(&testGrStack);
 }
 END_TEST
 
@@ -156,7 +162,7 @@ START_TEST (test_createBuiltInElementGrammar)
 
 	err = createBuiltInElementGrammar(&testElementGrammar, &strm);
 	fail_unless (err == EXIP_OK, "createBuildInElementGrammar returns error code %d", err);
-
+	freeAllocList(&strm.memList);
 }
 END_TEST
 #endif
@@ -232,6 +238,7 @@ int main (void)
 	int number_failed;
 	Suite *s = grammar_suite();
 	SRunner *sr = srunner_create (s);
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

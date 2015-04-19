@@ -200,6 +200,7 @@ int main (void)
 	int number_failed;
 	Suite *s = tables_suite();
 	SRunner *sr = srunner_create (s);
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

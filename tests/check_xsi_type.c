@@ -570,7 +570,7 @@ int main (int argc, char *argv[])
 	}
 
 	dataDir = argv[1];
-
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif

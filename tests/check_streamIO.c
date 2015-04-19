@@ -82,7 +82,7 @@ START_TEST (test_readNextBit)
 
   err = readNextBit(&testStream, &bit_val);
   fail_unless (err == EXIP_BUFFER_END_REACHED, "Incorrect error code");
-
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -127,6 +127,7 @@ START_TEST (test_readBits)
 
   err = readBits(&testStream, 5, &bits_val);
   fail_unless (err == EXIP_BUFFER_END_REACHED, "Incorrect error code");
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -182,7 +183,7 @@ START_TEST (test_writeNextBit)
 
   err = writeNextBit(&testStream, 0);
   fail_unless (err == EXIP_BUFFER_END_REACHED, "Incorrect error code");
-
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -233,6 +234,7 @@ START_TEST (test_writeNBits)
 
   err = writeNBits(&testStream, 5, 16);
   fail_unless (err == EXIP_BUFFER_END_REACHED, "Incorrect error code");
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -269,7 +271,7 @@ START_TEST (test_decodeNBitUnsignedInteger)
 	       "decodeNBitUnsignedInteger returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 6,
     	       "The decodeNBitUnsignedInteger function did not move the bit Pointer of the stream correctly");
-
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -301,6 +303,7 @@ START_TEST (test_decodeBoolean)
 	       "decodeBoolean returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 1,
     	       "The decodeBoolean function did not move the bit Pointer of the stream correctly");
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -377,7 +380,7 @@ START_TEST (test_decodeString)
     	       "The decodeString function did not move the bit Pointer of the stream correctly");
   fail_unless (testStream.context.bufferIndx == 3,
       	       "The decodeString function did not move the byte Pointer of the stream correctly");
-
+  freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -841,6 +844,7 @@ START_TEST (test_encodeBinary)
 	fail_unless(testStream.buffer.buf[3] == (signed char) 0xD4, "Incorrect encoding during encodeBinary 4");
 	fail_unless(testStream.buffer.buf[4] == (signed char) 0x5A, "Incorrect encoding during encodeBinary 5");
 	fail_unless(testStream.buffer.buf[5] == (signed char) 0xD7, "Incorrect encoding during encodeBinary 6");
+	freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -886,7 +890,7 @@ START_TEST (test_encodeFloatValue)
 
 	fail_unless(test_val.exponent == test_dec.exponent && test_val.mantissa == test_dec.mantissa
 			, "Incorrect encoding of float value");
-
+	freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -924,6 +928,7 @@ START_TEST (test_encodeIntegerValue)
 
 	fail_unless (test_dec == -913,
 			   "The encodeIntegerValue encodes correctly");
+	freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -968,7 +973,7 @@ START_TEST (test_encodeDecimalValue)
 	err = decodeDecimalValue(&testStream, &dec_val);
 
 	fail_unless (res.mantissa == dec_val.mantissa && res.exponent == dec_val.exponent, "The value 5.001 is decoded as %d*10^%d", dec_val.mantissa, dec_val.exponent);
-
+	freeAllocList(&testStream.memList);
 }
 END_TEST
 
@@ -1091,6 +1096,7 @@ int main (void)
 	int number_failed;
 	Suite *s = streamIO_suite();
 	SRunner *sr = srunner_create (s);
+	srunner_set_fork_status(sr, CK_NOFORK);
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif
