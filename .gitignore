@@ -1,0 +1,9 @@
+# Eclipse (leave checked in)
+# .cproject
+# .project
+# /.launches/
+
+# doxygen output
+/doc/
+
+

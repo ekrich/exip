@@ -58,6 +58,20 @@ UTILS_BIN_DIR = $(BIN_DIR)/utils
 # Public include directory
 PUBLIC_INCLUDE_DIR = $(PROJECT_ROOT)/include
 
+# Platform specific
+ifeq ($(OS), Windows_NT)
+	# Future support
+else
+	UNAME_S := $(shell uname -s)
+	UNAME_P := $(shell uname -p)
+	ifeq ($(UNAME_S), Darwin)
+		ifeq ($(UNAME_P), arm)
+			INCDIRS += -I/opt/homebrew/include
+			LDFLAGS += -L/opt/homebrew/lib
+		endif
+	endif
+endif
+
 # All directories containing *.c files
 VPATH = $(PROJECT_ROOT)/src/common/src
 VPATH += $(PROJECT_ROOT)/src/contentIO/src
@@ -156,7 +170,7 @@ all: $(BIN_DIR) $(LIB_BIN_DIR) $(LIB_OBJECTS) $(LIB_BIN_DIR)/libexip.a copy_head
 dynlib: COMPILE += -fPIC
 dynlib: clean all $(LIB_BIN_DIR)/libexip.so
 
-# TARGET: Exacute the unit tests
+# TARGET: Execute the unit tests
 check: all $(TESTS_BIN_DIR) $(CHECK_BINS)
 		for i in $(CHECK_BINS); do \
                    $$i $(TESTS_DATA_DIR); \

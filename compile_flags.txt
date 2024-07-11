@@ -1,0 +1,31 @@
+# Project setup for clangd
+
+# Include dirs
+-I
+include
+-I
+src/common/include
+-I
+src/contentIO/include
+-I
+src/grammar/include
+-I
+src/grammarGen/include
+-I
+src/streamIO/include
+-I
+src/stringTables/include
+-I
+utils/schemaHandling/include
+
+# Platform specific
+# EXIP specific
+-I
+build/gcc/pc
+
+# macOS arm
+-I
+/opt/homebrew/include
+
+# Defines as required for features or conditional compilation
+# -DXXX
