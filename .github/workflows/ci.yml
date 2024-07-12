@@ -27,4 +27,4 @@ jobs:
       - name: Run tests
         run: |
             cd build/gcc
-            make TARGET=pc clean all dynlib check examples utils doc
+            make TARGET=pc clean all check examples utils doc
