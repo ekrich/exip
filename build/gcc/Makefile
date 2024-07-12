@@ -220,7 +220,7 @@ $(BIN_DIR)/%.o: %.c
 
 # Build the tests
 $(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o
-		$(COMPILE) $(LDFLAGS) $< -lcheck -lexip -o $@
+		$(COMPILE) $(LDFLAGS) $< -lcheck -lexip -lm -o $@
 		
 # Build for the examples		
 $(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS)
