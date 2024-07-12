@@ -69,6 +69,9 @@ else
 	LINK_FLAGS = -Wl,-soname
 	UNAME_S := $(shell uname -s)
 	UNAME_P := $(shell uname -p)
+	ifeq ($(UNAME_S), Linux)
+		EXTRA_LINK_FLAGS = -lm -lsubunit
+	endif
 	ifeq ($(UNAME_S), Darwin)
 		DYNAMIC_LIB_EXT = dylib
 		LINK_FLAGS = -Wl,-install_name
@@ -220,7 +223,7 @@ $(BIN_DIR)/%.o: %.c
 
 # Build the tests
 $(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o
-		$(COMPILE) $(LDFLAGS) $< -lcheck -lexip -o $@
+		$(COMPILE) $(LDFLAGS) $< -lcheck -lexip $(EXTRA_LINK_FLAGS) -o $@
 		
 # Build for the examples		
 $(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS)
