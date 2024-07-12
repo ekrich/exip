@@ -61,10 +61,17 @@ PUBLIC_INCLUDE_DIR = $(PROJECT_ROOT)/include
 # Platform specific
 ifeq ($(OS), Windows_NT)
 	# Future support
+	DYNAMIC_LIB_EXT = dll
+	STATIC_LIB_EXT = lib
 else
+	DYNAMIC_LIB_EXT = so
+	STATIC_LIB_EXT = a
+	LINK_FLAGS = -Wl,-soname
 	UNAME_S := $(shell uname -s)
 	UNAME_P := $(shell uname -p)
 	ifeq ($(UNAME_S), Darwin)
+		DYNAMIC_LIB_EXT = dylib
+		LINK_FLAGS = -Wl,-install_name
 		ifeq ($(UNAME_P), arm)
 			INCDIRS += -I/opt/homebrew/include
 			LDFLAGS += -L/opt/homebrew/lib
@@ -164,11 +171,11 @@ UTILS_BINS := $(UTILS_BIN_DIR)/exipg
 COMPILE = $(CC) $(CFLAGS) $(INCDIRS)
 
 # TARGET: (DEFAULT) Building the exip library
-all: $(BIN_DIR) $(LIB_BIN_DIR) $(LIB_OBJECTS) $(LIB_BIN_DIR)/libexip.a copy_headers
+all: $(BIN_DIR) $(LIB_BIN_DIR) $(LIB_OBJECTS) $(LIB_BIN_DIR)/libexip.$(STATIC_LIB_EXT) copy_headers
 
 # TARGET: Building exip as dynamic library
 dynlib: COMPILE += -fPIC
-dynlib: clean all $(LIB_BIN_DIR)/libexip.so
+dynlib: clean all $(LIB_BIN_DIR)/libexip.$(DYNAMIC_LIB_EXT)
 
 # TARGET: Execute the unit tests
 check: all $(TESTS_BIN_DIR) $(CHECK_BINS)
@@ -226,12 +233,12 @@ $(EXAMPLES_BIN_DIR)/exipd: $(EXIPD_OBJECTS)
 $(UTILS_BIN_DIR)/exipg: $(EXIPG_OBJECTS)
 		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@
 	
-$(LIB_BIN_DIR)/libexip.a: $(LIB_OBJECTS)
-		$(ARCHIVER) rcs $(LIB_BIN_DIR)/libexip.a $(LIB_OBJECTS)
+$(LIB_BIN_DIR)/libexip.$(STATIC_LIB_EXT): $(LIB_OBJECTS)
+		$(ARCHIVER) rcs $(LIB_BIN_DIR)/libexip.$(STATIC_LIB_EXT) $(LIB_OBJECTS)
 
-$(LIB_BIN_DIR)/libexip.so: $(LIB_OBJECTS)
-		$(CC) -shared -Wl,-soname,libexip.so.$(EXIP_VERSION) -o $(LIB_BIN_DIR)/libexip.so.$(EXIP_VERSION) $(LIB_OBJECTS)
-		ln -sf $(LIB_BIN_DIR)/libexip.so.$(EXIP_VERSION) $(LIB_BIN_DIR)/libexip.so
+$(LIB_BIN_DIR)/libexip.$(DYNAMIC_LIB_EXT): $(LIB_OBJECTS)
+		$(CC) -shared $(LINK_FLAGS),libexip.$(DYNAMIC_LIB_EXT).$(EXIP_VERSION) -o $(LIB_BIN_DIR)/libexip.$(DYNAMIC_LIB_EXT).$(EXIP_VERSION) $(LIB_OBJECTS)
+		ln -sf $(LIB_BIN_DIR)/libexip.$(DYNAMIC_LIB_EXT).$(EXIP_VERSION) $(LIB_BIN_DIR)/libexip.$(DYNAMIC_LIB_EXT)
 
 $(BIN_DIR):
 		mkdir -p $(BIN_DIR)
