@@ -4,8 +4,15 @@
 
 ## Current status
 
-* Compiles locally on macOS M1 using Ventura 13.6.7 and Xcode command line tools. Passes CI.
-* CI failing on Linux
+Known to pass CI with the following configurations:
+
+| OS         | Works | Version(s)              | Arch(s)             | Compiler(s)
+| ---------- | ----- | ------------------------| --------------------|-----------------|
+| macOS      |   ✅  | 13.6.x                  | arm                 | System          |
+| Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
+
+* The build system calls `gcc`.
+* macOS system compiler `gcc` is aliased to `clang`.
 
 This is new information. Refer to the original
 [README.txt](README.txt) for more information. Other links will be added in the future.
