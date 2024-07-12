@@ -1,5 +1,7 @@
 # EXIP - Embeddable EXI Processor in C
 
+![CI](https://github.com/ekrich/exip/workflows/CI/badge.svg)
+
 This is just a placeholder for new information. Refer to the original
 [README.txt](README.txt)
 
