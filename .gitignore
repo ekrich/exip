@@ -6,4 +6,11 @@
 # doxygen output
 /doc/
 
+# VSCode
+.vscode/
 
+# Visual Studio (Windows)
+.vs/
+*.user
+Debug/
+packages/
