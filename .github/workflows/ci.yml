@@ -25,6 +25,10 @@ jobs:
         run: |
             brew install check doxygen
       - name: Setup (Windows)
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[16.11)'
+          msbuild-architecture: x86
         if: startsWith(matrix.os, 'windows')
         run: |
             echo "Setup Windows"
@@ -37,3 +41,4 @@ jobs:
         if: (startsWith(matrix.os, 'windows'))
         run: |
             echo "Testing Windows"
+            msbuild build\vs2019\exip.sln -t:rebuild -verbosity:diag -property:Configuration=Debug
