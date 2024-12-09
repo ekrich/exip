@@ -14,3 +14,6 @@
 *.user
 Debug/
 packages/
+
+# vcpkg generated
+vcpkg_installed/
