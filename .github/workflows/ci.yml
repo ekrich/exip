@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, windows-2019]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
@@ -24,7 +24,15 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: |
             brew install check doxygen
-      - name: Run tests
+      - name: Setup (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+            echo "Setup Windows"
+      - name: Run tests ${{matrix.os}}
+        if: (!startsWith(matrix.os, 'windows'))
         run: |
             cd build/gcc
             make TARGET=pc clean all check examples utils doc
+        if: (startsWith(matrix.os, 'windows'))
+        run: |
+            echo "Testing Windows"
