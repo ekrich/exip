@@ -6,4 +6,14 @@
 # doxygen output
 /doc/
 
+# VSCode
+.vscode/
 
+# Visual Studio (Windows)
+.vs/
+*.user
+Debug/
+packages/
+
+# vcpkg generated
+vcpkg_installed/
