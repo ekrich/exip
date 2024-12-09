@@ -29,10 +29,11 @@ jobs:
         run: |
             echo "Setup Windows"
       - name: Run tests ${{matrix.os}}
-        if: (!startsWith(matrix.os, 'windows'))
+        if: startsWith(matrix.os, 'windows') == false
         run: |
             cd build/gcc
             make TARGET=pc clean all check examples utils doc
+      - name: Run tests ${{matrix.os}}
         if: (startsWith(matrix.os, 'windows'))
         run: |
             echo "Testing Windows"
