@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\utils\schemaHandling\createGrammars.c" />
+    <ClCompile Include="..\..\utils\schemaHandling\exipg.c" />
     <ClCompile Include="..\..\utils\schemaHandling\output\dynOutputUtils.c" />
     <ClCompile Include="..\..\utils\schemaHandling\output\exipOutputUtils.c" />
     <ClCompile Include="..\..\utils\schemaHandling\output\staticOutputUtils.c" />
@@ -71,9 +72,10 @@
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies />
+      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

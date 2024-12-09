@@ -22,5 +22,8 @@
     <ClCompile Include="..\..\utils\schemaHandling\output\textOutputUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\utils\schemaHandling\exipg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -10,5 +10,8 @@
     <ClCompile Include="..\..\examples\simpleDecoding\decodeTestEXI.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\examples\simpleDecoding\exipd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
