@@ -10,6 +10,7 @@ Known to pass CI with the following configurations:
 | ---------- | ----- | ------------------------| --------------------|-----------------|
 | macOS      |   ✅  | 13.6.x                  | arm                 | System          |
 | Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
+| Windows    |   ✅  | Visual Studio 2019      | x86                 | cl              |
 
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
@@ -50,6 +51,10 @@ $ brew install check
 $ apt-get install check
 ```
 
+### Windows
+
+Coming soon.
+
 ## Documentation Dependency
 
 In order to `make` the documentation you need to install [doxygen](https://www.doxygen.nl/).
@@ -68,7 +73,7 @@ $ brew install doxygen
 $ apt-get install doxygen
 ```
 
-## Building
+## Building macOS and Linux
 
 The following commands will allow you to build everything. There is also a `dynlib` Make target that can be used to create a shared library.
 
@@ -76,3 +81,7 @@ The following commands will allow you to build everything. There is also a `dynl
 $ cd build/gcc
 $ make TARGET=pc clean all check examples utils doc
 ```
+
+## Building Windows
+
+Coming soon.
