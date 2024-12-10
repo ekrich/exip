@@ -10,21 +10,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-13]
+        os: [ubuntu-22.04, macos-13, windows-2019]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
         uses: actions/checkout@v4
+
       - name: Setup (Linux)
         if: startsWith(matrix.os, 'ubuntu')
         run: |
             sudo apt-get update
             sudo apt-get install -y check doxygen
+
       - name: Setup (Mac)
         if: startsWith(matrix.os, 'macos')
         run: |
             brew install check doxygen
-      - name: Run tests
+
+      - name: Setup (Windows)
+        if: startsWith(matrix.os, 'windows')
+        uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[16.11, 16.12)'
+
+      - name: Run tests ${{matrix.os}}
+        if: startsWith(matrix.os, 'windows') == false
         run: |
             cd build/gcc
             make TARGET=pc clean all check examples utils doc
+
+      - name: Run tests ${{matrix.os}}
+        if: (startsWith(matrix.os, 'windows'))
+        run: |
+            vcpkg integrate install
+            msbuild build\vs2019\exip.sln -property:Configuration=Debug
+            echo "Run individual tests"
+            build\vs2019\Debug\check_contentio.exe
+            build\vs2019\Debug\check_grammar.exe
+            build\vs2019\Debug\check_streamIO.exe
+            build\vs2019\Debug\check_stringTables.exe
+            echo "Run examples (todo)"
