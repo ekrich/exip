@@ -25,13 +25,11 @@ jobs:
         run: |
             brew install check doxygen
       - name: Setup (Windows)
+        if: startsWith(matrix.os, 'windows')
         uses: microsoft/setup-msbuild@v2
         with:
           vs-version: '[16.11)'
           msbuild-architecture: x86
-        if: startsWith(matrix.os, 'windows')
-        run: |
-            echo "Setup Windows"
       - name: Run tests ${{matrix.os}}
         if: startsWith(matrix.os, 'windows') == false
         run: |
