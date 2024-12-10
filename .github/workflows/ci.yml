@@ -28,7 +28,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         uses: microsoft/setup-msbuild@v2
         with:
-          vs-version: '[16.11)'
+          vs-version: '[16.11.34)'
           msbuild-architecture: x86
       - name: Run tests ${{matrix.os}}
         if: startsWith(matrix.os, 'windows') == false
