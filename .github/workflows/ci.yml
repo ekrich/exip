@@ -44,3 +44,5 @@ jobs:
         run: |
             vcpkg integrate install
             msbuild build\vs2019\exip.sln -property:Configuration=Debug
+            echo "Run Individual tests"
+            build\vs2019\Debug\check_contentio.exe
