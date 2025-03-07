@@ -10,10 +10,11 @@ Known to pass CI with the following configurations:
 | ---------- | ----- | ------------------------| --------------------|-----------------|
 | macOS      |   ✅  | 13.6.x                  | arm                 | System          |
 | Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
-| Windows    |   ✅  | Visual Studio 2019      | x86                 | cl              |
+| Windows    |   ✅  | Visual Studio 2019/2022 | x86/x86_64          | cl              |
 
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
+* Windows default creates a 32bit x86 executable.
 
 This is new information. Refer to the original
 [README.txt](README.txt) for more information. Other links will be added in the future.
@@ -83,7 +84,7 @@ $ apt-get install doxygen
 
 ### Windows
 
-Refer to https://www.doxygen.nl/download.html to install doxygen for Windows to create the documentation.
+Refer to https://www.doxygen.nl/download.html to install doxygen for Windows to create the documentation. Recommended to use `vcpkg` for dependencies in general.
 
 ## Building on macOS and Linux
 
