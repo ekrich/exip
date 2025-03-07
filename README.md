@@ -56,9 +56,9 @@ $ apt-get install check
 
 ### Windows
 
-The easiest setup is to install Visual Studio 2019 to get the latest Windows 10 SDK and the MSVC v142 tools. The following is the installer setup used for the current setup that succeeded.
+The easiest setup is to install Visual Studio 2019 to get the latest Windows 10 SDK and the MSVC v142 tools. You can also use Visual Studio 2022 along with MSVC v143 tools. The following is the installer setup used for the current vs2019 setup that succeeded.
 
-![Visual Studio Installed Image](doc/images/VS2019.png)
+![Visual Studio Installed Image](images/VS2019.png)
 
 To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
 
