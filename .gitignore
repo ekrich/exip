@@ -4,7 +4,7 @@
 # /.launches/
 
 # doxygen output
-/doc/
+/doc/dev/doxygen
 
 # VSCode
 .vscode/
