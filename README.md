@@ -6,6 +6,11 @@
 
 ## Current status
 
+This project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed and of the rest of the work to date is to support the platforms shown in the table below. The project originally supported the embedded IoT [Contiki](https://github.com/contiki-ng/contiki-ng) platform but this support has not been addressed to date. See the following original links for more information:
+
+* [Original README.txt](README.txt)
+* [Original Website](https://exip.sourceforge.net/)
+
 Known to pass CI with the following configurations:
 
 | OS         | Works | Version(s)              | Arch(s)             | Compiler(s)
@@ -17,9 +22,6 @@ Known to pass CI with the following configurations:
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
 * Windows default creates a 32bit x86 executable.
-
-This is new information. Refer to the original
-[README.txt](README.txt) for more information. Other links will be added in the future.
 
 # Developer Information
 
