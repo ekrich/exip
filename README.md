@@ -141,6 +141,7 @@ The normal way to build is to open Visual Studio and navigate to `build\vs2022` 
 
 Note that the option `/FS` is added to the build as the different projects share the same output directory. This was the setup in `vs2010` that was upgraded so this was not changed. The extra `/FS` option can be seen in the `Configuration Properties / C/C++ / Command Line` menu. If you prefer to build on the command line, refer to the Github action and this will also provide clues on how to run the tests.
 
+<<<<<<< HEAD
 ### Running tests Using Visual Studio
 
 The tests (`check_*`) are individual projects so you can right click on the project and select `Debug -> Start Without Debugging` to run the unit test. If the unit test requires test files and doesn't run you can Right Click on the project and select `Properties -> Configuration Properties -> Debugging` and then add in `Command Arguments`, `../../tests/test-set` to give the path to the executable. The test source includes specific test files which are appended to this path.
@@ -155,3 +156,4 @@ scripts/run-unit-tests.bat
 
  - Original license: [EISLAB](LICENSE-orig.txt)
  - Additions: [Apache License, Version 2.0](LICENSE-2.0.txt)
+
