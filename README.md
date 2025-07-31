@@ -29,7 +29,7 @@ The following sections are for new contributors to EXIP or people wanting to try
 
 ## Miscellaneous
 
-The macOS `arm` processors have a non-standard include directory so there needs to be an entry in the `compile_flags.txt` file for `clangd` to support the Check library. This is at the root of the project.
+The macOS `arm` processors have a non-standard include directory so there needs to be an entry in the `compile_flags.txt` file for `clangd` to support the Check library. This files is at the root of the project.
 
 Adding architecture specific [code](https://stackoverflow.com/questions/714100/os-detecting-makefile) to the `Makefile` may not be so good but for now it works.
 
@@ -104,3 +104,8 @@ $ make TARGET=pc clean all check examples utils doc
 The normal way to build is to open Visual Studio and navigate to `build\vs2019` and then open the `exip.sln` solution file. Once the project is loaded you can right click to build or use the menus. Individual projects can be cleaned and compiled as well.
 
 Note that the option `/FS` is added to the build as the different projects share the same output directory. This was the setup in `vs2010` that was upgraded so this was not changed. The extra `/FS` option can be seen in the `Configuration Properties / C/C++ / Command Line` menu. If you prefer to build on the command line, refer to the Github action and this will also provide clues on how to run the tests.
+
+## Licenses
+
+Original license: [EISLAB](LICENSE.txt)
+Additions: [BSD 3-Clause](LICENSE-BSD-3.md)

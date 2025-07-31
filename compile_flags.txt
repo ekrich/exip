@@ -1,31 +1,27 @@
 # Project setup for clangd
 
-# Include dirs
--I
-include
--I
-src/common/include
--I
-src/contentIO/include
--I
-src/grammar/include
--I
-src/grammarGen/include
--I
-src/streamIO/include
--I
-src/stringTables/include
--I
-utils/schemaHandling/include
+# macOS arm
+-I/opt/homebrew/include
+
+# Compile flags
+-Wall
+
+# src
+-Iinclude
+-Isrc/common/include
+-Isrc/contentIO/include
+-Isrc/grammar/include
+-Isrc/grammarGen/include
+-Isrc/streamIO/include
+-Isrc/stringTables/include
+-Iutils/schemaHandling/include
+
+# test src
+-Itests
 
 # Platform specific
 # EXIP specific
--I
-build/gcc/pc
-
-# macOS arm
--I
-/opt/homebrew/include
+-Ibuild/gcc/pc
 
 # Defines as required for features or conditional compilation
 # -DXXX
