@@ -107,5 +107,5 @@ Note that the option `/FS` is added to the build as the different projects share
 
 ## Licenses
 
-Original license: [EISLAB](LICENSE.txt)
-Additions: [BSD 3-Clause](LICENSE-BSD-3.md)
+ - Original license: [EISLAB](LICENSE-orig.txt)
+ - Additions: [Apache License, Version 2.0](LICENSE-2.0.txt)
