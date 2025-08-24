@@ -31,7 +31,7 @@ jobs:
         if: startsWith(matrix.os, 'windows-2019')
         uses: microsoft/setup-msbuild@v2
         with:
-          vs-version: '[16.11, 16.12)'
+          vs-version: '[16.11, 16.11)'
 
       - name: Setup (Windows)
         if: startsWith(matrix.os, 'windows-2022')
