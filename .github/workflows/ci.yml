@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-13, windows-2019, windows-2022]
+        os: [ubuntu-22.04, macos-13, windows-2022]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout current branch (full)
@@ -28,16 +28,8 @@ jobs:
             brew install check doxygen
 
       - name: Setup (Windows)
-        if: startsWith(matrix.os, 'windows-2019')
-        uses: microsoft/setup-msbuild@v2
-        with:
-          vs-version: '[16.11, 16.12)'
-
-      - name: Setup (Windows)
         if: startsWith(matrix.os, 'windows-2022')
         uses: microsoft/setup-msbuild@v2
-        with:
-          vs-version: '[17.13, 17.14)'
 
       - name: Run tests ${{matrix.os}}
         if: startsWith(matrix.os, 'windows') == false
@@ -46,22 +38,10 @@ jobs:
             make TARGET=pc clean all check examples utils doc
 
       - name: Run tests ${{matrix.os}}
-        if: (startsWith(matrix.os, 'windows-2019'))
-        run: |
-            vcpkg integrate install
-            msbuild build\vs2019\exip.sln -property:Configuration=Debug
-            echo "Run individual tests"
-            build\vs2019\Debug\check_contentio.exe
-            build\vs2019\Debug\check_grammar.exe
-            build\vs2019\Debug\check_streamIO.exe
-            build\vs2019\Debug\check_stringTables.exe
-            echo "Run examples (todo)"
-
-      - name: Run tests ${{matrix.os}}
         if: (startsWith(matrix.os, 'windows-2022'))
         run: |
             vcpkg integrate install
-            msbuild build\vs2022\exip.sln -property:Configuration=Debug
+            msbuild.exe build\vs2022\exip.sln -property:Configuration=Debug
             echo "Run individual tests"
             build\vs2022\Debug\check_contentio.exe
             build\vs2022\Debug\check_grammar.exe
