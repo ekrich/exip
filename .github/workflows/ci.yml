@@ -43,7 +43,7 @@ jobs:
         if: (startsWith(matrix.os, 'windows-2022'))
         run: |
             vcpkg integrate install
-            msbuild build\vs2022\exip.sln -property:Configuration=Debug
+            msbuild.exe build\vs2022\exip.sln -property:Configuration=Debug
             echo "Run individual tests"
             build\vs2022\Debug\check_contentio.exe
             build\vs2022\Debug\check_grammar.exe
