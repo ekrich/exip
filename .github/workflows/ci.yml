@@ -30,8 +30,6 @@ jobs:
       - name: Setup (Windows)
         if: startsWith(matrix.os, 'windows-2022')
         uses: microsoft/setup-msbuild@v2
-        with:
-          vs-version: '[17.13, 17.14)'
 
       - name: Run tests ${{matrix.os}}
         if: startsWith(matrix.os, 'windows') == false
