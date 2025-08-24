@@ -2,7 +2,7 @@
  * hexBinary.h - Hexadecimal (Base16) encode/decode for xs:hexBinary values
  *
  * Copyright (c) 2025, Eric Richardson
- * Licensed under the BSD 2-Clause License.
+ * Licensed under the Apache License, Version 2.0.
  * See the LICENSE file in the project root for full license text.
  */
 
@@ -17,16 +17,16 @@ extern "C" {
 #endif
 
 /**
- * Encode binary data to uppercase hexadecimal (Base16) string.
+ * Encode binary data xs:hexBinary to uppercase hexadecimal (Base16) string.
  *
  * @param in       Pointer to input byte array
  * @param len      Number of input bytes
- * @param out      Output buffer (must be at least 2 * len + 1 bytes)
+ * @param out      Output buffer (must be at least (2 * len + 1) bytes)
  */
 void encodeHexBinary(const uint8_t *in, size_t len, char *out);
 
 /**
- * Decode a hexadecimal (Base16) string to binary data.
+ * Decode a hexadecimal xs:hexBinary (Base16) string to binary data.
  *
  * @param in           Null-terminated hex string (uppercase or lowercase)
  * @param out          Output buffer for decoded bytes
