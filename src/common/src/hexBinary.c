@@ -1,20 +1,19 @@
 /*
  * hexBinary.c - Hexadecimal encode/decode for xs:hexBinary values
  *
- * BSD 3-Clause License
- * 
- * Copyright (c) 2025, Eric K Richardson
- * Licensed under the BSD 3-Clause License.
+ * Copyright (c) 2025, Eric Richardson
+ * Licensed under the Apache License, Version 2.0.
  * See the LICENSE file in the project root for full license text.
  */
 
 #include <stddef.h>
 #include <stdint.h>
 #include <ctype.h>
+#include "hexBinary.h"
 
 /**
  * Encode binary data as hex string (uppercase).
- * `out` must be at least 2*len + 1 bytes long.
+ * `out` must be at least (2 * len + 1) bytes long.
  */
 void encodeHexBinary(const uint8_t *in, size_t len, char *out)
 {
