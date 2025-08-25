@@ -20,6 +20,10 @@
 
 #include "exipConfig.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define INFO 1
 #define WARNING 2
 #define ERROR 3
@@ -209,5 +213,9 @@ typedef enum errorCode errorCode;
 									  DEBUG_MSG(ERROR, EXIP_DEBUG, ("\n>Error %s:%d at %s, line %d", GET_ERR_STRING(tmp_err_code), tmp_err_code, __FILE__, __LINE__)); \
 									  cblock;\
 									  return tmp_err_code; } } while(0)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ERRORHANDLE_H_ */

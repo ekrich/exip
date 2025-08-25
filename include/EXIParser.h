@@ -21,6 +21,10 @@
 
 #include "contentHandler.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Parses an EXI document.
  */
@@ -129,5 +133,9 @@ errorCode pushEXIData(char* inBuf, unsigned int bufSize, unsigned int* bytesRead
  * @param[in] parser the parser object
  */
 void destroyParser(Parser* parser);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EXIPARSER_H_ */

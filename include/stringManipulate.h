@@ -20,6 +20,10 @@
 #include "procTypes.h"
 #include "errorHandle.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Allocate a memory for a string with UCSchars number of UCS characters
  * It depends on the representation of the characters
@@ -228,5 +232,9 @@ errorCode dateTimeToString(EXIPDateTime dt, String* outStr);
 void printString(const String* inStr);
 
 #endif /* EXIP_DEBUG */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* STRINGMANIPULATE_H_ */
