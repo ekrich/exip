@@ -25,6 +25,10 @@
 #include "exipConfig.h"
 #include <limits.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum boolean
 {
 	FALSE = 0,
@@ -1346,5 +1350,9 @@ errorCode pushOnStack(GenericStack** stack, void* item);
 void popFromStack(GenericStack** stack, void** item);
 
 int compareEnumDefs(const void* enum1, const void* enum2);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PROCTYPES_H_ */

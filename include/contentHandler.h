@@ -22,6 +22,10 @@
 
 #include "procTypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Simple container for function pointers for document events.
  */
@@ -66,5 +70,9 @@ typedef struct ContentHandler ContentHandler;
  *
  */
 void initContentHandler(ContentHandler* handler);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* CONTENTHANDLER_H_ */
