@@ -64,6 +64,10 @@ void encodeBase64Binary(const uint8_t *in, size_t len, char *out) {
     out[j] = '\0'; // null terminator
 }
 
+size_t encodeBufferSize(size_t len) {
+    return ((len + 2) / 3) * 4 + 1;
+}
+
 static inline bool isInvalidChar(unsigned char c) {
     return (c > 127) || ((base64ReverseTable[c] == 0) && (c != 'A'));
 }
@@ -101,4 +105,8 @@ int decodeBase64Binary(const char *in, uint8_t *out, size_t maxOutLen)
     }
 
     return (int)outLen;
+}
+
+size_t decodeBufferSize(const char *in) {
+    return (strlen(in) / 4) * 3;
 }

@@ -31,6 +31,14 @@ extern "C" {
 void encodeBase64Binary(const uint8_t *in, size_t len, char *out);
 
 /**
+ * Calculate the output buffer as ((len + 2) / 3) * 4 + 1 bytes.
+ *
+ * @param len      Length of input bytes
+ * @param out      Output buffer size
+ */
+size_t encodeBufferSize(size_t len);
+
+/**
  * Decode a Base64 string (RFC 4648) to binary data.
  *
  * Supports standard '=' padding. Ignores whitespace.
@@ -45,6 +53,14 @@ void encodeBase64Binary(const uint8_t *in, size_t len, char *out);
  * @return Number of bytes written to out, or -1 on error
  */
 int decodeBase64Binary(const char *in, uint8_t *out, size_t max_out_len);
+
+/**
+ * Calculate the buffer size as (strlen(in) / 4) * 3 bytes.
+ *
+ * @param in       Null-terminated Base64 string
+ * @param out      Output buffer size / max_out_len
+ */
+size_t decodeBufferSize(const char *in);
 
 #ifdef __cplusplus
 }
