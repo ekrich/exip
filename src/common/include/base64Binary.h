@@ -27,8 +27,10 @@ extern "C" {
  * @param in       Pointer to input bytes
  * @param len      Length of input bytes
  * @param out      Output buffer (must follow size guidelines above)
+ //fix docs
  */
-void encodeBase64Binary(const uint8_t *in, size_t len, char *out);
+void encodeBase64Binary(const uint8_t *in, size_t len, char *out,
+                        size_t *outLen);
 
 /**
  * Calculate the output buffer as ((len + 2) / 3) * 4 + 1 bytes.
@@ -51,16 +53,19 @@ size_t encodeBufferSize(size_t len);
  * @param max_out_len  Maximum number of bytes to write to out
  *
  * @return Number of bytes written to out, or -1 on error
+ //fix docs
  */
-int decodeBase64Binary(const char *in, uint8_t *out, size_t max_out_len);
+// int decodeBase64Binary(const char *in, uint8_t *out, size_t max_out_len);
+int decodeBase64Binary(const char *in, size_t inLen, uint8_t *out,
+                       size_t *outLen);
 
 /**
  * Calculate the buffer size as (strlen(in) / 4) * 3 bytes.
  *
- * @param in       Null-terminated Base64 string
+ * @param in    Size of Base64 string
  * @param out      Output buffer size / max_out_len
  */
-size_t decodeBufferSize(const char *in);
+size_t decodeBufferSize(size_t in);
 
 #ifdef __cplusplus
 }
