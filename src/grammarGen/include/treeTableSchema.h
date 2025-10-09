@@ -329,7 +329,6 @@ errorCode initTreeTable(TreeTable* treeT);
  * @brief Destroy a TreeTable object (free the memory allocations)
  *
  * @param[in, out] treeT a tree table object
- * @return Error handling code
  */
 void destroyTreeTable(TreeTable* treeT);
 
@@ -356,13 +355,13 @@ void destroyTreeTable(TreeTable* treeT);
 errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema);
 
 /**
- * @brief Given a set of TreeTable instances, resolve the <include> or <import> dependencies
+ * @brief Given a set of TreeTable instances, resolve the &lt;include&gt; or &lt;import&gt; dependencies
  *
  * @param[in, out] schema the EXIPSchema object
  * @param[in, out] treeT a pointer to an array of tree table objects (can be RE-ALLOCED!)
  * @param[in, out] count the number of tree table objects
- * @param[in] loadSchemaHandler Call-back handler for loading <include>-ed or <import>-ed schema files; Can be left NULL
- * if no <include> or <import> statements are used in the XML schema.
+ * @param[in] loadSchemaHandler Call-back handler for loading &lt;include&gt;-ed or &lt;import&gt;-ed schema files; Can be left NULL
+ * if no &lt;include&gt; or &lt;import&gt; statements are used in the XML schema.
  *
  * @return Error handling code
  */

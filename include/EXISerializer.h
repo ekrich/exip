@@ -257,7 +257,6 @@ errorCode selfContained(EXIStream* strm);
  * @brief Initialize the header of an EXI stream object
  *
  * @param[in, out] strm EXI stream object
- * @return Error handling code
  */
 void initHeader(EXIStream* strm);
 

@@ -56,7 +56,6 @@ void freeAllMem(EXIStream* strm);
  * @brief Frees a particular Allocation list
  *
  * @param[in, out] list Allocation list to be freed
- * @return Error handling code
  */
 void freeAllocList(AllocList* list);
 
