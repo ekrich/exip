@@ -704,10 +704,10 @@ errorCode encodeWithDynamicTypes(char* buf, int buf_size, int *strmSize);
  * to SCHEMA_ID_EMPTY in order to use the built-in schema types.
  * Encodes the following XML:
  *
- * <trivial xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- * xmlns:xsd="http://www.w3.org/2001/XMLSchema">
- *    <anElement xsi:type="xsd:date">2014-01-31T16:15:25+02:00</anElement>
- * </trivial>
+ * &lt;trivial xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ * xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+ *     &lt;anElement xsi:type="xsd:date">2014-01-31T16:15:25+02:00&lt;/anElement&gt;
+ * &lt;/trivial&gt;
  */
 START_TEST (test_built_in_dynamic_types)
 {
