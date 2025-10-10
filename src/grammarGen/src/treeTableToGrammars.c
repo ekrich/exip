@@ -466,8 +466,8 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	String type;
-	QNameID elQNameID;
-	QNameID typeQNameID;
+	QNameID elQNameID = {0};
+	QNameID typeQNameID = {0};
 	bool isNillable = false;
 
 #if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
