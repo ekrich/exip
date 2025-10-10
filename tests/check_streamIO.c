@@ -107,7 +107,7 @@ START_TEST (test_readBits)
   err = readBits(&testStream, 4, &bits_val);
 
   fail_unless (bits_val == 13,
-	       "The bits 1101 from the stream are read as %d", bits_val);
+	       "The bits 1101 from the stream are read as %lu", bits_val);
   fail_unless (err == EXIP_OK,
 	       "readBits returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 4,
@@ -119,7 +119,7 @@ START_TEST (test_readBits)
   err = readBits(&testStream, 5, &bits_val);
 
   fail_unless (bits_val == 6,
-		      "The bits 00110 from the stream are read as %d", bits_val);
+		      "The bits 00110 from the stream are read as %lu", bits_val);
   fail_unless (err == EXIP_OK,
     	       "readNextBit returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 4 && testStream.context.bufferIndx == 1,
@@ -266,7 +266,7 @@ START_TEST (test_decodeNBitUnsignedInteger)
   err = decodeNBitUnsignedInteger(&testStream, 6, &bit_val);
 
   fail_unless (bit_val == 53,
-	       "The 110101 from the stream is read as %d", bit_val);
+	       "The 110101 from the stream is read as %lu", bit_val);
   fail_unless (err == EXIP_OK,
 	       "decodeNBitUnsignedInteger returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 6,
@@ -331,7 +331,7 @@ START_TEST (test_decodeUnsignedInteger)
   err = decodeUnsignedInteger(&testStream, &bit_val);
 
   fail_unless (bit_val == 12372,
-	       "The UnsignedInteger 12372 from the stream is read as %d", bit_val);
+	       "The UnsignedInteger 12372 from the stream is read as %llu", bit_val);
   fail_unless (err == EXIP_OK,
 	       "decodeUnsignedInteger returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 0,
@@ -371,7 +371,7 @@ START_TEST (test_decodeString)
   err = decodeString(&testStream, &bit_val);
 
   fail_unless (bit_val.length == 2,
-	       "The String length of 2 is reported as %d from decodeString", bit_val.length);
+	       "The String length of 2 is reported as %zu from decodeString", bit_val.length);
   fail_unless (bit_val.str[0] == 'e' && bit_val.str[1] == 'T',
   	       "The String \"eT\" is decoded wrong by decodeString");
   fail_unless (err == EXIP_OK,
@@ -439,7 +439,7 @@ START_TEST (test_decodeBinary)
   fail_unless (err == EXIP_OK,
 	       "decodeBinary returns error code %d", err);
   fail_unless (bytes == 5,
-	       "The length of the binary content is read as %d (actual : %d)", bytes,5);
+	       "The length of the binary content is read as %zu (actual : %d)", bytes, 5);
   fail_unless (same == 1,
 	       "The binary content is read wrongly");
   fail_unless (testStream.context.bitPointer == 0,
@@ -466,7 +466,7 @@ START_TEST (test_decodeBinary)
   fail_unless (err == EXIP_OK,
 	       "decodeBinary returns error code %d", err);
   fail_unless (bytes == 8,
-	       "The length of the binary content is read as %d (actual : %d)", bytes,8);
+	       "The length of the binary content is read as %zu (actual : %d)", bytes, 8);
   fail_unless (same == 1,
 	       "The binary content is read wrongly");
   fail_unless (testStream.context.bitPointer == 0,
@@ -554,7 +554,7 @@ START_TEST (test_decodeIntegerValue)
   err = decodeIntegerValue(&testStream, &bit_val);
 
   fail_unless (bit_val == -41,
-	       "The IntegerValue -41 from the stream is read as %d", bit_val);
+	       "The IntegerValue -41 from the stream is read as %lld", bit_val);
   fail_unless (err == EXIP_OK,
 	       "decodeIntegerValue returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 1,
@@ -569,7 +569,7 @@ START_TEST (test_decodeIntegerValue)
   err = decodeIntegerValue(&testStream, &bit_val);
 
   fail_unless (bit_val == 40,
-	       "The IntegerValue 40 from the stream is read as %d", bit_val);
+	       "The IntegerValue 40 from the stream is read as %lld", bit_val);
   fail_unless (err == EXIP_OK,
 	       "decodeIntegerValue returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 1,
@@ -610,7 +610,7 @@ START_TEST (test_decodeDecimalValue)
 
 	err = decodeDecimalValue(&testStream, &dec_val);
 
-	fail_unless (res.mantissa == dec_val.mantissa && res.exponent == dec_val.exponent, "The value 5.001 is decoded as %d*10^%d", dec_val.mantissa, dec_val.exponent);
+	fail_unless (res.mantissa == dec_val.mantissa && res.exponent == dec_val.exponent, "The value 5.001 is decoded as %lld*10^%d", dec_val.mantissa, dec_val.exponent);
 	fail_unless (err == EXIP_OK,
 		   "decodeDecimalValue returns error code %d", err);
 	fail_unless (testStream.context.bitPointer == 1,
@@ -972,7 +972,7 @@ START_TEST (test_encodeDecimalValue)
 
 	err = decodeDecimalValue(&testStream, &dec_val);
 
-	fail_unless (res.mantissa == dec_val.mantissa && res.exponent == dec_val.exponent, "The value 5.001 is decoded as %d*10^%d", dec_val.mantissa, dec_val.exponent);
+	fail_unless (res.mantissa == dec_val.mantissa && res.exponent == dec_val.exponent, "The value 5.001 is decoded as %lld*10^%d", dec_val.mantissa, dec_val.exponent);
 	freeAllocList(&testStream.memList);
 }
 END_TEST

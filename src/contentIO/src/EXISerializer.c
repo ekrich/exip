@@ -896,7 +896,7 @@ errorCode decimalData(EXIStream* strm, Decimal dec_val)
 
 errorCode listData(EXIStream* strm, unsigned int itemCount)
 {
-	Index typeId;
+	Index typeId = 0;
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, ("\n>Start list data serialization\n"));
 
 	if(strm->gStack->grammar == NULL)

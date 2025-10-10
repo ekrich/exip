@@ -15,13 +15,15 @@ Known to pass CI with the following configurations:
 
 | OS         | Works | Version(s)              | Arch(s)             | Compiler(s)
 | ---------- | ----- | ------------------------| --------------------|-----------------|
-| macOS      |   ✅  | 13.6.x                  | arm                 | System          |
+| macOS      |   ✅  | 13.6.x                  | arm                 | gcc             |
 | Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
 | Windows    |   ✅  | Visual Studio 2019/2022 | x86/x86_64          | cl              |
 
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
+* `clang` should also work on Linux.
 * Windows default creates a 32bit x86 executable.
+* We now use C99 standard as we have refactored to use `bool`.
 
 # Developer Information
 

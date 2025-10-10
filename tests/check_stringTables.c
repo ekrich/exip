@@ -33,9 +33,9 @@ START_TEST (test_createValueTable)
 
 	fail_unless (err == EXIP_OK, "createValueTable returns error code %d", err);
 	fail_unless (valueTable.count == 0,
-				"createValueTable populates the valueTable with count: %d", valueTable.count);
+				"createValueTable populates the valueTable with count: %zu", valueTable.count);
 	fail_unless (valueTable.dynArray.arrayEntries == DEFAULT_VALUE_ENTRIES_NUMBER,
-					"createValueTable creates dynamic array with %d rows", valueTable.dynArray.arrayEntries);
+					"createValueTable creates dynamic array with %zu rows", valueTable.dynArray.arrayEntries);
 	fail_if(valueTable.value == NULL);
 
 	destroyDynArray(&valueTable.dynArray);
@@ -63,7 +63,7 @@ START_TEST (test_addUriEntry)
 	fail_unless (stringEqual(uriTable.uri[0].uriStr, test_uri) == 1,
 						"addUriEntry changed the uriStr");
 	fail_unless (entryId == 0,
-				"addUriEntry returned wrong entryId: %d", entryId);
+				"addUriEntry returned wrong entryId: %zu", entryId);
 
 	fail_if(uriTable.uri[0].lnTable.ln == NULL);
 
@@ -79,7 +79,7 @@ START_TEST (test_addUriEntry)
 	fail_unless (stringEqual(uriTable.uri[DEFAULT_URI_ENTRIES_NUMBER].uriStr, test_uri) == 1,
 						"addUriEntry changed the uriStr");
 	fail_unless (entryId == DEFAULT_URI_ENTRIES_NUMBER,
-				"addUriEntry returned wrong entryId: %d", entryId);
+				"addUriEntry returned wrong entryId: %zu", entryId);
 
 	fail_if(uriTable.uri[DEFAULT_URI_ENTRIES_NUMBER].lnTable.ln == NULL);
 
@@ -107,7 +107,7 @@ START_TEST (test_addLnEntry)
 	fail_unless (stringEqual(lnTable.ln[0].lnStr, test_ln) == 1,
 						"addLnEntry changed the lnStr");
 	fail_unless (entryId == 0,
-				"addLnEntry returned wrong entryId: %d", entryId);
+				"addLnEntry returned wrong entryId: %zu", entryId);
 
 #if VALUE_CROSSTABLE_USE
 	fail_if(lnTable.ln[0].vxTable != NULL);
@@ -125,7 +125,7 @@ START_TEST (test_addLnEntry)
 	fail_unless (stringEqual(lnTable.ln[DEFAULT_LN_ENTRIES_NUMBER].lnStr, test_ln) == 1,
 						"addLnEntry changed the lnStr");
 	fail_unless (entryId == DEFAULT_LN_ENTRIES_NUMBER,
-				"addLnEntry returned wrong entryId: %d", entryId);
+				"addLnEntry returned wrong entryId: %zu", entryId);
 #if VALUE_CROSSTABLE_USE
 	fail_if(lnTable.ln[DEFAULT_LN_ENTRIES_NUMBER].vxTable != NULL);
 #endif

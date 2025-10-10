@@ -39,7 +39,7 @@ extern "C" {
  * When turned on, the debugging information is by default
  * printed on the standard output.
  *
- * @section configuration Debug configuration
+ * @section configuration Debug Configuration
  * The following macro definitions are used to customize the debugging:
  * <dl>
  *     <dt>EXIP_DEBUG</dt>
@@ -54,15 +54,15 @@ extern "C" {
  *     		<dd>Used to print a debug message</dd>
  * </dl>
  *
- * @section error_codes Error codes
+ * @section error_codes Error Codes
  * Most of the functions in the exip library return a 8 bit integer that
  * indicates the status of the execution with 0 being success and
  * non-zero value indication an error condition.
  * <p>
- *  The error codes are defined in errorHandle.h
+ *  The @ref error_codes are defined in errorHandle.h
  * </p>
  *
- * @section debug_output Debug output
+ * @section debug_output Debug Output
  * DEBUG_STREAM_IO provides a detailed stream output and position debug messages. It shows byte-level
  * output on a new line, beginning with '>>'. It indicates position of next write
  * in the form \@B:b, where B is the byte offset and b is the bit offset within
@@ -110,7 +110,7 @@ extern "C" {
  */
 #if EXIP_DEBUG == ON
 
-#  include <stdio.h>
+#include <stdio.h>
 
 /* Platform specific debugging character output */
 # ifndef DEBUG_CHAR_OUTPUT

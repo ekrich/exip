@@ -88,7 +88,7 @@ errorCode startDocument(EXIStream* strm);
 errorCode endDocument(EXIStream* strm);
 
 /**
- * @brief Encodes start of an element with qualified name qname
+ * @brief Encodes start of an element with qualified name
  *
  * @param[in, out] strm EXI stream object
  * @param[in] qname qualified name of the element
@@ -110,7 +110,7 @@ errorCode endElement(EXIStream* strm);
 
 
 /**
- * @brief Encodes a start of an attribute with qualified name qname
+ * @brief Encodes a start of an attribute with qualified name
  * Note that the attributes within an element must be encoded lexicographically sorted
  * when in schema mode. Sorting is done first by local name and then by namespace.
  *
@@ -212,7 +212,7 @@ errorCode listData(EXIStream* strm, unsigned int itemCount);
  * @brief This function is only used to encode the value of xsi:type attribute
  *
  * @param[in, out] strm EXI stream object
- * @param[in] qname the qname to be encoded
+ * @param[in] qname the qualified name to be encoded
  * @return Error handling code
  */
 errorCode qnameData(EXIStream* strm, QName qname);
