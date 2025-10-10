@@ -119,7 +119,7 @@ static errorCode sample_fatalError(const errorCode code, const char* msg, void* 
 static errorCode sample_startDocument(void* app_data)
 {
 	appData* appD = (appData*) app_data;
-	asciiToString("SD", &appD->eventCode, &appD->allocList, TRUE);
+	asciiToString("SD", &appD->eventCode, &appD->allocList, true);
 
 	return EXIP_OK;
 }
@@ -127,7 +127,7 @@ static errorCode sample_startDocument(void* app_data)
 static errorCode sample_endDocument(void* app_data)
 {
 	appData* appD = (appData*) app_data;
-	asciiToString("ED", &appD->eventCode, &appD->allocList, TRUE);
+	asciiToString("ED", &appD->eventCode, &appD->allocList, true);
 
 	return EXIP_OK;
 }
@@ -135,7 +135,7 @@ static errorCode sample_endDocument(void* app_data)
 static errorCode sample_startElement(QName qname, void* app_data)
 {
 	appData* appD = (appData*) app_data;
-	asciiToString("SE", &appD->eventCode, &appD->allocList, TRUE);
+	asciiToString("SE", &appD->eventCode, &appD->allocList, true);
 	cloneStringManaged(qname.uri, &appD->uri, &appD->allocList);
 	cloneStringManaged(qname.localName, &appD->localName, &appD->allocList);
 
@@ -145,7 +145,7 @@ static errorCode sample_startElement(QName qname, void* app_data)
 static errorCode sample_endElement(void* app_data)
 {
 	appData* appD = (appData*) app_data;
-	asciiToString("EE", &appD->eventCode, &appD->allocList, TRUE);
+	asciiToString("EE", &appD->eventCode, &appD->allocList, true);
 
 	return EXIP_OK;
 }
@@ -153,7 +153,7 @@ static errorCode sample_endElement(void* app_data)
 static errorCode sample_attribute(QName qname, void* app_data)
 {
 	appData* appD = (appData*) app_data;
-	asciiToString("AT", &appD->eventCode, &appD->allocList, TRUE);
+	asciiToString("AT", &appD->eventCode, &appD->allocList, true);
 	
 	/*
 	printString(qname.uri);
@@ -172,7 +172,7 @@ static errorCode sample_stringData(const String value, void* app_data)
 	appData* appD = (appData*) app_data;
 	if(appD->expectAttributeData)
 	{
-		asciiToString("AT", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("AT", &appD->eventCode, &appD->allocList, true);
 		/*
 		printString(&value);
 		printf("\"\n");
@@ -181,7 +181,7 @@ static errorCode sample_stringData(const String value, void* app_data)
 	}
 	else
 	{
-		asciiToString("CH", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("CH", &appD->eventCode, &appD->allocList, true);
 		/*
 		printString(&value);
 		printf("\n");
@@ -196,7 +196,7 @@ static errorCode sample_decimalData(Decimal value, void* app_data)
 	appData* appD = (appData*) app_data;
 	if(appD->expectAttributeData)
 	{
-		asciiToString("AT", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("AT", &appD->eventCode, &appD->allocList, true);
 		/*
 		printf("%.1f\"\n", (double) value);
 		*/
@@ -204,7 +204,7 @@ static errorCode sample_decimalData(Decimal value, void* app_data)
 	}
 	else
 	{
-		asciiToString("CH", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("CH", &appD->eventCode, &appD->allocList, true);
 	}
 
 	return EXIP_OK;
@@ -216,7 +216,7 @@ static errorCode sample_intData(Integer int_val, void* app_data)
 	/* char tmp_buf[30]; */
 	if(appD->expectAttributeData)
 	{
-		asciiToString("AT", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("AT", &appD->eventCode, &appD->allocList, true);
 		/*
 		sprintf(tmp_buf, "%lld", int_val);
 		printf("%s", tmp_buf);
@@ -226,7 +226,7 @@ static errorCode sample_intData(Integer int_val, void* app_data)
 	}
 	else
 	{
-		asciiToString("CH", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("CH", &appD->eventCode, &appD->allocList, true);
 		/*
 		sprintf(tmp_buf, "%lld", int_val);
 		printf("%s", tmp_buf);
@@ -243,7 +243,7 @@ static errorCode sample_floatData(Float fl_val, void* app_data)
 	/* char tmp_buf[30]; */
 	if(appD->expectAttributeData)
 	{
-		asciiToString("AT", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("AT", &appD->eventCode, &appD->allocList, true);
 		/*
 		sprintf(tmp_buf, "%lldE%d", fl_val.mantissa, fl_val.exponent);
 		printf("%s", tmp_buf);
@@ -253,7 +253,7 @@ static errorCode sample_floatData(Float fl_val, void* app_data)
 	}
 	else
 	{
-		asciiToString("CH", &appD->eventCode, &appD->allocList, TRUE);
+		asciiToString("CH", &appD->eventCode, &appD->allocList, true);
 		/*
 		printf("%3d CH ", appD->eventCount);
 		sprintf(tmp_buf, "%lldE%d", fl_val.mantissa, fl_val.exponent);
@@ -327,7 +327,7 @@ START_TEST (test_acceptance_for_A_01)
 	testParser.handler.floatData     = sample_floatData;
 	
 	// IV: Parse the header of the stream
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser,  &schema);
@@ -488,7 +488,7 @@ START_TEST (test_acceptance_for_A_01_exip1)
 	testParser.handler.floatData     = sample_floatData;
 	
 	// IV: Parse the header of the stream
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, &schema);
@@ -578,8 +578,8 @@ START_TEST (test_acceptance_for_A_01b)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header, if different from the defaults
-	testStrm.header.has_cookie = TRUE;
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_cookie = true;
+	testStrm.header.has_options = true;
 	testStrm.header.opts.valueMaxLength = 300;
 	testStrm.header.opts.valuePartitionCapacity = 50;
 	SET_STRICT(testStrm.header.opts.enumOpt);
@@ -692,7 +692,7 @@ struct processValueDesc
 {
 	char name[50];
 	ValueType type;
-	unsigned char isReadOnly; // boolean
+	unsigned char isReadOnly; // bool
 	char description[150];
 };
 
@@ -762,8 +762,8 @@ static errorCode lkab_startElement_desc(QName qname, void* app_data);
 static errorCode lkab_endElement(void* app_data);
 static errorCode lkab_stringData_io(const String value, void* app_data);
 static errorCode lkab_stringData_desc(const String value, void* app_data);
-static errorCode lkab_booleanData_io(boolean bool_val, void* app_data);
-static errorCode lkab_booleanData_desc(boolean bool_val, void* app_data);
+static errorCode lkab_booleanData_io(bool bool_val, void* app_data);
+static errorCode lkab_booleanData_desc(bool bool_val, void* app_data);
 static errorCode lkab_dateTimeData(EXIPDateTime dt_val, void* app_data);
 
 /**
@@ -835,7 +835,7 @@ static error_code serializeIOMsg(char* buf, unsigned int buf_size, unsigned int*
 	serialize.initHeader(&strm);
 
 	// II: Set any options in the header, if different from the defaults
-	strm.header.has_options = TRUE;
+	strm.header.has_options = true;
 	SET_STRICT(strm.header.opts.enumOpt);
 
 	// III: Define an external stream for the output if any
@@ -932,7 +932,7 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 	serialize.initHeader(&strm);
 
 	// II: Set any options in the header, if different from the defaults
-	strm.header.has_options = TRUE;
+	strm.header.has_options = true;
 	SET_STRICT(strm.header.opts.enumOpt);
 
 	// III: Define an external stream for the output if any
@@ -1098,7 +1098,7 @@ static error_code parseIOMsg(char* buf, unsigned int buf_size, BoolValue *val)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&lkabParser, FALSE);
+	tmp_err_code = parseHeader(&lkabParser, false);
 
 	tmp_err_code = setSchema(&lkabParser, &lkab_schema);
 	// V: Parse the body of the EXI stream
@@ -1169,7 +1169,7 @@ static error_code parseDevDescMsg(char* buf, unsigned int buf_size, DevDescribti
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&lkabParser, FALSE);
+	tmp_err_code = parseHeader(&lkabParser, false);
 
 	tmp_err_code = setSchema(&lkabParser, &lkab_schema);
 	// V: Parse the body of the EXI stream
@@ -1365,7 +1365,7 @@ static errorCode lkab_stringData_desc(const String value, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode lkab_booleanData_io(boolean bool_val, void* app_data)
+static errorCode lkab_booleanData_io(bool bool_val, void* app_data)
 {
 	struct appDataLKAB* appD = (struct appDataLKAB*) app_data;
 
@@ -1379,7 +1379,7 @@ static errorCode lkab_booleanData_io(boolean bool_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode lkab_booleanData_desc(boolean bool_val, void* app_data)
+static errorCode lkab_booleanData_desc(bool bool_val, void* app_data)
 {
 	struct appDataLKAB* appD = (struct appDataLKAB*) app_data;
 

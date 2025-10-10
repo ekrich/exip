@@ -60,7 +60,7 @@ errorCode processNextProduction(EXIStream* strm, SmallIndex* nonTermID_out, Cont
 	TRY(printGrammarRule(currNonTermID, currentRule, strm->schema));
 #endif
 
-	if(strm->context.isNilType == FALSE)
+	if(strm->context.isNilType == false)
 		prodCount = currentRule->pCount;
 	else
 	{   /* xsi:nil=true case */
@@ -72,7 +72,7 @@ errorCode processNextProduction(EXIStream* strm, SmallIndex* nonTermID_out, Cont
 			bitCount = getBitsFirstPartCode(strm, prodCount, currNonTermID);
 			if(bitCount > 0)
 				TRY(decodeNBitUnsignedInteger(strm, bitCount, &tmp_bits_val));
-			strm->context.isNilType = FALSE;
+			strm->context.isNilType = false;
 			if(handler->endElement != NULL)
 			{
 				TRY(handler->endElement(app_data));
@@ -97,13 +97,13 @@ errorCode processNextProduction(EXIStream* strm, SmallIndex* nonTermID_out, Cont
 
 			if(tmp_bits_val < prodCount)
 			{
-				if(strm->context.isNilType == TRUE && tmp_bits_val == (prodCount - 1))
+				if(strm->context.isNilType == true && tmp_bits_val == (prodCount - 1))
 				{
 					// Because SE productions are ordered before the EE in case of emptyTypeGrammar this might be either AT or EE
 					if(RULE_CONTAIN_EE(currentRule->meta))
 					{
 						// Always last so this is an EE event
-						strm->context.isNilType = FALSE;
+						strm->context.isNilType = false;
 						if(handler->endElement != NULL)
 						{
 							TRY(handler->endElement(app_data));
@@ -140,7 +140,7 @@ static errorCode handleProduction(EXIStream* strm, Production* prodHit, SmallInd
 		break;
 		case EVENT_EE:
 			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, ("> EE event:\n"));
-			strm->context.isNilType = FALSE;
+			strm->context.isNilType = false;
 			if(handler->endElement != NULL)
 			{
 				TRY(handler->endElement(app_data));
@@ -184,42 +184,42 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 		 * Availability for EE is encoded in position 0,
 		 * availability for AT(xsi:type) is encoded in position 1,
 		 * and so on. */
-		boolean state_mask[8] = {FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE};
+		bool state_mask[8] = {false, false, false, false, false, false, false, false};
 		unsigned int i;
 
 		prodCnt = 2; // Always SE, CH, position 4, 5
-		state_mask[4] = TRUE;
-		state_mask[5] = TRUE;
+		state_mask[4] = true;
+		state_mask[5] = true;
 
 		if(strm->gStack->currNonTermID == GR_START_TAG_CONTENT)
 		{
 			prodCnt += 2; // EE, AT, position 0, 1
-			state_mask[0] = TRUE;
-			state_mask[1] = TRUE;
+			state_mask[0] = true;
+			state_mask[1] = true;
 
 			if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES))
 			{
 				prodCnt += 1; // NS, position 2
-				state_mask[2] = TRUE;
+				state_mask[2] = true;
 			}
 
 			if(WITH_SELF_CONTAINED(strm->header.opts.enumOpt))
 			{
 				prodCnt += 1; // SC, position 3
-				state_mask[3] = TRUE;
+				state_mask[3] = true;
 			}
 		}
 
 		if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD))
 		{
 			prodCnt += 1; // ER position 6
-			state_mask[6] = TRUE;
+			state_mask[6] = true;
 		}
 
 		if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS))
 		{
 			prodCnt += 1; // CM or PI, position 7
-			state_mask[7] = TRUE;
+			state_mask[7] = true;
 		}
 
 		TRY(decodeNBitUnsignedInteger(strm, getBitsNumber(prodCnt - 1), &tmp_bits_val));
@@ -234,7 +234,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 		{
 			case 0:
 				// StartTagContent : EE event
-				strm->context.isNilType = FALSE;
+				strm->context.isNilType = false;
 				if(handler->endElement != NULL)
 				{
 					TRY(handler->endElement(app_data));
@@ -303,7 +303,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 		}
 #else
 		DEBUG_MSG(ERROR, DEBUG_CONTENT_IO, (">Build-in element grammars are not supported by this configuration \n"));
-		assert(FALSE);
+		assert(false);
 		return EXIP_INCONSISTENT_PROC_STATE;
 #endif
 	}
@@ -431,12 +431,12 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			// Strict mode
 
 			// Only available second level event if it is an entry grammar rule and is not Nil type grammar
-			if(strm->gStack->currNonTermID == GR_START_TAG_CONTENT && strm->context.isNilType == FALSE)
+			if(strm->gStack->currNonTermID == GR_START_TAG_CONTENT && strm->context.isNilType == false)
 			{
 				/* There are 2 possible states to exit the state machine: AT(xsi:type) and AT(xsi:nil)
 				 * (Note this is the state for level 2 productions) */
 				unsigned long state = 1;
-				boolean nil;
+				bool nil;
 
 				*nonTermID_out = GR_START_TAG_CONTENT;
 
@@ -478,8 +478,8 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 					case 1:
 						// AT(xsi:nil) event
 						TRY(decodeBoolean(strm, &nil));
-						if(nil == TRUE)
-							strm->context.isNilType = TRUE;
+						if(nil == true)
+							strm->context.isNilType = true;
 
 						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:nil) event\n"));
 						strm->context.currAttr.uriId = XML_SCHEMA_INSTANCE_ID;
@@ -518,7 +518,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			 * Availability for EE is encoded in position 0,
 			 * availability for AT(xsi:type) is encoded in position 1,
 			 * and so on. */
-			boolean state_mask[11] = {FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE};
+			bool state_mask[11] = {false, false, false, false, false, false, false, false, false, false, false};
 			unsigned int i;
 			// Create a copy of the content grammar if and only if there are AT
 			// productions that point to the content grammar rule OR the content index is 0.
@@ -528,64 +528,64 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			// to the content2 while GR_CONTENT_2 is pointing to content i.e. the roles are
 			// reversed in this situation. It is implemented in this way in order to keep
 			// all the rule processing in tact in the other parts of the implementation.
-			boolean isContent2Grammar = FALSE;
+			bool isContent2Grammar = false;
 
 			if(strm->gStack->currNonTermID == GR_CONTENT_2)
 			{
 				if(GET_CONTENT_INDEX(strm->gStack->grammar->props) != GR_START_TAG_CONTENT)
-					isContent2Grammar = TRUE;
+					isContent2Grammar = true;
 			}
 			else if(GET_CONTENT_INDEX(strm->gStack->grammar->props) == GR_START_TAG_CONTENT &&
 					strm->gStack->currNonTermID == GR_START_TAG_CONTENT)
 			{
-					isContent2Grammar = TRUE;
+					isContent2Grammar = true;
 			}
 
 			prodCnt = 2; // SE(*), CH(untyped) always available, position 7 and 8
-			state_mask[7] = TRUE;
-			state_mask[8] = TRUE;
+			state_mask[7] = true;
+			state_mask[8] = true;
 			if(isContent2Grammar ||
 					strm->gStack->currNonTermID < GET_CONTENT_INDEX(strm->gStack->grammar->props))
 			{
 				prodCnt += 2; // AT(*), AT(untyped) third level, position 3 and 4
-				state_mask[3] = TRUE;
-				state_mask[4] = TRUE;
+				state_mask[3] = true;
+				state_mask[4] = true;
 			}
 
 			if(!RULE_CONTAIN_EE(currentRule->meta))
 			{
 				prodCnt += 1; // EE, position 0
-				state_mask[0] = TRUE;
+				state_mask[0] = true;
 			}
 
 			if(strm->gStack->currNonTermID == GR_START_TAG_CONTENT)
 			{
 				prodCnt += 2; // AT(xsi:type), AT(xsi:nil), position 1 and 2
-				state_mask[1] = TRUE;
-				state_mask[2] = TRUE;
+				state_mask[1] = true;
+				state_mask[2] = true;
 
 				if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES))
 				{
 					prodCnt += 1; // NS, position 5
-					state_mask[5] = TRUE;
+					state_mask[5] = true;
 				}
 				if(WITH_SELF_CONTAINED(strm->header.opts.enumOpt))
 				{
 					prodCnt += 1; // SC, position 6
-					state_mask[6] = TRUE;
+					state_mask[6] = true;
 				}
 			}
 
 			if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD))
 			{
 				prodCnt += 1; // ER, position 9
-				state_mask[9] = TRUE;
+				state_mask[9] = true;
 			}
 
 			if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS))
 			{
 				prodCnt += 1; // CM or PI, position 10
-				state_mask[10] = TRUE;
+				state_mask[10] = true;
 			}
 
 			TRY(decodeNBitUnsignedInteger(strm, getBitsNumber(prodCnt - 1), &tmp_bits_val));
@@ -601,7 +601,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			{
 				case 0:
 					// EE event
-					strm->context.isNilType = FALSE;
+					strm->context.isNilType = false;
 					if(handler->endElement != NULL)
 					{
 						TRY(handler->endElement(app_data));
@@ -625,10 +625,10 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				case 2:
 					// AT(xsi:nil) Element i, 0
 					{
-						boolean nil = FALSE;
+						bool nil = false;
 						TRY(decodeBoolean(strm, &nil));
-						if(nil == TRUE)
-							strm->context.isNilType = TRUE;
+						if(nil == true)
+							strm->context.isNilType = true;
 
 						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:nil) event\n"));
 						strm->context.currAttr.uriId = XML_SCHEMA_INSTANCE_ID;
@@ -810,7 +810,7 @@ errorCode decodePfxQname(EXIStream* strm, QName* qname, SmallIndex uriId)
 
 	qname->prefix = NULL;
 
-	if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES) == FALSE)
+	if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES) == false)
 		return EXIP_OK;
 
 	if(strm->schema->uriTable.uri[uriId].pfxTable.count == 0)
@@ -919,7 +919,7 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 	{
 		case EVENT_SE_ALL:
 			strm->gStack->currNonTermID = GET_PROD_NON_TERM(prodHit->content);
-			assert(strm->context.isNilType == FALSE);
+			assert(strm->context.isNilType == false);
 
 			TRY(decodeSEWildcardEvent(strm, handler, nonTermID_out, app_data));
 		break;
@@ -931,7 +931,7 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 			EXIGrammar* elemGrammar = NULL;
 
 			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(qname) event: \n"));
-			assert(strm->context.isNilType == FALSE);
+			assert(strm->context.isNilType == false);
 
 			qname.uri = &(strm->schema->uriTable.uri[prodHit->qnameId.uriId].uriStr);
 			qname.localName = &(GET_LN_URI_QNAME(strm->schema->uriTable, prodHit->qnameId).lnStr);
@@ -994,7 +994,7 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 		case EVENT_CH:
 		{
 			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event\n"));
-			assert(strm->context.isNilType == FALSE);
+			assert(strm->context.isNilType == false);
 			TRY(decodeValueItem(strm, prodHit->typeId, handler, nonTermID_out, strm->gStack->currQNameID, app_data));
 		}
 		break;
@@ -1091,7 +1091,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		break;
 		case VALUE_TYPE_BOOLEAN:
 		{
-			boolean bool_val;
+			bool bool_val;
 			TRY(decodeBoolean(strm, &bool_val));
 			if(handler->booleanData != NULL)  // Invoke handler method
 			{
@@ -1101,10 +1101,10 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 			// handle xsi:nil attribute
 			if(IS_SCHEMA(strm->gStack->grammar->props) && localQNameID.uriId == XML_SCHEMA_INSTANCE_ID && localQNameID.lnId == XML_SCHEMA_INSTANCE_NIL_ID) // Schema-enabled grammar and http://www.w3.org/2001/XMLSchema-instance:nil
 			{
-				if(bool_val == TRUE)
+				if(bool_val == true)
 				{
 					// xsi:nil attribute equals to true & schema mode
-					strm->context.isNilType = TRUE;
+					strm->context.isNilType = true;
 					*nonTermID_out = GR_START_TAG_CONTENT;
 				}
 			}
@@ -1223,7 +1223,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		default: // VALUE_TYPE_STRING || VALUE_TYPE_NONE || VALUE_TYPE_UNTYPED
 		{
 			String value;
-			boolean freeable = FALSE;
+			bool freeable = false;
 
 			/* ENUMERATION CHECK */
 			if(typeId != INDEX_MAX && (HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content, TYPE_FACET_ENUMERATION)))
@@ -1240,14 +1240,14 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 
 				TRY(decodeNBitUnsignedInteger(strm, getBitsNumber(eDefFound->count - 1), &indx));
 				value = ((String*) eDefFound->values)[indx];
-				freeable = FALSE;
+				freeable = false;
 			}
 			else
 			{
 				TRY(decodeStringValue(strm, localQNameID, &value));
 
 				if(value.length == 0 || value.length > strm->header.opts.valueMaxLength || strm->header.opts.valuePartitionCapacity == 0)
-					freeable = TRUE;
+					freeable = true;
 			}
 
 			if(handler->stringData != NULL)  // Invoke handler method
@@ -1268,7 +1268,7 @@ errorCode decodeNSEvent(EXIStream* strm, ContentHandler* handler, SmallIndex* no
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	SmallIndex ns_uriId;
 	SmallIndex pfxId;
-	boolean bool = FALSE;
+	bool bool_val = false;
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">NS event:\n"));
 	*nonTermID_out = GR_START_TAG_CONTENT;
@@ -1276,11 +1276,11 @@ errorCode decodeNSEvent(EXIStream* strm, ContentHandler* handler, SmallIndex* no
 	TRY(decodeUri(strm, &ns_uriId));
 
 	TRY(decodePfx(strm, ns_uriId, &pfxId));
-	TRY(decodeBoolean(strm, &bool));
+	TRY(decodeBoolean(strm, &bool_val));
 
 	if(handler->namespaceDeclaration != NULL)  // Invoke handler method
 	{
-		TRY(handler->namespaceDeclaration(strm->schema->uriTable.uri[ns_uriId].uriStr, strm->schema->uriTable.uri[ns_uriId].pfxTable.pfx[pfxId], bool, app_data));
+		TRY(handler->namespaceDeclaration(strm->schema->uriTable.uri[ns_uriId].uriStr, strm->schema->uriTable.uri[ns_uriId].pfxTable.pfx[pfxId], bool_val, app_data));
 	}
 	return EXIP_OK;
 }
@@ -1332,7 +1332,7 @@ errorCode decodeSEWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 			unsigned int tmp_bits_val = 0;
 			QName attrQname;
 			QNameID attrQnameId = {URI_MAX, LN_MAX};
-			boolean nsProdHit = FALSE;
+			bool nsProdHit = false;
 
 			prodCnt += IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES);
 			prodCnt += WITH_SELF_CONTAINED(strm->header.opts.enumOpt);
@@ -1363,14 +1363,14 @@ errorCode decodeSEWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 					{
 						// NS event(s)
 						TRY(decodeNSEvent(strm, handler, nonTermID_out, app_data));
-						nsProdHit = TRUE;
+						nsProdHit = true;
 					}
 
 					DEBUG_MSG(ERROR, DEBUG_CONTENT_IO, (">Build-in element grammars are not supported by this configuration \n"));
 					return EXIP_INCONSISTENT_PROC_STATE;
 				}
 				else
-					nsProdHit = FALSE;
+					nsProdHit = false;
 			}
 			while(nsProdHit);
 
@@ -1412,7 +1412,7 @@ errorCode decodeSEWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 		}
 #else
 		DEBUG_MSG(ERROR, DEBUG_CONTENT_IO, (">Build-in element grammars are not supported by this configuration \n"));
-		assert(FALSE);
+		assert(false);
 		return EXIP_INCONSISTENT_PROC_STATE;
 #endif
 	}

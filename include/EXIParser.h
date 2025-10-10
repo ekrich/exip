@@ -42,7 +42,7 @@ typedef struct Parser Parser;
 struct EXIParser
 {
 	errorCode (*initParser)(Parser* parser, BinaryBuffer buffer, void* app_data);
-	errorCode (*parseHeader)(Parser* parser, boolean outOfBandOpts);
+	errorCode (*parseHeader)(Parser* parser, bool outOfBandOpts);
 	errorCode (*setSchema)(Parser* parser, EXIPSchema* schema);
 	errorCode (*parseNext)(Parser* parser);
 	errorCode (*pushEXIData)(char* inBuf, unsigned int bufSize, unsigned int* bytesRead, Parser* parser);
@@ -69,11 +69,11 @@ errorCode initParser(Parser* parser, BinaryBuffer buffer, void* app_data);
 /**
  * @brief Parse the header on the EXI stream contained in the parser object
  * @param[in] parser the parser object
- * @param[in] outOfBandOpts TRUE if there are out-of-band options set in parser->strm.header
- * FALSE otherwise
+ * @param[in] outOfBandOpts true if there are out-of-band options set in parser->strm.header
+ * false otherwise
  * @return Error handling code
  */
-errorCode parseHeader(Parser* parser, boolean outOfBandOpts);
+errorCode parseHeader(Parser* parser, bool outOfBandOpts);
 
 /**
  * @brief Initialize the schema information to be used for parsing

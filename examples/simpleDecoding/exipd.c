@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	EXIPSchema* schemaPtr = NULL;
 	EXIOptions ops;
 	EXIOptions* opsPtr = NULL;
-	boolean outOfBandOpts = FALSE;
+	bool outOfBandOpts = false;
 	unsigned char outFlag = OUT_EXI; // Default output option
 	unsigned int argIndex = 1;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 		if(strstr(argv[argIndex], "-ops") != NULL)
 		{
 			char *mask = argv[argIndex] + 4;
-			outOfBandOpts = TRUE;
+			outOfBandOpts = true;
 
 			parseOpsMask(mask, &ops);
 			opsPtr = &ops;

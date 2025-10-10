@@ -21,7 +21,7 @@
 #include "ioUtil.h"
 #include "initSchemaInstance.h"
 
-/** This function @returns TRUE is the two grammar rules represent the same state. Otherwise false */
+/** This function @returns true is the two grammar rules represent the same state. Otherwise false */
 static char rulesEqual(ProtoGrammar* g1, Index ruleIndx1, ProtoGrammar* g2, Index ruleIndx2);
 
 /** Collision aware addition of all the productions from grammar rule right[ruleIndxR]
@@ -134,14 +134,14 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int prodIterL = 0;
 	unsigned int prodIterR = 0;
-	boolean rProdFoundInLeft = FALSE;
+	bool rProdFoundInLeft = false;
 	Index nonTermRight;
 	unsigned int prodCountR = right->rule[ruleIndxR].count; // Needed as left might be the same grammar as right
 
 	for(prodIterR = 0; prodIterR < prodCountR; prodIterR++)
 	{
 		/* Check for equivalent productions */
-		rProdFoundInLeft = FALSE;
+		rProdFoundInLeft = false;
 
 		/* The use case when the Non-Terminal RHS symbol of the production is pointing to the same grammar rule
 		 * can cause problems when the rules are merged. Few possible outcomes:
@@ -155,28 +155,28 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 		{
 			ProtoRuleEntry* pRuleEntry;
 			unsigned int tmpIterL, tmpIterR;
-			boolean equalRRuleFound = FALSE;
-			boolean allRProdIn = TRUE;
-			boolean rProdFound = FALSE;
+			bool equalRRuleFound = false;
+			bool allRProdIn = true;
+			bool rProdFound = false;
 
 			// It is only an issue if we have productions in (right, ruleIndxR) that are not in (left, ruleIndxL); EE excluded
 			for(tmpIterR = 0; tmpIterR < right->rule[ruleIndxR].count; tmpIterR++)
 			{
 				if(GET_PROD_EXI_EVENT(right->rule[ruleIndxR].prod[tmpIterR].content) != EVENT_EE)
 				{
-					rProdFound = FALSE;
+					rProdFound = false;
 					for(tmpIterL = 0; tmpIterL < left->rule[ruleIndxL].count; tmpIterL++)
 					{
 						if(GET_PROD_EXI_EVENT(right->rule[ruleIndxR].prod[tmpIterR].content) == GET_PROD_EXI_EVENT(left->rule[ruleIndxL].prod[tmpIterL].content))
 						{
-							rProdFound = TRUE;
+							rProdFound = true;
 							break;
 						}
 					}
 
-					if(rProdFound == FALSE)
+					if(rProdFound == false)
 					{
-						allRProdIn = FALSE;
+						allRProdIn = false;
 						break;
 					}
 				}
@@ -196,12 +196,12 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 					{
 						// We found a rule that is equal, then make the Non-TermS on the RHS pointing to it
 						nonTermRight = tmpIterL;
-						equalRRuleFound = TRUE;
+						equalRRuleFound = true;
 						break;
 					}
 				}
 
-				if(equalRRuleFound == FALSE)
+				if(equalRRuleFound == false)
 				{
 					// Creating a new rule ...
 
@@ -241,7 +241,7 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 					 * If the NonTerminals are the same as well, no need to add
 					 * the production as it's already there
 					 */
-					rProdFoundInLeft = TRUE;
+					rProdFoundInLeft = true;
 					/* Check the next production in LHS... */
 					break;
 				}
@@ -253,7 +253,7 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 					{
 						// NonTerminals are different indexes but are otherwise equal
 						// no need to add the production as it's already there
-						rProdFoundInLeft = TRUE;
+						rProdFoundInLeft = true;
 						/* Check the next production in LHS... */
 						break;
 					}
@@ -267,13 +267,13 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 						// <sequence><any> <any></sequence> or
 						// <sequence><element name="test"> <element name="test"></sequence>
 						// TODO: solve that!
-						assert(FALSE);
+						assert(false);
 					}
 				}
 			}
 		}
 
-		if(rProdFoundInLeft == FALSE)
+		if(rProdFoundInLeft == false)
 		{
 			/*
 			 * We have been through all LHS productions and there were no clashes
@@ -306,7 +306,7 @@ errorCode createSimpleTypeGrammar(Index typeId, ProtoGrammar* simpleGrammar)
 }
 
 errorCode createComplexTypeGrammar(ProtoGrammarArray* attrUseArray, ProtoGrammar* contentTypeGrammar,
-							boolean isMixedContent, ProtoGrammar* complexGrammar)
+							bool isMixedContent, ProtoGrammar* complexGrammar)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int i;
@@ -361,7 +361,7 @@ errorCode createComplexUrTypeGrammar(ProtoGrammar* result)
 	return EXIP_NOT_IMPLEMENTED_YET;
 }
 
-errorCode createAttributeUseGrammar(boolean required, Index typeId,
+errorCode createAttributeUseGrammar(bool required, Index typeId,
 									ProtoGrammar* attrGrammar, QNameID qnameID)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
@@ -402,16 +402,16 @@ errorCode createParticleGrammar(int minOccurs, int maxOccurs,
 
 	if(maxOccurs - minOccurs > 0 || maxOccurs < 0) // Only if maxOccurs is unbounded or maxOccurs > minOccurs
 	{
-		boolean prodEEFound = FALSE;
+		bool prodEEFound = false;
 		for(i = 0; i < (int)termGrammar->rule[0].count; i++)
 		{
 			if(GET_PROD_EXI_EVENT(termGrammar->rule[0].prod[i].content) == EVENT_EE)
 			{
-				prodEEFound = TRUE;
+				prodEEFound = true;
 				break;
 			}
 		}
-		if(prodEEFound == FALSE) //	There is no production Gi,0 : EE so add one
+		if(prodEEFound == false) //	There is no production Gi,0 : EE so add one
 		{
 			TRY(addEEProduction(&termGrammar->rule[0]));
 		}
@@ -712,17 +712,17 @@ int compareQNameID(const void* qnameID1, const void* qnameID2, UriTable* uriTbl)
 static char rulesEqual(ProtoGrammar* g1, Index ruleIndx1, ProtoGrammar* g2, Index ruleIndx2)
 {
 	Index i, j;
-	boolean prodFound;
+	bool prodFound;
 
 	// TODO: currently it does not follow the right hand side non-terminals to check if the state there is the same...
 	// It might not be needed; if needed there will be a recursive call that might lag a lot
 
 	if(g1->rule[ruleIndx1].count != g2->rule[ruleIndx2].count)
-		return FALSE;
+		return false;
 
 	for(i = 0; i < g1->rule[ruleIndx1].count; i++)
 	{
-		prodFound = FALSE;
+		prodFound = false;
 		for(j = 0; j < g2->rule[ruleIndx2].count; j++)
 		{
 			if(GET_PROD_EXI_EVENT(g1->rule[ruleIndx1].prod[i].content) == GET_PROD_EXI_EVENT(g2->rule[ruleIndx2].prod[j].content) &&
@@ -730,14 +730,14 @@ static char rulesEqual(ProtoGrammar* g1, Index ruleIndx1, ProtoGrammar* g2, Inde
 					g1->rule[ruleIndx1].prod[i].qnameId.uriId == g2->rule[ruleIndx2].prod[j].qnameId.uriId &&
 					g1->rule[ruleIndx1].prod[i].qnameId.lnId == g2->rule[ruleIndx2].prod[j].qnameId.lnId)
 			{
-				prodFound = TRUE;
+				prodFound = true;
 				break;
 			}
 		}
 
 		if(!prodFound)
-			return FALSE;
+			return false;
 	}
 
-	return TRUE;
+	return true;
 }

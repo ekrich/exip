@@ -30,7 +30,7 @@ errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned l
 		return EXIP_OK;
 	}
 
-	if(WITH_COMPRESSION(strm->header.opts.enumOpt) == FALSE && GET_ALIGNMENT(strm->header.opts.enumOpt) == BIT_PACKED)
+	if(WITH_COMPRESSION(strm->header.opts.enumOpt) == false && GET_ALIGNMENT(strm->header.opts.enumOpt) == BIT_PACKED)
 	{
 		return readBits(strm, n, int_val);
 	}
@@ -59,14 +59,14 @@ errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned l
 	return EXIP_OK;
 }
 
-errorCode decodeBoolean(EXIStream* strm, boolean* bool_val)
+errorCode decodeBoolean(EXIStream* strm, bool* bool_val)
 {
 	//TODO:  when pattern facets are available in the schema datatype - handle it differently
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned long lBoolVal;
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> (bool)"));
 	TRY(decodeNBitUnsignedInteger(strm, 1, &lBoolVal));
-	*bool_val = (boolean) lBoolVal;
+	*bool_val = (bool) lBoolVal;
 	return EXIP_OK;
 }
 
@@ -150,7 +150,7 @@ errorCode decodeIntegerValue(EXIStream* strm, Integer* sint_val)
 	// TODO: If there is associated schema datatype handle differently!
 	// TODO: check if the result fit into int type
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	boolean bool_val = 0;
+	bool bool_val = 0;
 	UnsignedInteger val;
 
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> (int)"));
@@ -173,7 +173,7 @@ errorCode decodeIntegerValue(EXIStream* strm, Integer* sint_val)
 errorCode decodeDecimalValue(EXIStream* strm, Decimal* dec_val)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	boolean sign;
+	bool sign;
 	UnsignedInteger integr_part = 0;
 	UnsignedInteger fract_part = 0;
 	UnsignedInteger fract_part_rev = 0;
@@ -210,7 +210,7 @@ errorCode decodeDecimalValue(EXIStream* strm, Decimal* dec_val)
 		dec_val->mantissa += fract_part_rev;
 	}
 
-	if(sign == TRUE) // negative number
+	if(sign == true) // negative number
 		dec_val->mantissa = -dec_val->mantissa;
 
 	return EXIP_OK;
@@ -252,7 +252,7 @@ errorCode decodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime* dt_
 	Integer year;
 	unsigned long monDay = 0;
 	unsigned long timeVal = 0;
-	boolean presence = FALSE;
+	bool presence = false;
 
 	dt_val->presenceMask = 0;
 

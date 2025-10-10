@@ -44,7 +44,7 @@ static errorCode lookupGlobalDefinition(EXIPSchema* schema, TreeTable* treeT, un
 /**
  * Check if there exists an <xs:import> with a given namespace attribute
  */
-static boolean checkForImportWithNs(TreeTable* treeT, String ns);
+static bool checkForImportWithNs(TreeTable* treeT, String ns);
 
 errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, unsigned int* count,
 		errorCode (*loadSchemaHandler) (String* namespace, String* schemaLocation, BinaryBuffer** buffers, unsigned int* bufCount, SchemaFormat* schemaFormat, EXIOptions** opt))
@@ -55,7 +55,7 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int i, j;
-	boolean treeTfound = FALSE;
+	bool treeTfound = false;
 	Index g;
 	BinaryBuffer* newBuffers;
 	unsigned int bufCount = 0;
@@ -84,17 +84,17 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 			}
 			else if((*treeT)[i].tree[g].element == ELEMENT_IMPORT)
 			{
-				treeTfound = FALSE;
+				treeTfound = false;
 				for(j = 0; j < *count; j++)
 				{
 					if(j != i && stringEqual((*treeT)[i].tree[g].attributePointers[ATTRIBUTE_NAMESPACE], (*treeT)[j].globalDefs.targetNs))
 					{
-						treeTfound = TRUE;
+						treeTfound = true;
 						break;
 					}
 				}
 
-				if(treeTfound == FALSE)
+				if(treeTfound == false)
 				{
 					if(loadSchemaHandler != NULL)
 					{
@@ -144,7 +144,7 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 
 		if(includeCnt > 0)
 		{
-			treeTfound = FALSE;
+			treeTfound = false;
 			tmpInclCnt = 0;
 			for(j = 0; j < *count; j++)
 			{
@@ -155,13 +155,13 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 						continue;
 					else
 					{
-						treeTfound = TRUE;
+						treeTfound = true;
 						break;
 					}
 				}
 			}
 
-			if(treeTfound == FALSE)
+			if(treeTfound == false)
 			{
 				if(loadSchemaHandler != NULL)
 				{
@@ -471,7 +471,7 @@ static errorCode lookupGlobalDefinition(EXIPSchema* schema, TreeTable* treeT, un
 		else if (elType == LOOKUP_SUBSTITUTION)
 		{
 			Index s;
-			boolean isHeadFound = FALSE;
+			bool isHeadFound = false;
 			QualifiedTreeTableEntry qEntry;
 
 			assert(subsTbl != NULL);
@@ -481,7 +481,7 @@ static errorCode lookupGlobalDefinition(EXIPSchema* schema, TreeTable* treeT, un
 			{
 				if(subsTbl->head[s].headId.uriId == typeQnameID.uriId && subsTbl->head[s].headId.lnId == typeQnameID.lnId)
 				{
-					isHeadFound = TRUE;
+					isHeadFound = true;
 					break;
 				}
 			}
@@ -517,7 +517,7 @@ errorCode getTypeQName(EXIPSchema* schema, TreeTable* treeT, const String typeLi
 	String lnStr;
 	String uriStr;
 	Index i;
-	boolean pfxFound = FALSE;
+	bool pfxFound = false;
 
 	/*
 	 * The type literal string passed in will be in the form of either:
@@ -539,7 +539,7 @@ errorCode getTypeQName(EXIPSchema* schema, TreeTable* treeT, const String typeLi
 		{
 			if(stringEqual(uriStr, treeT->globalDefs.pfxNsTable.pfxNs[i].pfx))
 			{
-				pfxFound = TRUE;
+				pfxFound = true;
 				break;
 			}
 		}
@@ -574,7 +574,7 @@ errorCode getTypeQName(EXIPSchema* schema, TreeTable* treeT, const String typeLi
 		{
 			if(isStringEmpty(&treeT->globalDefs.pfxNsTable.pfxNs[i].pfx))
 			{
-				pfxFound = TRUE;
+				pfxFound = true;
 				break;
 			}
 		}
@@ -632,7 +632,7 @@ errorCode getTypeQName(EXIPSchema* schema, TreeTable* treeT, const String typeLi
 	return EXIP_OK;
 }
 
-static boolean checkForImportWithNs(TreeTable* treeT, String ns)
+static bool checkForImportWithNs(TreeTable* treeT, String ns)
 {
 	Index i;
 
@@ -648,7 +648,7 @@ static boolean checkForImportWithNs(TreeTable* treeT, String ns)
 		{
 			if(stringEqual(treeT->tree[i].attributePointers[ATTRIBUTE_NAMESPACE], ns))
 			{
-				return TRUE;
+				return true;
 			}
 		}
 		else
@@ -657,7 +657,7 @@ static boolean checkForImportWithNs(TreeTable* treeT, String ns)
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 errorCode getNsList(TreeTable* treeT, String nsList, NsTable* nsTable)

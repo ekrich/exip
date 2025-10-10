@@ -59,7 +59,7 @@ errorCode dynExipSchemaOutput(EXIPSchema* schema, char* prefix, unsigned char ma
 			{
 				fprintf(out, "tmp_err_code += asciiToString(\"");
 				fwrite(schema->uriTable.uri[uriIter].pfxTable->pfxStr[pfxIter].str, sizeof(CharType), schema->uriTable.uri[uriIter].pfxTable->pfxStr[pfxIter].length, out);
-				fprintf(out, "\", &pTable_%d->string_val[%d], &schema->memList, TRUE);\n\t", uriIter, pfxIter);
+				fprintf(out, "\", &pTable_%d->string_val[%d], &schema->memList, true);\n\t", uriIter, pfxIter);
 			}
 			for(; pfxIter < MAXIMUM_NUMBER_OF_PREFIXES_PER_URI; pfxIter++)
 			{
@@ -77,7 +77,7 @@ errorCode dynExipSchemaOutput(EXIPSchema* schema, char* prefix, unsigned char ma
 			typeGrammarID = hashtable_search(typeGrammarsHash, &hashKey);
 			if(tmpGrammar != NULL && typeGrammarID == INDEX_MAX)
 			{
-				if(mask_specified == TRUE)
+				if(mask_specified == true)
 				{
 					if(EXIP_OK != addUndeclaredProductions(&schema->memList, mask_strict, mask_sc, mask_preserve, tmpGrammar, &schema->simpleTypeTable))
 					{
@@ -238,7 +238,7 @@ errorCode dynExipSchemaOutput(EXIPSchema* schema, char* prefix, unsigned char ma
 	fprintf(out, "schema->simpleTypeArray = sTypes;\n\t");
 	fprintf(out, "schema->simpleTypeTable.count = %d;\n\t", schema->simpleTypeTable.count);
 	fprintf(out, "schema->isAugmented = %d;\n\t", mask_specified);
-	fprintf(out, "schema->isStatic = FALSE;\n\t");
+	fprintf(out, "schema->isStatic = false;\n\t");
 	fprintf(out, "return EXIP_OK;\n}");
 
 	hashtable_destroy(typeGrammarsHash);

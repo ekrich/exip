@@ -34,7 +34,7 @@ static errorCode stateMachineProdEncode(EXIStream* strm, EventTypeClass eventCla
 errorCode encodeStringData(EXIStream* strm, String strng, QNameID qnameID, Index typeId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	boolean flag_StringLiteralsPartition = FALSE;
+	bool flag_StringLiteralsPartition = false;
 
 	/* ENUMERATION CHECK */
 	if(typeId != INDEX_MAX && HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content,TYPE_FACET_ENUMERATION))
@@ -105,7 +105,7 @@ errorCode encodeStringData(EXIStream* strm, String strng, QNameID qnameID, Index
 	return EXIP_OK;
 }
 
-errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean isSchemaType, QName* qname, EXITypeClass chTypeClass, Production* prodHit)
+errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, bool isSchemaType, QName* qname, EXITypeClass chTypeClass, Production* prodHit)
 {
 	GrammarRule* currentRule;
 	EventCode ec;
@@ -113,7 +113,7 @@ errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean i
 	Production* tmpProd = NULL;
 	Index prodCount;
 	unsigned int bitCount;
-	boolean matchFound = FALSE;
+	bool matchFound = false;
 	SmallIndex currNonTermID = strm->gStack->currNonTermID;
 
 	// TODO: GR_CONTENT_2 is only needed when schema deviations are allowed.
@@ -157,7 +157,7 @@ errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean i
 					ec.part[0] = prodCount - 1;
 					ec.bits[0] = bitCount;
 					strm->gStack->currNonTermID = GR_VOID_NON_TERMINAL;
-					strm->context.isNilType = FALSE;
+					strm->context.isNilType = false;
 
 					return writeEventCode(strm, ec);
 				}
@@ -176,7 +176,7 @@ errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean i
 
 	bitCount = getBitsFirstPartCode(strm, prodCount, currNonTermID);
 
-	if(isSchemaType == TRUE)
+	if(isSchemaType == true)
 	{
 		for(j = 0; j < prodCount; j++)
 		{
@@ -190,7 +190,7 @@ errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean i
 					if(tmpProd->qnameId.uriId == URI_MAX || (stringEqual(strm->schema->uriTable.uri[tmpProd->qnameId.uriId].uriStr, *(qname->uri)) &&
 					   (tmpProd->qnameId.lnId == LN_MAX || stringEqual(GET_LN_URI_QNAME(strm->schema->uriTable, tmpProd->qnameId).lnStr, *(qname->localName)))))
 					{
-						matchFound = TRUE;
+						matchFound = true;
 						break;
 					}
 				}
@@ -203,21 +203,21 @@ errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean i
 						exiType = VALUE_TYPE_NONE;
 
 					if(exiType == VALUE_TYPE_NONE || exiType == VALUE_TYPE_UNTYPED)
-						matchFound = TRUE;
+						matchFound = true;
 					else if(chTypeClass == GET_VALUE_TYPE_CLASS(exiType))
-						matchFound = TRUE;
+						matchFound = true;
 					break;
 				}
 				else
 				{
-					matchFound = TRUE;
+					matchFound = true;
 					break;
 				}
 			}
 		}
 	}
 
-	if(matchFound == TRUE)
+	if(matchFound == true)
 	{
 		*prodHit = *tmpProd;
 		ec.length = 1;
@@ -373,7 +373,7 @@ static errorCode stateMachineProdEncode(EXIStream* strm, EventTypeClass eventCla
 		}
 #else
 		DEBUG_MSG(ERROR, DEBUG_CONTENT_IO, (">Build-in element grammars are not supported by this configuration \n"));
-		assert(FALSE);
+		assert(false);
 		return EXIP_INCONSISTENT_PROC_STATE;
 #endif
 	}
@@ -469,17 +469,17 @@ static errorCode stateMachineProdEncode(EXIStream* strm, EventTypeClass eventCla
 			// to the content2 while GR_CONTENT_2 is pointing to content i.e. the roles are
 			// reversed in this situation. It is implemented in this way in order to keep
 			// all the rule processing in tact in the other parts of the implementation.
-			boolean isContent2Grammar = FALSE;
+			bool isContent2Grammar = false;
 
 			if(strm->gStack->currNonTermID == GR_CONTENT_2)
 			{
 				if(GET_CONTENT_INDEX(strm->gStack->grammar->props) != GR_START_TAG_CONTENT)
-					isContent2Grammar = TRUE;
+					isContent2Grammar = true;
 			}
 			else if(GET_CONTENT_INDEX(strm->gStack->grammar->props) == GR_START_TAG_CONTENT &&
 					strm->gStack->currNonTermID == GR_START_TAG_CONTENT)
 			{
-					isContent2Grammar = TRUE;
+					isContent2Grammar = true;
 			}
 			prod2Count = 2; // SE(*), CH(untyped) always available
 
@@ -518,7 +518,7 @@ static errorCode stateMachineProdEncode(EXIStream* strm, EventTypeClass eventCla
 					ec.part[1] = 0;
 					ec.bits[1] = getBitsNumber(prod2Count - 1);
 					strm->gStack->currNonTermID = GR_VOID_NON_TERMINAL;
-					strm->context.isNilType = FALSE;
+					strm->context.isNilType = false;
 				break;
 				case EVENT_AT_CLASS:
 
@@ -590,7 +590,7 @@ static errorCode stateMachineProdEncode(EXIStream* strm, EventTypeClass eventCla
 					}
 					SET_PROD_EXI_EVENT(prodHit->content, EVENT_SE_ALL);
 					ec.length = 2;
-					ec.part[1] = prod2Count - 2 - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD) == TRUE) - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS));
+					ec.part[1] = prod2Count - 2 - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD) == true) - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS));
 					ec.bits[1] = getBitsNumber(prod2Count - 1);
 				break;
 				case EVENT_CH_CLASS:
@@ -605,7 +605,7 @@ static errorCode stateMachineProdEncode(EXIStream* strm, EventTypeClass eventCla
 					}
 					SET_PROD_EXI_EVENT(prodHit->content, EVENT_CH);
 					ec.length = 2;
-					ec.part[1] = prod2Count - 1 - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD) == TRUE) - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS));
+					ec.part[1] = prod2Count - 1 - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD) == true) - (IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS));
 					ec.bits[1] = getBitsNumber(prod2Count - 1);
 				break;
 				case EVENT_ER_CLASS:
@@ -699,7 +699,7 @@ errorCode encodePfxQName(EXIStream* strm, QName* qname, EventType eventT, SmallI
 	unsigned char prefixBits = 0;
 	SmallIndex prefixID = 0;
 
-	if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES) == FALSE)
+	if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PREFIXES) == false)
 		return EXIP_OK;
 
 	if(strm->schema->uriTable.uri[uriId].pfxTable.count == 0)
@@ -712,7 +712,7 @@ errorCode encodePfxQName(EXIStream* strm, QName* qname, EventType eventT, SmallI
 		if(qname == NULL)
 			return EXIP_NULL_POINTER_REF;
 
-		if(lookupPfx(&strm->schema->uriTable.uri[uriId].pfxTable, *qname->prefix, &prefixID) == TRUE)
+		if(lookupPfx(&strm->schema->uriTable.uri[uriId].pfxTable, *qname->prefix, &prefixID) == true)
 		{
 			TRY(encodeNBitUnsignedInteger(strm, prefixBits, (unsigned int) prefixID));
 		}

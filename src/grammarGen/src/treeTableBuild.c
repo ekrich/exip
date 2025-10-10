@@ -50,12 +50,12 @@ struct TreeTableParsingData
 	 * - 2 the properties are all set ([schema] attr. parsed)
 	 */
 	unsigned char propsStat; 
-	boolean expectingAttr;
+	bool expectingAttr;
 	/** Pointer to the expected character data */
 	String* charDataPtr;
 	/**
 	 * Whether or not the currently processed element is part of the tree table.
-	 * - 0 (FALSE) - the element is not ignored and will be an entry in the tree table
+	 * - 0 (false) - the element is not ignored and will be an entry in the tree table
 	 * - > 0 - the number of ignored elements on the stack
 	 */
 	unsigned int ignoredElement;
@@ -80,8 +80,8 @@ static errorCode xsd_startElement(QName qname, void* app_data);
 static errorCode xsd_endElement(void* app_data);
 static errorCode xsd_attribute(QName qname, void* app_data);
 static errorCode xsd_stringData(const String value, void* app_data);
-static errorCode xsd_namespaceDeclaration(const String ns, const String prefix, boolean isLocalElementNS, void* app_data);
-static errorCode xsd_boolData(boolean bool_val, void* app_data);
+static errorCode xsd_namespaceDeclaration(const String ns, const String prefix, bool isLocalElementNS, void* app_data);
+static errorCode xsd_boolData(bool bool_val, void* app_data);
 static errorCode xsd_intData(Integer int_val, void* app_data);
 
 //////////// Helper functions
@@ -182,9 +182,9 @@ errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIO
 	xsdParser.handler.intData = xsd_intData;
 
 	ttpd.propsStat = INITIAL_STATE;
-	ttpd.expectingAttr = FALSE;
+	ttpd.expectingAttr = false;
 	ttpd.charDataPtr = NULL;
-	ttpd.ignoredElement = FALSE;
+	ttpd.ignoredElement = false;
 	getEmptyString(&ttpd.attributeFormDefault);
 	getEmptyString(&ttpd.elementFormDefault);
 	getEmptyString(&treeT->globalDefs.targetNs);
@@ -198,14 +198,14 @@ errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIO
 	if(opt != NULL)
 	{
 		xsdParser.strm.header.opts = *opt;
-		TRY(parseHeader(&xsdParser, TRUE));
+		TRY(parseHeader(&xsdParser, true));
 	}
 	else
 	{
-		TRY(parseHeader(&xsdParser, FALSE));
+		TRY(parseHeader(&xsdParser, false));
 	}
 
-	if(IS_PRESERVED(xsdParser.strm.header.opts.preserve, PRESERVE_PREFIXES) == FALSE)
+	if(IS_PRESERVED(xsdParser.strm.header.opts.preserve, PRESERVE_PREFIXES) == false)
 	{
 		/* When qualified namesNS are used in the values of AT or CH events in an EXI Stream,
 		 * the Preserve.prefixes fidelity option SHOULD be turned on to enable the preservation of
@@ -351,7 +351,7 @@ static errorCode xsd_startElement(QName qname, void* app_data)
 			return EXIP_OK;
 		}
 		else
-			ttpd->ignoredElement = FALSE;
+			ttpd->ignoredElement = false;
 
 		if(ttpd->contextStack != NULL)
 			prevEntry = (TreeTableEntry*) ttpd->contextStack->item;
@@ -434,7 +434,7 @@ static errorCode xsd_endElement(void* app_data)
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
 
-	if(ttpd->ignoredElement != FALSE)
+	if(ttpd->ignoredElement != false)
 	{
 		ttpd->ignoredElement -= 1;
 		return EXIP_OK;
@@ -604,7 +604,7 @@ static errorCode xsd_attribute(QName qname, void* app_data)
 {
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
 
-	if(ttpd->ignoredElement != FALSE)
+	if(ttpd->ignoredElement != false)
 		return EXIP_OK;
 
 	if(ttpd->propsStat == SCHEMA_ELEMENT_STATE) // <schema> element attribute
@@ -660,7 +660,7 @@ static errorCode xsd_attribute(QName qname, void* app_data)
 #endif
 		}
 	}
-	ttpd->expectingAttr = TRUE;
+	ttpd->expectingAttr = true;
 	return EXIP_OK;
 }
 
@@ -669,7 +669,7 @@ static errorCode xsd_stringData(const String value, void* app_data)
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 
-	if(ttpd->ignoredElement != FALSE)
+	if(ttpd->ignoredElement != false)
 		return EXIP_OK;
 
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, (">String data:\n"));
@@ -690,7 +690,7 @@ static errorCode xsd_stringData(const String value, void* app_data)
 		{
 			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, (">Ignored element attribute value\n"));
 		}
-		ttpd->expectingAttr = FALSE;
+		ttpd->expectingAttr = false;
 	}
 	else
 	{
@@ -700,30 +700,30 @@ static errorCode xsd_stringData(const String value, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode xsd_boolData(boolean bool_val, void* app_data)
+static errorCode xsd_boolData(bool bool_val, void* app_data)
 {
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	if(ttpd->ignoredElement != FALSE)
+	if(ttpd->ignoredElement != false)
 		return EXIP_OK;
 
-	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, (">Bool data: %s\n", bool_val == TRUE?TRUE_CHAR_STR:FALSE_CHAR_STR));
+	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, (">Bool data: %s\n", bool_val == true?TRUE_CHAR_STR:FALSE_CHAR_STR));
 
 	if(ttpd->expectingAttr)
 	{
 		if(ttpd->charDataPtr != NULL)
 		{
-			if(bool_val == TRUE)
-				TRY(asciiToString(TRUE_CHAR_STR, ttpd->charDataPtr, &ttpd->treeT->memList, TRUE));
+			if(bool_val == true)
+				TRY(asciiToString(TRUE_CHAR_STR, ttpd->charDataPtr, &ttpd->treeT->memList, true));
 			else
-				TRY(asciiToString(FALSE_CHAR_STR, ttpd->charDataPtr, &ttpd->treeT->memList, TRUE));
+				TRY(asciiToString(FALSE_CHAR_STR, ttpd->charDataPtr, &ttpd->treeT->memList, true));
 			ttpd->charDataPtr = NULL;
 		}
 		else
 		{
 			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, (">Ignored element attribute value\n"));
 		}
-		ttpd->expectingAttr = FALSE;
+		ttpd->expectingAttr = false;
 	}
 	else
 	{
@@ -738,7 +738,7 @@ static errorCode xsd_intData(Integer int_val, void* app_data)
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	char tmp_str[15];
-	if(ttpd->ignoredElement != FALSE)
+	if(ttpd->ignoredElement != false)
 		return EXIP_OK;
 
 	sprintf(tmp_str, "%ld", (long) int_val);
@@ -749,14 +749,14 @@ static errorCode xsd_intData(Integer int_val, void* app_data)
 	{
 		if(ttpd->charDataPtr != NULL)
 		{
-			TRY(asciiToString(tmp_str, ttpd->charDataPtr, &ttpd->treeT->memList, TRUE));
+			TRY(asciiToString(tmp_str, ttpd->charDataPtr, &ttpd->treeT->memList, true));
 			ttpd->charDataPtr = NULL;
 		}
 		else
 		{
 			DEBUG_MSG(WARNING, DEBUG_GRAMMAR_GEN, (">Ignored element attribute value\n"));
 		}
-		ttpd->expectingAttr = FALSE;
+		ttpd->expectingAttr = false;
 	}
 	else
 	{
@@ -766,14 +766,14 @@ static errorCode xsd_intData(Integer int_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode xsd_namespaceDeclaration(const String ns, const String pfx, boolean isLocalElementNS, void* app_data)
+static errorCode xsd_namespaceDeclaration(const String ns, const String pfx, bool isLocalElementNS, void* app_data)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	struct TreeTableParsingData* ttpd = (struct TreeTableParsingData*) app_data;
 	PfxNsEntry pfxNsEntry;
 	Index entryID;
 
-	if(ttpd->ignoredElement != FALSE)
+	if(ttpd->ignoredElement != false)
 		return EXIP_OK;
 
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, (">Namespace declaration\n"));

@@ -63,12 +63,12 @@ static errorCode sample_stringData(const String value, void* app_data);
 static errorCode sample_decimalData(Decimal value, void* app_data);
 static errorCode sample_intData(Integer int_val, void* app_data);
 static errorCode sample_floatData(Float fl_val, void* app_data);
-static errorCode sample_booleanData(boolean bool_val, void* app_data);
+static errorCode sample_booleanData(bool bool_val, void* app_data);
 static errorCode sample_dateTimeData(EXIPDateTime dt_val, void* app_data);
 static errorCode sample_binaryData(const char* binary_val, Index nbytes, void* app_data);
 static errorCode sample_qnameData(const QName qname, void* app_data);
 
-errorCode decode(EXIPSchema* schemaPtr, unsigned char outFlag, FILE *infile, boolean outOfBandOpts, EXIOptions* opts, size_t (*inputStream)(void* buf, size_t size, void* stream))
+errorCode decode(EXIPSchema* schemaPtr, unsigned char outFlag, FILE *infile, bool outOfBandOpts, EXIOptions* opts, size_t (*inputStream)(void* buf, size_t size, void* stream))
 {
 	Parser testParser;
 	char buf[INPUT_BUFFER_SIZE];
@@ -357,7 +357,7 @@ static errorCode sample_intData(Integer int_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode sample_booleanData(boolean bool_val, void* app_data)
+static errorCode sample_booleanData(bool bool_val, void* app_data)
 {
 	struct appData* appD = (struct appData*) app_data;
 

@@ -43,7 +43,7 @@ START_TEST (test_decodeHeader)
 	testStream.buffer.ioStrm.stream = NULL;
 	makeDefaultOpts(&testStream.header.opts);
 
-	err = decodeHeader(&testStream, TRUE);
+	err = decodeHeader(&testStream, true);
 	fail_unless (err == EXIP_OK, "decodeHeader returns error code %d", err);
 	fail_unless (testStream.header.has_cookie == 0,
 				"decodeHeader founds EXI cookie");
@@ -72,7 +72,7 @@ START_TEST (test_decodeHeader)
 	testStream2.buffer.ioStrm.stream = NULL;
 	makeDefaultOpts(&testStream2.header.opts);
 
-	err = decodeHeader(&testStream2, TRUE);
+	err = decodeHeader(&testStream2, true);
 	fail_unless (err == EXIP_OK, "decodeHeader returns error code %d", err);
 	fail_unless (testStream2.header.has_cookie == 1,
 				"decodeHeader does not found EXI cookie");

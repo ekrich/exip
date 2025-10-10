@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	int argIndex = 1;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	char prefix[20];
-	unsigned char mask = FALSE;
+	unsigned char mask = false;
 	EXIOptions maskOpt;
 	Deviations dvis;
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 	   argv[argIndex][3] == 's' &&
 	   argv[argIndex][4] == '=')
 	{
-		mask = TRUE;
+		mask = true;
 		if(argv[argIndex][5] == '1')
 			SET_STRICT(maskOpt.enumOpt);
 

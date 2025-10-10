@@ -189,7 +189,7 @@ START_TEST (test_insertZeroProduction)
 	rule.prodDim = 1;
 	rule.production = prod0Arr;
 
-	tmp_err_code = insertZeroProduction(&rule, EVENT_CH, 5, &qname, FALSE);
+	tmp_err_code = insertZeroProduction(&rule, EVENT_CH, 5, &qname, false);
 	fail_unless (tmp_err_code == EXIP_OK, "insertZeroProduction returns an error code %d", tmp_err_code);
 	fail_unless (rule.pCount == 1);
 }

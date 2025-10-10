@@ -99,7 +99,7 @@ errorCode addPfxEntry(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId)
  *
  * @param[in, out] uriTable URI string table partition
  * @param[in] uri namespace string
- * @param[in] createPfx TRUE if prefix table to be created, FALSE otherwise
+ * @param[in] createPfx true if prefix table to be created, false otherwise
  * @param[in] pfx prefix string
  * @param[in] lnBase Character array representing array of local names, or NULL if not present
  * @param[in] lnSize Number of local names in array at lnBase
@@ -116,11 +116,11 @@ errorCode createUriTableEntry(UriTable* uriTable, const String uri, int createPf
  * calling this function.
  *
  * @param[in, out] uriTable An empty UriTable; The memory must be already allocated for it
- * @param[in] withSchema TRUE if there is schema for this stream; FALSE otherwise;
+ * @param[in] withSchema true if there is schema for this stream; false otherwise;
  * Can be retrieved from strm->opts->schemaID != NULL
  * @return Error handling code
  */
-errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema);
+errorCode createUriTableEntries(UriTable* uriTable, bool withSchema);
 
 /**
  * @brief Search the URI table for a particular string value
@@ -129,9 +129,9 @@ errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema);
  * @param[in] uriTable URI table to be searched
  * @param[in] uriStr The string searched for
  * @param[out] uriEntryId If found, ID of the UriEntry with that string
- * @return FALSE-not found, TRUE found
+ * @return false not found, true found
  */
-boolean lookupUri(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId);
+bool lookupUri(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId);
 
 /**
  * @brief Search the local names table for a particular string value
@@ -141,9 +141,9 @@ boolean lookupUri(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId);
  * @param[in] lnTable Local names table to be searched
  * @param[in] lnStr The local name string searched for
  * @param[out] lnEntryId if found, ID of the LnEntry with that string
- * @return FALSE-not found, TRUE found
+ * @return false not found, true found
  */
-boolean lookupLn(LnTable* lnTable, String lnStr, Index* lnEntryId);
+bool lookupLn(LnTable* lnTable, String lnStr, Index* lnEntryId);
 
 /**
  * @brief Search the Prefix table for a particular string value
@@ -152,9 +152,9 @@ boolean lookupLn(LnTable* lnTable, String lnStr, Index* lnEntryId);
  * @param[in] pfxTable Prefix table to be searched
  * @param[in] pfxStr The string searched for
  * @param[out] pfxEntryId if found, ID of the Prefix row with that string
- * @return FALSE-not found, TRUE found
+ * @return false not found, true found
  */
-boolean lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId);
+bool lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId);
 
 #if VALUE_CROSSTABLE_USE
 /**
@@ -167,9 +167,9 @@ boolean lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId);
  * @param[in] vxTable Value cross table - local partition of the Value table to be searched
  * @param[in] valueStr The string searched for
  * @param[out] vxEntryId if found, ID of the VxEntry with that string
- * @return FALSE-not found, TRUE found
+ * @return false not found, true found
  */
-boolean lookupVx(ValueTable* valueTable, VxTable* vxTable, String valueStr, Index* vxEntryId);
+bool lookupVx(ValueTable* valueTable, VxTable* vxTable, String valueStr, Index* vxEntryId);
 #endif
 
 /**
@@ -180,8 +180,8 @@ boolean lookupVx(ValueTable* valueTable, VxTable* vxTable, String valueStr, Inde
  * @param[in] valueTable Global Value table to be searched
  * @param[in] valueStr The string searched for
  * @param[out] valueEntryId if found, ID of the ValueEntry with that string
- * @return FALSE-not found, TRUE found
+ * @return FALSEnot found, true found
  */
-boolean lookupValue(ValueTable* valueTable, String valueStr, Index* valueEntryId);
+bool lookupValue(ValueTable* valueTable, String valueStr, Index* valueEntryId);
 
 #endif /* STABLES_H_ */

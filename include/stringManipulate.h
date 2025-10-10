@@ -81,9 +81,9 @@ void getEmptyString(String* emptyStr);
 /**
  * @brief Checks if an string is empty
  * @param[in] str string to check
- * @return FALSE if not empty, TRUE if empty
+ * @return false if not empty, true if empty
  */
-boolean isStringEmpty(const String* str);
+bool isStringEmpty(const String* str);
 
 /**
  * @brief Transform a NULL terminated string of ASCII chars to String allocating memory for the CharType*.
@@ -91,19 +91,19 @@ boolean isStringEmpty(const String* str);
  * @param[in, out] outStr resulted string
  * @param[in, out] memList A list storing the memory allocations
  * @param[in] clone Boolean indicating if outStr should reuse the memory allocated for inStr if possible.
- * 					FALSE - if String implementation allows it - do not allocate new memory for the string
- * 					TRUE - always allocate fresh memory for outStr and copy inStr there
+ * 					false - if String implementation allows it - do not allocate new memory for the string
+ * 					true - always allocate fresh memory for outStr and copy inStr there
  * @return Error handling code
  */
-errorCode asciiToString(const char* inStr, String* outStr, AllocList* memList, boolean clone);
+errorCode asciiToString(const char* inStr, String* outStr, AllocList* memList, bool clone);
 
 /**
  * @brief Tests if two strings are equal
  * @param[in] str1 string to compare
  * @param[in] str2 string to compare
- * @return TRUE if the strings are equal, FALSE - otherwise
+ * @return true if the strings are equal, false - otherwise
  */
-boolean stringEqual(const String str1, const String str2);
+bool stringEqual(const String str1, const String str2);
 
 /**
  * @brief Compare two strings lexicographically
@@ -117,9 +117,9 @@ int stringCompare(const String str1, const String str2);
  * @brief Checks if a String string and ASCII string are equal
  * @param[in] str1 string to compare
  * @param[in] str2 null terminated string to compare
- * @return TRUE if the strings are equal, FALSE - otherwise
+ * @return true if the strings are equal, false - otherwise
  */
-boolean stringEqualToAscii(const String str1, const char* str2);
+bool stringEqualToAscii(const String str1, const char* str2);
 
 /**
  * @brief Makes a copy of the string in a new location
@@ -180,11 +180,11 @@ errorCode integerToString(Integer number, String* outStr);
  * Uses allocateStringMemory() so make sure to free the
  * memory allocated for the string manually!
  *
- * @param[in] b TRUE/FALSE
+ * @param[in] b true/false
  * @param[out] outStr the resulting string representation
  * @return Error handling code
  */
-errorCode booleanToString(boolean b, String* outStr);
+errorCode booleanToString(bool b, String* outStr);
 
 /**
  * @brief Converts a float to string representation.

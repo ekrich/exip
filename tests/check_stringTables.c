@@ -154,7 +154,7 @@ START_TEST (test_addValueEntry)
 		fail_unless (testStrm.schema != NULL, "Memory alloc error");
 		/* Create and initialize initial string table entries */
 		tmp_err_code += createDynArray(&testStrm.schema->uriTable.dynArray, sizeof(UriEntry), DEFAULT_URI_ENTRIES_NUMBER);
-		tmp_err_code += createUriTableEntries(&testStrm.schema->uriTable, FALSE);
+		tmp_err_code += createUriTableEntries(&testStrm.schema->uriTable, false);
 	}
 	fail_unless (tmp_err_code == EXIP_OK, "initStream returns an error code %d", tmp_err_code);
 

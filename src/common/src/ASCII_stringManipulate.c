@@ -54,19 +54,19 @@ void getEmptyString(String* emptyStr)
 	emptyStr->str = NULL;
 }
 
-boolean isStringEmpty(const String* str)
+bool isStringEmpty(const String* str)
 {
 	if(str == NULL || str->length == 0)
 		return 1;
 	return 0;
 }
 
-errorCode asciiToString(const char* inStr, String* outStr, AllocList* memList, boolean clone)
+errorCode asciiToString(const char* inStr, String* outStr, AllocList* memList, bool clone)
 {
 	outStr->length = strlen(inStr);
 	if(outStr->length > 0)  // If == 0 -> empty string
 	{
-		if(clone == FALSE)
+		if(clone == false)
 		{
 			outStr->str = (CharType*) inStr;
 			return EXIP_OK;
@@ -85,7 +85,7 @@ errorCode asciiToString(const char* inStr, String* outStr, AllocList* memList, b
 	return EXIP_OK;
 }
 
-boolean stringEqual(const String str1, const String str2)
+bool stringEqual(const String str1, const String str2)
 {
 	if(str1.length != str2.length)
 		return 0;
@@ -103,7 +103,7 @@ boolean stringEqual(const String str1, const String str2)
 	}
 }
 
-boolean stringEqualToAscii(const String str1, const char* str2)
+bool stringEqualToAscii(const String str1, const char* str2)
 {
 	if(str1.length != strlen(str2))
 		return 0;
@@ -245,7 +245,7 @@ errorCode integerToString(Integer number, String* outStr)
 	return EXIP_NOT_IMPLEMENTED_YET;
 }
 
-errorCode booleanToString(boolean b, String* outStr)
+errorCode booleanToString(bool b, String* outStr)
 {
 	return EXIP_NOT_IMPLEMENTED_YET;
 }
