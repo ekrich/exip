@@ -63,7 +63,7 @@ static errorCode sample_stringData(const String value, void* app_data);
 static errorCode sample_decimalData(Decimal value, void* app_data);
 static errorCode sample_intData(Integer int_val, void* app_data);
 static errorCode sample_floatData(Float fl_val, void* app_data);
-static errorCode sample_booleanData(boolean bool_val, void* app_data);
+static errorCode sample_booleanData(bool bool_val, void* app_data);
 static errorCode sample_dateTimeData(EXIPDateTime dt_val, void* app_data);
 static errorCode sample_binaryData(const char* binary_val, Index nbytes, void* app_data);
 static errorCode sample_qnameData(const QName qname, void* app_data);
@@ -97,10 +97,10 @@ int main(int ac, char **av) {
 
 	serialize.initHeader(&testStrm);
 
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 
 	if	(schemaPtr) {
-		tmp_err_code = asciiToString("subscription", &testStrm.header.opts.schemaID, &testStrm.memList, FALSE); check("")
+		tmp_err_code = asciiToString("subscription", &testStrm.header.opts.schemaID, &testStrm.memList, false); check("")
 		testStrm.header.opts.schemaIDMode = SCHEMA_ID_SET;
 		printf ("schemaId %s\n", "subscription");
 	}
@@ -113,33 +113,33 @@ int main(int ac, char **av) {
 	tmp_err_code = serialize.startDocument(&testStrm); check("SD")
 
 	printf ("### startElement %s:%s\n", M2M, "subscription");
-	tmp_err_code += asciiToString(M2M, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("subscription", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString(M2M, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("subscription", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE m2m:subscription")
 
 	printf ("### startElement %s:%s\n", M2M, "filterCriteria");
-	tmp_err_code += asciiToString(M2M, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("filterCriteria", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString(M2M, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("filterCriteria", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE m2m:filterCriteria")
 
 	printf ("### attribute %s:%s\n", XSI, "type");
-	tmp_err_code += asciiToString(XSI, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, FALSE); check("")
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); check("xsi:type")
+	tmp_err_code += asciiToString(XSI, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, false); check("")
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); check("xsi:type")
 
 	printf ("### qnameData %s:%s\n", M2M, "ContentInstanceFilterCriteriaType");
-	tmp_err_code += asciiToString(M2M, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("ContentInstanceFilterCriteriaType", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString(M2M, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("ContentInstanceFilterCriteriaType", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.qnameData(&testStrm, qname); check("qnameData m2m:ContentInstanceFilterCriteriaType")
 
 	// <creator>http://www.creator.org/</creator>
 	printf ("### startElement %s:%s valueType=%d\n", "", "creator", valueType);
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("creator", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("creator", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE creator")
 
 	printf ("### stringData %s\n", "http://www.creator.org");
-	tmp_err_code += asciiToString("http://www.creator.org", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("http://www.creator.org", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal); check("CH")
 
 	tmp_err_code += serialize.endElement(&testStrm); check("EE creator")
@@ -181,7 +181,7 @@ int main(int ac, char **av) {
 	testParser.handler.binaryData = sample_binaryData;
 	testParser.handler.qnameData = sample_qnameData;
 
-	tmp_err_code = parseHeader(&testParser, FALSE); check("")
+	tmp_err_code = parseHeader(&testParser, false); check("")
 
 	// IV.1: Set the schema to be used for parsing.
 	// The schemaID mode and schemaID field can be read at
@@ -308,7 +308,7 @@ static errorCode sample_intData(Integer int_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode sample_booleanData(boolean bool_val, void* app_data)
+static errorCode sample_booleanData(bool bool_val, void* app_data)
 {
 	return EXIP_OK;
 }

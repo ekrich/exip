@@ -60,7 +60,7 @@ errorCode convertProtoGrammar(AllocList* memlist, ProtoGrammar* pg, EXIGrammar* 
 	Index ruleIter;
 	Index prodIter;
 	uint16_t attrCount;
-	boolean hasEE;
+	bool hasEE;
 
 	exiGrammar->props = 0;
 	SET_SCHEMA_GR(exiGrammar->props);
@@ -74,7 +74,7 @@ errorCode convertProtoGrammar(AllocList* memlist, ProtoGrammar* pg, EXIGrammar* 
 	for(ruleIter = 0; ruleIter < pg->count; ruleIter++)
 	{
 		attrCount = 0;
-		hasEE = FALSE;
+		hasEE = false;
 
 		exiGrammar->rule[ruleIter].production = (Production*) memManagedAllocate(memlist, sizeof(Production)*pg->rule[ruleIter].count);
 		if(exiGrammar->rule[ruleIter].production == NULL)
@@ -88,7 +88,7 @@ errorCode convertProtoGrammar(AllocList* memlist, ProtoGrammar* pg, EXIGrammar* 
 			if(GET_PROD_EXI_EVENT_CLASS(pg->rule[ruleIter].prod[prodIter].content) == EVENT_AT_CLASS)
 				attrCount++;
 			else if(GET_PROD_EXI_EVENT(pg->rule[ruleIter].prod[prodIter].content) == EVENT_EE)
-				hasEE = TRUE;
+				hasEE = true;
 			exiGrammar->rule[ruleIter].production[prodIter] = pg->rule[ruleIter].prod[prodIter];
 		}
 

@@ -278,7 +278,7 @@ START_TEST (test_default_options)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, TRUE);
+	tmp_err_code = parseHeader(&testParser, true);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, &schema);
@@ -352,7 +352,7 @@ START_TEST (test_strict_option)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, &schema);

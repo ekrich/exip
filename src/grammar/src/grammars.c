@@ -189,7 +189,7 @@ errorCode createBuiltInElementGrammar(EXIGrammar* elementGrammar, EXIStream* str
 	return EXIP_OK;
 }
 
-errorCode insertZeroProduction(DynGrammarRule* rule, EventType eventType, SmallIndex nonTermID, QNameID* qnameId, boolean hasSecondLevelProd)
+errorCode insertZeroProduction(DynGrammarRule* rule, EventType eventType, SmallIndex nonTermID, QNameID* qnameId, bool hasSecondLevelProd)
 {
 	if(rule->pCount == rule->prodDim) // The dynamic array rule->production needs to be resized
 	{
@@ -319,27 +319,27 @@ errorCode createFragmentGrammar(EXIPSchema* schema, QNameID* elQnameArr, Index q
 
 unsigned int getBitsFirstPartCode(EXIStream* strm, Index prodCount, SmallIndex currentRuleIndx)
 {
-	boolean secondLevelExists = FALSE;
+	bool secondLevelExists = false;
 
 	if(IS_BUILT_IN_ELEM(strm->gStack->grammar->props))
 	{
 		// Built-in element grammar
 		// There is always a second level production
-		secondLevelExists = TRUE;
+		secondLevelExists = true;
 	}
 	else if(IS_DOCUMENT(strm->gStack->grammar->props))
 	{
 		// Document grammar
 		if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS))
-			secondLevelExists = TRUE;
+			secondLevelExists = true;
 		else if(currentRuleIndx == 0 && IS_PRESERVED(strm->header.opts.preserve, PRESERVE_DTD))
-			secondLevelExists = TRUE;
+			secondLevelExists = true;
 	}
 	else if(IS_FRAGMENT(strm->gStack->grammar->props))
 	{
 		// Fragment grammar
 		if(IS_PRESERVED(strm->header.opts.preserve, PRESERVE_COMMENTS) || IS_PRESERVED(strm->header.opts.preserve, PRESERVE_PIS))
-			secondLevelExists = TRUE;
+			secondLevelExists = true;
 	}
 	else
 	{
@@ -347,16 +347,16 @@ unsigned int getBitsFirstPartCode(EXIStream* strm, Index prodCount, SmallIndex c
 		if(WITH_STRICT(strm->header.opts.enumOpt))
 		{
 			// Strict mode
-			if(strm->context.isNilType == FALSE && currentRuleIndx == 0)
+			if(strm->context.isNilType == false && currentRuleIndx == 0)
 			{
 				if(IS_NILLABLE(strm->gStack->grammar->props) || HAS_NAMED_SUB_TYPE_OR_UNION(strm->gStack->grammar->props))
-					secondLevelExists = TRUE;
+					secondLevelExists = true;
 			}
 		}
 		else // Non-strict mode
 		{
 			// There is always a second level production
-			secondLevelExists = TRUE;
+			secondLevelExists = true;
 		}
 	}
 

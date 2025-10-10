@@ -18,24 +18,18 @@
 #ifndef PROCTYPES_H_
 #define PROCTYPES_H_
 
-#include "errorHandle.h"
-#include <stdint.h>
-#include <time.h>
-#include <string.h>
-#include "exipConfig.h"
 #include <limits.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <time.h>
+#include "errorHandle.h"
+#include "exipConfig.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-enum boolean
-{
-	FALSE = 0,
-	TRUE  = 1
-};
-
-typedef enum boolean boolean;
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -329,7 +323,7 @@ struct QName {
 	 */
 	const String* localName;
 	/**
-	 * Pointer to a String value in the Prefix string table if [Preserve prefixes] is TRUE and NULL otherwise.
+	 * Pointer to a String value in the Prefix string table if [Preserve prefixes] is true and NULL otherwise.
 	 * @note It is not allowed to modify the string table content from this pointer.
 	 */
 	const String* prefix;
@@ -1137,8 +1131,8 @@ struct StreamContext
 	/** Non-zero if expecting attribute data or list items */
 	unsigned int expectATData;
 
-	/** TRUE if the current grammar rule must be processed as EmptyType grammar */
-	boolean isNilType;
+	/** true if the current grammar rule must be processed as EmptyType grammar */
+	bool isNilType;
 
 	/** Value type of the expected attribute */
 	Index attrTypeId;
@@ -1236,17 +1230,17 @@ typedef struct EXIOptions EXIOptions;
 struct EXIheader
 {
 	/**
-	 * Boolean value - FALSE for lack of EXI cookie, otherwise TRUE
+	 * bool value - false for lack of EXI cookie, otherwise true
 	 */
-	boolean has_cookie;
+	bool has_cookie;
 
 	/**
-	 * Boolean value - FALSE for lack of EXI Options, otherwise TRUE
+	 * bool value - false for lack of EXI Options, otherwise true
 	 */
-	boolean has_options;
+	bool has_options;
 
-	/** Boolean value - TRUE preview version, FALSE final version */
-	boolean is_preview_version;
+	/** bool value - true preview version, false final version */
+	bool is_preview_version;
 
 	/**
 	 * EXI stream version

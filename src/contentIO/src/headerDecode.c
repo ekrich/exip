@@ -39,7 +39,7 @@ static errorCode ops_endElement(void* app_data);
 static errorCode ops_attribute(QName qname, void* app_data);
 static errorCode ops_stringData(const String value, void* app_data);
 static errorCode ops_intData(Integer int_val, void* app_data);
-static errorCode ops_boolData(boolean bool_val, void* app_data);
+static errorCode ops_boolData(bool bool_val, void* app_data);
 
 struct ops_AppData
 {
@@ -50,11 +50,11 @@ struct ops_AppData
 	unsigned char prevElementLnID;
 };
 
-errorCode decodeHeader(EXIStream* strm, boolean outOfBandOpts)
+errorCode decodeHeader(EXIStream* strm, bool outOfBandOpts)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned long bits_val = 0;
-	boolean boolVal = FALSE;
+	bool boolVal = false;
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Start EXI header decoding\n"));
 	TRY(readBits(strm, 2, &bits_val));
@@ -92,15 +92,15 @@ errorCode decodeHeader(EXIStream* strm, boolean outOfBandOpts)
 	// Read the Presence Bit for EXI Options
 	TRY(readNextBit(strm, &boolVal));
 
-	if(boolVal == TRUE) // There are EXI options
+	if(boolVal == true) // There are EXI options
 	{
-		strm->header.has_options = TRUE;
+		strm->header.has_options = true;
 		// validation checks. If the options are included then
 		// they cannot be set by an out-of-band mechanism.
 		// If out-of-band options are set -
 		// rise a warning and overwrite them.
 		// Only the options from the header will be used
-		if(outOfBandOpts == TRUE)
+		if(outOfBandOpts == true)
 		{
 			DEBUG_MSG(WARNING, DEBUG_CONTENT_IO, (">Ignored out-of-band set EXI options\n"));
 			makeDefaultOpts(&strm->header.opts);
@@ -109,8 +109,8 @@ errorCode decodeHeader(EXIStream* strm, boolean outOfBandOpts)
 	else // Out-of-band set EXI options
 	{
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">No EXI options field in the header\n"));
-		strm->header.has_options = FALSE;
-		if(outOfBandOpts == FALSE)
+		strm->header.has_options = false;
+		if(outOfBandOpts == false)
 		{
 			DEBUG_MSG(ERROR, DEBUG_CONTENT_IO, (">No EXI options in the header and no out-of-band options specified. \n"));
 			return EXIP_HEADER_OPTIONS_MISMATCH;
@@ -388,13 +388,13 @@ static errorCode ops_intData(Integer int_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode ops_boolData(boolean bool_val, void* app_data)
+static errorCode ops_boolData(bool bool_val, void* app_data)
 {
 	struct ops_AppData* o_appD = (struct ops_AppData*) app_data;
 
 	if(o_appD->parsed_ops->schemaIDMode == SCHEMA_ID_NIL) // xsi:nil attribute
 	{
-		if(bool_val == FALSE)
+		if(bool_val == false)
 			o_appD->parsed_ops->schemaIDMode = SCHEMA_ID_EMPTY;
 	}
 	else

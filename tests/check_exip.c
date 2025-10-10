@@ -76,30 +76,30 @@ START_TEST (test_default_options)
 	tmp_err_code = serialize.startDocument(&testStrm);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startDocument returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("http://www.ltu.se/EISLAB/schema-test", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("EXIPEncoder", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("http://www.ltu.se/EISLAB/schema-test", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("EXIPEncoder", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startElement returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("version", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("version", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("0.2", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("0.2", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("status", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("status", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("alpha", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("alpha", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 
 	tmp_err_code += serialize.endElement(&testStrm);
@@ -126,7 +126,7 @@ START_TEST (test_default_options)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, TRUE);
+	tmp_err_code = parseHeader(&testParser, true);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, NULL);
@@ -171,8 +171,8 @@ START_TEST (test_fragment_option)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header, if different from the defaults
-	testStrm.header.has_cookie = TRUE;
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_cookie = true;
+	testStrm.header.has_options = true;
 	SET_FRAGMENT(testStrm.header.opts.enumOpt);
 
 	// III: Define an external stream for the output if any
@@ -188,34 +188,34 @@ START_TEST (test_fragment_option)
 	tmp_err_code = serialize.startDocument(&testStrm);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startDocument returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("http://www.ltu.se/EISLAB/schema-test", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("EXIPEncoder", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("http://www.ltu.se/EISLAB/schema-test", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("EXIPEncoder", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startElement returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("version", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("version", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("0.2", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("0.2", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("status", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("status", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("alpha", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("alpha", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("Test", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("Test", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startElement returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("beta tests", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("beta tests", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
@@ -223,11 +223,11 @@ START_TEST (test_fragment_option)
 
 	tmp_err_code += serialize.endElement(&testStrm);
 
-	tmp_err_code += asciiToString("Test2", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("Test2", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startElement returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("beta tests -> second root element", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("beta tests -> second root element", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
@@ -258,7 +258,7 @@ START_TEST (test_fragment_option)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, NULL);
@@ -316,7 +316,7 @@ START_TEST (test_value_part_zero)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header, if different from the defaults
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 	testStrm.header.opts.valuePartitionCapacity = 0;
 
 	// III: Define an external stream for the output if any
@@ -339,7 +339,7 @@ START_TEST (test_value_part_zero)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <cobs>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_NODE_ID_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // nodeId="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // nodeId="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%d", 111);
 	chVal.str = valStr;
@@ -453,7 +453,7 @@ START_TEST (test_value_part_zero)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, TRUE);
+	tmp_err_code = parseHeader(&testParser, true);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, NULL);
@@ -506,7 +506,7 @@ START_TEST (test_recursive_defs)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header, if different from the defaults
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 	SET_STRICT(testStrm.header.opts.enumOpt);
 	SET_ALIGNMENT(testStrm.header.opts.enumOpt, BYTE_ALIGNMENT);
 
@@ -530,7 +530,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <obj>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_XSTR_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // xsss="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // xsss="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "http://obix.org/ns/schema/1.1");
 	chVal.str = valStr;
@@ -538,7 +538,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_XTEMP_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // x-template="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // x-template="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "ipu_inst.xml");
 	chVal.str = valStr;
@@ -549,7 +549,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <str>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_NAME_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // name="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // name="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "interworkingProxyID");
 	chVal.str = valStr;
@@ -557,7 +557,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_VAL_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // val="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // val="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "IPU_6LoWPAN");
 	chVal.str = valStr;
@@ -570,7 +570,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <list>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_NAME_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // name="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // name="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "supportedTechnologies");
 	chVal.str = valStr;
@@ -585,7 +585,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <str>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_NAME_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // name="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // name="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "anPhysical");
 	chVal.str = valStr;
@@ -593,7 +593,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_VAL_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // val="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // val="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "2003_2_4GHz");
 	chVal.str = valStr;
@@ -607,7 +607,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <str>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_NAME_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // name="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // name="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "anStandard");
 	chVal.str = valStr;
@@ -615,7 +615,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_VAL_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // val="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // val="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "Bee_1_0");
 	chVal.str = valStr;
@@ -630,7 +630,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); // <str>
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_NAME_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // name="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // name="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "anProfile");
 	chVal.str = valStr;
@@ -638,7 +638,7 @@ START_TEST (test_recursive_defs)
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	qname.localName = &ATTR_VAL_STR;
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); // val="..."
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); // val="..."
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.* returns an error code %d", tmp_err_code);
 	sprintf(valStr, "%s", "Bee_HA");
 	chVal.str = valStr;
@@ -676,7 +676,7 @@ START_TEST (test_recursive_defs)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, NULL);
@@ -737,7 +737,7 @@ START_TEST (test_built_in_dynamic_types)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, NULL);
@@ -792,7 +792,7 @@ errorCode encodeWithDynamicTypes(char* buf, int buf_size, int *strmSize)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header (including schemaID and schemaIDMode), if different from the defaults.
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 	SET_PRESERVED(testStrm.header.opts.preserve, PRESERVE_PREFIXES);
 	testStrm.header.opts.schemaIDMode = SCHEMA_ID_EMPTY;
 
@@ -812,7 +812,7 @@ errorCode encodeWithDynamicTypes(char* buf, int buf_size, int *strmSize)
 	qname.localName = &ELEM_TRIVIAL;
 	TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // <trivial>
 
-	TRY_CATCH_ENCODE(serialize.namespaceDeclaration(&testStrm, NS_XSI, PREFIX_XSI, FALSE)); // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	TRY_CATCH_ENCODE(serialize.namespaceDeclaration(&testStrm, NS_XSI, PREFIX_XSI, false)); // xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 
 	qname.uri = &NS_EMPTY;
 	qname.localName = &ELEM_AN_ELEMENT;
@@ -820,7 +820,7 @@ errorCode encodeWithDynamicTypes(char* buf, int buf_size, int *strmSize)
 
 	qname.uri = &NS_XSI;
 	qname.localName = &ATTR_TYPE;
-	TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // xsi:type="
+	TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // xsi:type="
 
 	qname.uri = &NS_XSD;
 	qname.localName = &VALUE_DATE;
@@ -928,8 +928,8 @@ START_TEST (test_large_doc_str_pattern)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header, if different from the defaults
-	testStrm.header.has_cookie = TRUE;
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_cookie = true;
+	testStrm.header.has_options = true;
 	testStrm.header.opts.valueMaxLength = 300;
 	testStrm.header.opts.valuePartitionCapacity = INDEX_MAX;
 	SET_STRICT(testStrm.header.opts.enumOpt);
@@ -978,7 +978,7 @@ START_TEST (test_large_doc_str_pattern)
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 
 	    sprintf(strbuffer, "%s%d", PORT_STR, i);
-	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
@@ -989,26 +989,26 @@ START_TEST (test_large_doc_str_pattern)
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_ADMIN_STATE;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += asciiToString(STATE_UP_STR, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(STATE_UP_STR, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_NORECEIVE;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += serialize.booleanData(&testStrm, FALSE);
+	    tmp_err_code += serialize.booleanData(&testStrm, false);
 		tmp_err_code += serialize.endElement(&testStrm);
 
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_NOFORWARD;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += serialize.booleanData(&testStrm, FALSE);
+	    tmp_err_code += serialize.booleanData(&testStrm, false);
 		tmp_err_code += serialize.endElement(&testStrm);
 
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_NOPACKET;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += serialize.booleanData(&testStrm, TRUE);
+	    tmp_err_code += serialize.booleanData(&testStrm, true);
 		tmp_err_code += serialize.endElement(&testStrm);
 
 		tmp_err_code += serialize.endElement(&testStrm);
@@ -1032,7 +1032,7 @@ START_TEST (test_large_doc_str_pattern)
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 
 		sprintf(strbuffer, "%s%d", SWITCH_STR, i);
-	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
@@ -1041,20 +1041,20 @@ START_TEST (test_large_doc_str_pattern)
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 
 		sprintf(strbuffer, "%s%d", DATAPATH_STR, 10 + i);
-	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_ENABLED;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += serialize.booleanData(&testStrm, TRUE);
+	    tmp_err_code += serialize.booleanData(&testStrm, true);
 		tmp_err_code += serialize.endElement(&testStrm);
 
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_LOSTCONNBEH;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += asciiToString(LOST_CONN_BEHAVIOR_STR, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(LOST_CONN_BEHAVIOR_STR, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 // printf("in loop(%d) line:%d: %d\n", i, __LINE__, tmp_err_code);
@@ -1071,7 +1071,7 @@ START_TEST (test_large_doc_str_pattern)
 	            tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 
 				sprintf(strbuffer, "%s%d", PORT_STR, j);
-	            tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, FALSE);
+	            tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, false);
 	            tmp_err_code += serialize.stringData(&testStrm, chVal);
 				tmp_err_code += serialize.endElement(&testStrm);
 			}
@@ -1091,14 +1091,14 @@ START_TEST (test_large_doc_str_pattern)
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 // printf("in loop(%d) line:%d: %d\n", i, __LINE__, tmp_err_code);
 		sprintf(strbuffer, "%s%d", CTRL_STR, i);
-	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 // printf("in loop(%d) line:%d: %d\n", i, __LINE__, tmp_err_code);
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_ROLE;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += asciiToString(ROLE_STR, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(ROLE_STR, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
@@ -1106,7 +1106,7 @@ START_TEST (test_large_doc_str_pattern)
 	    qname.localName = &ELEM_IPADDR;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 		sprintf(strbuffer, "%s%d", IPADDR_STR, i);
-	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(strbuffer, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
@@ -1119,7 +1119,7 @@ START_TEST (test_large_doc_str_pattern)
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_PROTOCOL;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += asciiToString(PROTOCOL_STR, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(PROTOCOL_STR, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
@@ -1130,7 +1130,7 @@ START_TEST (test_large_doc_str_pattern)
 	    qname.uri = &NS_EMPTY_STR;
 	    qname.localName = &ELEM_CONNSTATE;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
-	    tmp_err_code += asciiToString(STATE_UP_STR, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(STATE_UP_STR, &chVal, &testStrm.memList, false);
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
 
@@ -1139,7 +1139,7 @@ START_TEST (test_large_doc_str_pattern)
 	    qname.localName = &ELEM_CURRVER;
 	    tmp_err_code += serialize.startElement(&testStrm, qname, &typeClass);
 // printf("in loop(%d) line:%d: %d\n", i, __LINE__, tmp_err_code);
-	    tmp_err_code += asciiToString(VER_STR, &chVal, &testStrm.memList, FALSE);
+	    tmp_err_code += asciiToString(VER_STR, &chVal, &testStrm.memList, false);
 
 	    tmp_err_code += serialize.stringData(&testStrm, chVal);
 		tmp_err_code += serialize.endElement(&testStrm);
@@ -1200,7 +1200,7 @@ START_TEST (test_large_doc_str_pattern)
     	fail_unless (tmp_err_code == EXIP_OK, "initParser returns an error code %d", tmp_err_code);
 
     	// IV: Parse the header of the stream
-		tmp_err_code = parseHeader(&testParser, FALSE);
+		tmp_err_code = parseHeader(&testParser, false);
 		fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 		tmp_err_code = setSchema(&testParser, &schema);
@@ -1269,7 +1269,7 @@ START_TEST (test_substitution_groups)
 	eventCount = 0;
 
 	// IV: Parse the header of the stream
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser,  &schema);
@@ -1334,7 +1334,7 @@ START_TEST (test_non_blocking_streaming)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parse.parseHeader(&testParser, FALSE);
+	tmp_err_code = parse.parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = parse.setSchema(&testParser, &schema);
@@ -1408,7 +1408,7 @@ START_TEST (test_non_blocking_streaming_bytealigned)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parse.parseHeader(&testParser, FALSE);
+	tmp_err_code = parse.parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = parse.setSchema(&testParser, &schema);
@@ -1484,7 +1484,7 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header (including schemaID and schemaIDMode), if different from the defaults.
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 	SET_ALIGNMENT(testStrm.header.opts.enumOpt, alignment);
 	testStrm.header.opts.schemaIDMode = SCHEMA_ID_SET;
 	testStrm.header.opts.schemaID = SCHEMA_ID_STR;
@@ -1521,14 +1521,14 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ATTR_SAMPLE;
-	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample="
+	tmp_err_code = serialize.attribute(&testStrm, qname, true, &valueType); // sample="
 	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
 	{
 		testStrm.context = savedContext;
 		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
 		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
 		*strmSize += bytesFlushed;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample="
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // redo sample="
 	}
 	else if(tmp_err_code != EXIP_OK)
 		return tmp_err_code;
@@ -1567,14 +1567,14 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ATTR_SAMPLE_2;
-	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	tmp_err_code = serialize.attribute(&testStrm, qname, true, &valueType); // sample-2="
 	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
 	{
 		testStrm.context = savedContext;
 		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
 		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
 		*strmSize += bytesFlushed;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // redo sample-2="
 	}
 	else if(tmp_err_code != EXIP_OK)
 		return tmp_err_code;
@@ -1643,14 +1643,14 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ATTR_SAMPLE_2;
-	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	tmp_err_code = serialize.attribute(&testStrm, qname, true, &valueType); // sample-2="
 	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
 	{
 		testStrm.context = savedContext;
 		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
 		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
 		*strmSize += bytesFlushed;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // redo sample-2="
 	}
 	else if(tmp_err_code != EXIP_OK)
 		return tmp_err_code;
@@ -1719,14 +1719,14 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ATTR_SAMPLE_2;
-	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	tmp_err_code = serialize.attribute(&testStrm, qname, true, &valueType); // sample-2="
 	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
 	{
 		testStrm.context = savedContext;
 		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
 		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
 		*strmSize += bytesFlushed;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // redo sample-2="
 	}
 	else if(tmp_err_code != EXIP_OK)
 		return tmp_err_code;
@@ -1795,14 +1795,14 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ATTR_SAMPLE_2;
-	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	tmp_err_code = serialize.attribute(&testStrm, qname, true, &valueType); // sample-2="
 	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
 	{
 		testStrm.context = savedContext;
 		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
 		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
 		*strmSize += bytesFlushed;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // redo sample-2="
 	}
 	else if(tmp_err_code != EXIP_OK)
 		return tmp_err_code;
@@ -1871,14 +1871,14 @@ errorCode encodeNonBlockingStreaming(EXIPSchema* schema, char* flushBuf, int buf
 	savedNonTerminalIndex = testStrm.gStack->currNonTermID;
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ATTR_SAMPLE_2;
-	tmp_err_code = serialize.attribute(&testStrm, qname, TRUE, &valueType); // sample-2="
+	tmp_err_code = serialize.attribute(&testStrm, qname, true, &valueType); // sample-2="
 	if(tmp_err_code == EXIP_BUFFER_END_REACHED)
 	{
 		testStrm.context = savedContext;
 		testStrm.gStack->currNonTermID = savedNonTerminalIndex;
 		TRY_CATCH_ENCODE(flushEXIData(&testStrm, flushBuf + *strmSize, buf_size - *strmSize, &bytesFlushed));
 		*strmSize += bytesFlushed;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // redo sample-2="
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // redo sample-2="
 	}
 	else if(tmp_err_code != EXIP_OK)
 		return tmp_err_code;
@@ -2048,7 +2048,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header (including schemaID and schemaIDMode), if different from the defaults.
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 
 	// III: Define an external stream for the output if any, otherwise set to NULL
 	buffer.ioStrm.readWriteToStream = NULL;
@@ -2070,9 +2070,9 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 	{
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_BN_STR;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // bn=""
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // bn=""
 
-		TRY_CATCH_ENCODE(asciiToString(senmlData.bn, &chVal, &testStrm.memList, FALSE));
+		TRY_CATCH_ENCODE(asciiToString(senmlData.bn, &chVal, &testStrm.memList, false));
 		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 	}
 
@@ -2080,7 +2080,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 	{
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_BT_STR;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // bt=""
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // bt=""
 
 		TRY_CATCH_ENCODE(serialize.intData(&testStrm, (Integer) senmlData.bt));
 	}
@@ -2089,8 +2089,8 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 	{
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_BU_STR;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // bu=""
-		TRY_CATCH_ENCODE(asciiToString(senmlData.bu, &chVal, &testStrm.memList, FALSE));
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // bu=""
+		TRY_CATCH_ENCODE(asciiToString(senmlData.bu, &chVal, &testStrm.memList, false));
 		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 	}
 
@@ -2098,7 +2098,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 	{
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_VER_STR;
-		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // ver=""
+		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // ver=""
 		TRY_CATCH_ENCODE(serialize.intData(&testStrm, (Integer) senmlData.version));
 	}
 
@@ -2112,16 +2112,16 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_BV_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // bv=""
-			TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, (boolean) senmlData.eArray[e].bv));
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // bv=""
+			TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, (bool) senmlData.eArray[e].bv));
 		}
 
 		if(senmlData.eArray[e].n[0] != '\0')
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_N_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // n=""
-			TRY_CATCH_ENCODE(asciiToString(senmlData.eArray[e].n, &chVal, &testStrm.memList, FALSE));
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // n=""
+			TRY_CATCH_ENCODE(asciiToString(senmlData.eArray[e].n, &chVal, &testStrm.memList, false));
 			TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 		}
 
@@ -2129,7 +2129,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_S_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // s=""
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // s=""
 			TRY_CATCH_ENCODE(serialize.decimalData(&testStrm, senmlData.eArray[e].s));
 		}
 
@@ -2137,8 +2137,8 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_SV_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // sv=""
-			TRY_CATCH_ENCODE(asciiToString(senmlData.eArray[e].sv, &chVal, &testStrm.memList, FALSE));
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // sv=""
+			TRY_CATCH_ENCODE(asciiToString(senmlData.eArray[e].sv, &chVal, &testStrm.memList, false));
 			TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 		}
 
@@ -2146,7 +2146,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_T_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // t=""
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // t=""
 			TRY_CATCH_ENCODE(serialize.intData(&testStrm, (Integer) senmlData.eArray[e].t));
 		}
 
@@ -2154,8 +2154,8 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_U_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // u=""
-			TRY_CATCH_ENCODE(asciiToString(senmlData.eArray[e].u, &chVal, &testStrm.memList, FALSE));
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // u=""
+			TRY_CATCH_ENCODE(asciiToString(senmlData.eArray[e].u, &chVal, &testStrm.memList, false));
 			TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 		}
 
@@ -2163,7 +2163,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_UT_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // ut=""
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // ut=""
 			TRY_CATCH_ENCODE(serialize.intData(&testStrm, (Integer) senmlData.eArray[e].ut));
 		}
 
@@ -2171,7 +2171,7 @@ errorCode encodeSenML(EXIPSchema* schema, senml senmlData, char* buf, int buflen
 		{
 			qname.uri = &NS_EMPTY_STR;
 			qname.localName = &ATTR_V_STR;
-			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, TRUE, &valueType)); // v=""
+			TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // v=""
 			TRY_CATCH_ENCODE(serialize.floatData(&testStrm, senmlData.eArray[e].v));
 		}
 
@@ -2224,7 +2224,7 @@ static errorCode sample_startElement(QName qname, void* app_data);
 static errorCode sample_attribute(QName qname, void* app_data);
 static errorCode sample_stringData(const String value, void* app_data);
 static errorCode sample_floatData(Float fl_val, void* app_data);
-static errorCode sample_booleanData(boolean bool_val, void* app_data);
+static errorCode sample_booleanData(bool bool_val, void* app_data);
 static errorCode sample_decimalData(Decimal value, void* app_data);
 static errorCode sample_intData(Integer int_val, void* app_data);
 
@@ -2266,7 +2266,7 @@ errorCode decodeSenML(EXIPSchema* schema, char* buf, int buflen, senml* senmlDat
 
 	// IV: Parse the header of the stream
 
-	TRY(parseHeader(&testParser, FALSE));
+	TRY(parseHeader(&testParser, false));
 
 	// IV.1: Set the schema to be used for parsing.
 	// The schemaID mode and schemaID field can be read at
@@ -2447,7 +2447,7 @@ static errorCode sample_floatData(Float fl_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode sample_booleanData(boolean bool_val, void* app_data)
+static errorCode sample_booleanData(bool bool_val, void* app_data)
 {
 	AppData* appD = (AppData*) app_data;
 

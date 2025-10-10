@@ -53,7 +53,7 @@ START_TEST (test_default_options)
 	serialize.initHeader(&testStrm);
 
 	// II: Set any options in the header, if different from the defaults
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 	testStrm.header.opts.schemaIDMode = SCHEMA_ID_EMPTY;
 
 	// III: Define an external stream for the output if any
@@ -69,45 +69,45 @@ START_TEST (test_default_options)
 	tmp_err_code = serialize.startDocument(&testStrm);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startDocument returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("http://www.ltu.se/EISLAB/schema-test", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("EXIPEncoder", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("http://www.ltu.se/EISLAB/schema-test", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("EXIPEncoder", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startElement returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("version", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("version", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("0.2", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("0.2", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("status", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("status", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("alpha", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("alpha", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, false);
 	tmp_err_code += serialize.stringData(&testStrm, chVal);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.stringData returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("xsitypetest", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("xsitypetest", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.startElement returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("http://www.w3.org/2001/XMLSchema-instance", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString("http://www.w3.org/2001/XMLSchema-instance", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.attribute returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString("http://www.w3.org/2001/XMLSchema", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("integer", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("http://www.w3.org/2001/XMLSchema", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("integer", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.qnameData(&testStrm, qname);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize.qnameData returns an error code %d", tmp_err_code);
 
@@ -140,7 +140,7 @@ START_TEST (test_default_options)
 
 	// IV: Parse the header of the stream
 
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
 
 	tmp_err_code = setSchema(&testParser, NULL);
@@ -185,7 +185,7 @@ static errorCode sample_stringData(const String value, void* app_data);
 static errorCode sample_decimalData(Decimal value, void* app_data);
 static errorCode sample_intData(Integer int_val, void* app_data);
 static errorCode sample_floatData(Float fl_val, void* app_data);
-static errorCode sample_booleanData(boolean bool_val, void* app_data);
+static errorCode sample_booleanData(bool bool_val, void* app_data);
 static errorCode sample_dateTimeData(EXIPDateTime dt_val, void* app_data);
 static errorCode sample_binaryData(const char* binary_val, Index nbytes, void* app_data);
 static errorCode sample_qnameData(const QName qname, void* app_data);
@@ -215,11 +215,11 @@ START_TEST (test_simple_schema)
 
 	serialize.initHeader(&testStrm);
 
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 	testStrm.header.opts.schemaIDMode = SCHEMA_ID_EMPTY;
 
 	if	(schemaPtr) {
-		tmp_err_code = asciiToString("product", &testStrm.header.opts.schemaID, &testStrm.memList, FALSE);
+		tmp_err_code = asciiToString("product", &testStrm.header.opts.schemaID, &testStrm.memList, false);
 		fail_unless (tmp_err_code == EXIP_OK, "asciiToString returns an error code %d", tmp_err_code);
 		testStrm.header.opts.schemaIDMode = SCHEMA_ID_SET;
 	}
@@ -231,20 +231,20 @@ START_TEST (test_simple_schema)
 	tmp_err_code = serialize.startDocument(&testStrm);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize returns an error code %d", tmp_err_code);
 
-	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("product", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("product", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 
-	tmp_err_code += asciiToString(XSI, &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, FALSE);
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType);
+	tmp_err_code += asciiToString(XSI, &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, false);
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType);
 
-	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("ShirtType", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("ShirtType", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.qnameData(&testStrm, qname);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("number", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("number", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	fail_unless (tmp_err_code == EXIP_OK, "serialize returns an error code %d", tmp_err_code);
 
@@ -252,22 +252,22 @@ START_TEST (test_simple_schema)
 		tmp_err_code += serialize.intData(&testStrm, 12345);
 	}
 	else {
-		tmp_err_code += asciiToString("12345", &chVal, &testStrm.memList, FALSE);
+		tmp_err_code += asciiToString("12345", &chVal, &testStrm.memList, false);
 		tmp_err_code += serialize.stringData(&testStrm, chVal);
 	}
 
 	fail_unless (tmp_err_code == EXIP_OK, "serialize returns an error code %d", tmp_err_code);
 	tmp_err_code += serialize.endElement(&testStrm);
 
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE);
-	tmp_err_code += asciiToString("size", &ln, &testStrm.memList, FALSE);
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false);
+	tmp_err_code += asciiToString("size", &ln, &testStrm.memList, false);
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 
 	if	(schemaPtr) {
 		tmp_err_code += serialize.intData(&testStrm, 33);
 	}
 	else {
-		tmp_err_code += asciiToString("33", &chVal, &testStrm.memList, FALSE);
+		tmp_err_code += asciiToString("33", &chVal, &testStrm.memList, false);
 		tmp_err_code += serialize.stringData(&testStrm, chVal);
 	}
 
@@ -303,7 +303,7 @@ START_TEST (test_simple_schema)
 	testParser.handler.binaryData = sample_binaryData;
 	testParser.handler.qnameData = sample_qnameData;
 
-	tmp_err_code = parseHeader(&testParser, FALSE);
+	tmp_err_code = parseHeader(&testParser, false);
 
 	// IV.1: Set the schema to be used for parsing.
 	// The schemaID mode and schemaID field can be read at
@@ -449,7 +449,7 @@ static errorCode sample_intData(Integer int_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode sample_booleanData(boolean bool_val, void* app_data)
+static errorCode sample_booleanData(bool bool_val, void* app_data)
 {
 	return EXIP_OK;
 }

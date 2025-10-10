@@ -79,13 +79,13 @@ struct subsGroupElTbl
 // Functions for handling of schema elements (defined in the global scope)
 // START
 /**
- * Given a global or local element definition (isGlobal == TRUE/FALSE),
+ * Given a global or local element definition (isGlobal == true/false),
  * this function builds (if not already built) its associated type grammar
  * and return the index of that type grammar in the grIndex parameter.
  * The type grammar is then used for processing of the corresponding
  * SE(QName) productions.
  */
-static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* treeTEntry, boolean isGlobal, QNameIDGrIndx* qNmGrIndex);
+static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* treeTEntry, bool isGlobal, QNameIDGrIndx* qNmGrIndex);
 
 /**
  * Builds a simple type grammar if it is not already built.
@@ -135,9 +135,9 @@ static errorCode getElementTermProtoGrammar(BuildContext* ctx, QualifiedTreeTabl
  * Given an attribute use entry this function builds the corresponding
  * attribute use proto grammar.
  * @param[in] isRequired The global attributed does not have a property use (required | optional). When a local attr.
- * references a global one it passes the use property value. Only used when isGlobal == TRUE
+ * references a global one it passes the use property value. Only used when isGlobal == true
  */
-static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry* attrEntry, boolean isGlobal, boolean isRequired, ProtoGrammar** attr);
+static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry* attrEntry, bool isGlobal, bool isRequired, ProtoGrammar** attr);
 
 /**
  * Given a Simple Type entry this function builds the corresponding
@@ -274,7 +274,7 @@ static errorCode getAnonymousTypeId(BuildContext* ctx, QualifiedTreeTableEntry* 
  * the SchemaGrammarTable of the EXIPSchema object.
  * The index to the grammar is returned in grIndex parameter
  */
-static errorCode storeGrammar(BuildContext* ctx, QNameID qnameID, ProtoGrammar* pGrammar, boolean isNillable, Index* grIndex);
+static errorCode storeGrammar(BuildContext* ctx, QNameID qnameID, ProtoGrammar* pGrammar, bool isNillable, Index* grIndex);
 
 static void sortGlobalElemQnameTable(GlobalElemQNameTable *gElTbl);
 
@@ -282,7 +282,7 @@ static void sortEnumTable(EXIPSchema *schema);
 
 /** Check if an attribute with a string name aName is in the table lAttrTbl
  * that contains all the attributes already included for certain complex type.
- * TRUE: present, FASLE not present */
+ * true: present, FASLE not present */
 static char isAttrAlreadyPresent(String aName, struct localAttrNames* lAttrTbl);
 
 /** Add the whole chain of {substitution group affiliation} of an element.
@@ -320,7 +320,7 @@ errorCode convertTreeTablesToExipSchema(TreeTable* treeT, unsigned int count, EX
 			switch(qEntry.entry->element)
 			{
 				case ELEMENT_ELEMENT:
-					tmp_err_code = handleElementEl(&ctx, &qEntry, TRUE, &qGrIndex);
+					tmp_err_code = handleElementEl(&ctx, &qEntry, true, &qGrIndex);
 					break;
 				case ELEMENT_SIMPLE_TYPE:
 					tmp_err_code = handleSimpleTypeEl(&ctx, &qEntry);
@@ -462,13 +462,13 @@ static errorCode getElementTermProtoGrammar(BuildContext* ctx, QualifiedTreeTabl
 	return EXIP_OK;
 }
 
-static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* treeTEntry, boolean isGlobal, QNameIDGrIndx* qNmGrIndex)
+static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* treeTEntry, bool isGlobal, QNameIDGrIndx* qNmGrIndex)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	String type;
 	QNameID elQNameID;
 	QNameID typeQNameID;
-	boolean isNillable = FALSE;
+	bool isNillable = false;
 
 #if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\n>Handle Element: "));
@@ -518,7 +518,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 	if(!isStringEmpty(&treeTEntry->entry->attributePointers[ATTRIBUTE_NILLABLE]) &&
 		stringEqualToAscii(treeTEntry->entry->attributePointers[ATTRIBUTE_NILLABLE], "true"))
 	{
-		isNillable = TRUE;
+		isNillable = true;
 	}
 
 	/* Check if the element declaration has a type="..." attribute */
@@ -552,7 +552,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 		{
 			// In case of ref="..." attribute
 			
-			return handleElementEl(ctx, &treeTEntry->entry->child, TRUE, qNmGrIndex);
+			return handleElementEl(ctx, &treeTEntry->entry->child, true, qNmGrIndex);
 		}
 		else
 			return EXIP_UNEXPECTED_ERROR;
@@ -576,7 +576,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 				else
 				{
 					Index r, p;
-					boolean prodFound = FALSE;
+					bool prodFound = false;
 					for(r = 0; r < GET_CONTENT_INDEX(exiGr.props); r++)
 					{
 						for(p = 0; p < RULE_GET_AT_COUNT(exiGr.rule[r].meta); p++)
@@ -584,7 +584,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 							if(GET_PROD_NON_TERM(exiGr.rule[r].production[exiGr.rule[r].pCount-1-p].content) == GET_CONTENT_INDEX(exiGr.props))
 							{
 								SET_HAS_CONTENT2(exiGr.props);
-								prodFound = TRUE;
+								prodFound = true;
 								break;
 							}
 						}
@@ -606,7 +606,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 		}
 		/* If the element is globally defined -> store the index of its grammar in the
 		 * LnEntry in the string tables */
-		if(isGlobal == TRUE)
+		if(isGlobal == true)
 			GET_LN_URI_QNAME(ctx->schema->uriTable, elQNameID).elemGrammar = qNmGrIndex->grIndex;
 
 	}
@@ -658,7 +658,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 					else
 					{
 						Index r, p;
-						boolean prodFound = FALSE;
+						bool prodFound = false;
 						for(r = 0; r < GET_CONTENT_INDEX(exiGr.props); r++)
 						{
 							for(p = 0; p < RULE_GET_AT_COUNT(exiGr.rule[r].meta); p++)
@@ -666,7 +666,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 								if(GET_PROD_NON_TERM(exiGr.rule[r].production[exiGr.rule[r].pCount-1-p].content) == GET_CONTENT_INDEX(exiGr.props))
 								{
 									SET_HAS_CONTENT2(exiGr.props);
-									prodFound = TRUE;
+									prodFound = true;
 									break;
 								}
 							}
@@ -695,7 +695,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 		/* If the element is globally defined -> store the index of its type grammar in the
 		 * LnEntry in the string tables. Otherwise simply assigned the returned grammar index to
 		 * the index of its type grammar */
-		if(isGlobal == TRUE)
+		if(isGlobal == true)
 			GET_LN_URI_QNAME(ctx->schema->uriTable, elQNameID).elemGrammar = GET_LN_URI_QNAME(ctx->schema->uriTable, typeQNameID).typeGrammar;
 
 		qNmGrIndex->grIndex = GET_LN_URI_QNAME(ctx->schema->uriTable, typeQNameID).typeGrammar;
@@ -717,10 +717,10 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 	return EXIP_OK;
 }
 
-static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry* attrEntry, boolean isGlobal, boolean isRequired, ProtoGrammar** attr)
+static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry* attrEntry, bool isGlobal, bool isRequired, ProtoGrammar** attr)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	boolean required = FALSE;
+	bool required = false;
 	Index typeId;
 	QNameID atQnameID;
 
@@ -731,7 +731,7 @@ static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableE
 	else if (!isStringEmpty(&(attrEntry->entry->attributePointers[ATTRIBUTE_USE])) &&
 			stringEqualToAscii(attrEntry->entry->attributePointers[ATTRIBUTE_USE], "required"))
 	{
-		required = TRUE;
+		required = true;
 	}
 
 	// Validation checks
@@ -776,7 +776,7 @@ static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableE
 		else if(attrEntry->entry->child.entry->element == ELEMENT_ATTRIBUTE)
 		{
 			// A reference to a global attribute
-			return getAttributeProtoGrammar(ctx, &attrEntry->entry->child, TRUE, required, attr);
+			return getAttributeProtoGrammar(ctx, &attrEntry->entry->child, true, required, attr);
 		}
 		else
 		{
@@ -852,7 +852,7 @@ static errorCode handleSimpleTypeEl(BuildContext* ctx, QualifiedTreeTableEntry* 
 			Index grIndex;
 
 			TRY(getSimpleTypeProtoGrammar(ctx, stEntry, &simpleProtoGrammar));
-			TRY(storeGrammar(ctx, stQNameID, simpleProtoGrammar, FALSE, &grIndex));
+			TRY(storeGrammar(ctx, stQNameID, simpleProtoGrammar, false, &grIndex));
 
 			GET_LN_URI_QNAME(ctx->schema->uriTable, stQNameID).typeGrammar = grIndex;
 		}
@@ -1032,7 +1032,7 @@ static errorCode getAttributeUseProtoGrammars(BuildContext* ctx, QualifiedTreeTa
 
 						if(!stringEqualToAscii(attrUse.entry->attributePointers[ATTRIBUTE_USE], "prohibited"))
 						{
-							TRY(getAttributeProtoGrammar(ctx, &attrUse, FALSE, FALSE, &attrPG));
+							TRY(getAttributeProtoGrammar(ctx, &attrUse, false, false, &attrPG));
 							TRY(addDynEntry(&attrUseArray->dynArray, &attrPG, &entryId));
 						}
 					}
@@ -1098,7 +1098,7 @@ static errorCode getComplexTypeProtoGrammar(BuildContext* ctx, QualifiedTreeTabl
 	ProtoGrammarArray attrUseArray;
 	ProtoGrammar* contentTypeGrammar = NULL;
 	String* attrWildcardNS = NULL;
-	boolean isMixedContent = FALSE;
+	bool isMixedContent = false;
 	Index i;
 
 	if(complEntry->entry->loopDetection == 0)
@@ -1124,7 +1124,7 @@ static errorCode getComplexTypeProtoGrammar(BuildContext* ctx, QualifiedTreeTabl
 	if(!isStringEmpty(&complEntry->entry->attributePointers[ATTRIBUTE_MIXED])
 			&& stringEqualToAscii(complEntry->entry->attributePointers[ATTRIBUTE_MIXED], "true"))
 	{
-		isMixedContent = TRUE;
+		isMixedContent = true;
 	}
 
 	TRY(getContentTypeProtoGrammar(ctx, complEntry, &contentTypeGrammar));
@@ -1268,7 +1268,7 @@ static errorCode handleComplexTypeEl(BuildContext* ctx, QualifiedTreeTableEntry*
 					else
 					{
 						Index r, p;
-						boolean prodFound = FALSE;
+						bool prodFound = false;
 						for(r = 0; r < GET_CONTENT_INDEX(exiGr.props); r++)
 						{
 							for(p = 0; p < RULE_GET_AT_COUNT(exiGr.rule[r].meta); p++)
@@ -1276,7 +1276,7 @@ static errorCode handleComplexTypeEl(BuildContext* ctx, QualifiedTreeTableEntry*
 								if(GET_PROD_NON_TERM(exiGr.rule[r].production[exiGr.rule[r].pCount-1-p].content) == GET_CONTENT_INDEX(exiGr.props))
 								{
 									SET_HAS_CONTENT2(exiGr.props);
-									prodFound = TRUE;
+									prodFound = true;
 									break;
 								}
 							}
@@ -1294,7 +1294,7 @@ static errorCode handleComplexTypeEl(BuildContext* ctx, QualifiedTreeTableEntry*
 			}
 			else
 			{
-				TRY(storeGrammar(ctx, ctQNameID, complType, FALSE, &grIndex));
+				TRY(storeGrammar(ctx, ctQNameID, complType, false, &grIndex));
 			}
 
 			GET_LN_URI_QNAME(ctx->schema->uriTable, ctQNameID).typeGrammar = grIndex;
@@ -1378,7 +1378,7 @@ static errorCode getSequenceProtoGrammar(BuildContext* ctx, QualifiedTreeTableEn
 		{
 			QNameIDGrIndx qGrIndex;
 
-			TRY(handleElementEl(ctx, &nextIterator, FALSE, &qGrIndex));
+			TRY(handleElementEl(ctx, &nextIterator, false, &qGrIndex));
 			TRY(getElementTermProtoGrammar(ctx, &nextIterator, qGrIndex, &particleGrammar));
 		}
 		else if(nextIterator.entry->element == ELEMENT_GROUP)
@@ -1488,7 +1488,7 @@ static errorCode getChoiceProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntr
 		if(nextIterator.entry->element == ELEMENT_ELEMENT)
 		{
 			QNameIDGrIndx qGrIndex;
-			TRY(handleElementEl(ctx, &nextIterator, FALSE, &qGrIndex));
+			TRY(handleElementEl(ctx, &nextIterator, false, &qGrIndex));
 			TRY(getElementTermProtoGrammar(ctx, &nextIterator, qGrIndex, &particleGrammar));
 		}
 		else if(nextIterator.entry->element == ELEMENT_GROUP)
@@ -2097,7 +2097,7 @@ static errorCode getListProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry*
 	return EXIP_OK;
 }
 
-static errorCode storeGrammar(BuildContext* ctx, QNameID qnameID, ProtoGrammar* pGrammar, boolean isNillable, Index* grIndex)
+static errorCode storeGrammar(BuildContext* ctx, QNameID qnameID, ProtoGrammar* pGrammar, bool isNillable, Index* grIndex)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	EXIGrammar exiGr;
@@ -2128,7 +2128,7 @@ static errorCode storeGrammar(BuildContext* ctx, QNameID qnameID, ProtoGrammar* 
 		else
 		{
 			Index r, p;
-			boolean prodFound = FALSE;
+			bool prodFound = false;
 			for(r = 0; r < GET_CONTENT_INDEX(exiGr.props); r++)
 			{
 				for(p = 0; p < RULE_GET_AT_COUNT(exiGr.rule[r].meta); p++)
@@ -2136,7 +2136,7 @@ static errorCode storeGrammar(BuildContext* ctx, QNameID qnameID, ProtoGrammar* 
 					if(GET_PROD_NON_TERM(exiGr.rule[r].production[exiGr.rule[r].pCount-1-p].content) == GET_CONTENT_INDEX(exiGr.props))
 					{
 						SET_HAS_CONTENT2(exiGr.props);
-						prodFound = TRUE;
+						prodFound = true;
 						break;
 					}
 				}
@@ -2193,10 +2193,10 @@ static char isAttrAlreadyPresent(String aName, struct localAttrNames* lAttrTbl)
 	for(i = 0; i < lAttrTbl->count; i++)
 	{
 		if(stringEqual(aName, lAttrTbl->attrNames[i]))
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 void assignCodes(ProtoGrammar* grammar)
@@ -2257,7 +2257,7 @@ static errorCode recursiveSubsitutionGroupAdd(BuildContext* ctx, QNameIDGrIndx h
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	Index s, i;
-	boolean isHeadFound = FALSE;
+	bool isHeadFound = false;
 	QNameIDGrIndx subsEl;
 
 	assert(subsElGrTbl != NULL);
@@ -2271,7 +2271,7 @@ static errorCode recursiveSubsitutionGroupAdd(BuildContext* ctx, QNameIDGrIndx h
 	{
 		if(ctx->subsTbl->head[s].headId.uriId == headQGrIndex.qnameId.uriId && ctx->subsTbl->head[s].headId.lnId == headQGrIndex.qnameId.lnId)
 		{
-			isHeadFound = TRUE;
+			isHeadFound = true;
 			break;
 		}
 	}
@@ -2279,7 +2279,7 @@ static errorCode recursiveSubsitutionGroupAdd(BuildContext* ctx, QNameIDGrIndx h
 	{
 		for(i = 0; i < ctx->subsTbl->head[s].count; i++)
 		{
-			TRY(handleElementEl(ctx, &ctx->subsTbl->head[s].substitutes[i], FALSE, &subsEl));
+			TRY(handleElementEl(ctx, &ctx->subsTbl->head[s].substitutes[i], false, &subsEl));
 			/* First add the substitute itself then check if the substitute is head and if head itself add its substitute too*/
 			TRY(recursiveSubsitutionGroupAdd(ctx, subsEl, subsElGrTbl));
 		}

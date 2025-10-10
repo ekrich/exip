@@ -30,7 +30,7 @@
  * @param[out] prodHit the matched grammar production
  * @return Error handling code
  */
-errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, boolean isSchemaType, QName* qname, EXITypeClass chTypeClass, Production* prodHit);
+errorCode encodeProduction(EXIStream* strm, EventTypeClass eventClass, bool isSchemaType, QName* qname, EXITypeClass chTypeClass, Production* prodHit);
 
 /**
  * @brief Encodes String value into EXI stream
@@ -73,7 +73,7 @@ errorCode encodeUri(EXIStream* strm, String* uri, SmallIndex* uriID);
 errorCode encodeLn(EXIStream* strm, String* ln, QNameID* qnameID);
 
 /**
- * @brief Encodes the prefix part of the QName into the EXI stream in case the Preserve.prefixes == TRUE
+ * @brief Encodes the prefix part of the QName into the EXI stream in case the Preserve.prefixes == true
  * @param[in, out] strm EXI stream
  * @param[in] qname qname to be written
  * @param[in] eventT (EVENT_SE_ALL or EVENT_AT_ALL) used for error checking purposes:

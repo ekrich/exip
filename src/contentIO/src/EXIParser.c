@@ -44,8 +44,8 @@ errorCode initParser(Parser* parser, BinaryBuffer buffer, void* app_data)
 	parser->strm.context.bufferIndx = 0;
 	parser->strm.context.currAttr.lnId = 0;
 	parser->strm.context.currAttr.uriId = 0;
-	parser->strm.context.expectATData = FALSE;
-	parser->strm.context.isNilType = FALSE;
+	parser->strm.context.expectATData = false;
+	parser->strm.context.isNilType = false;
 	parser->strm.context.attrTypeId = INDEX_MAX;
 	parser->strm.gStack = NULL;
 	parser->strm.valueTable.value = NULL;
@@ -63,7 +63,7 @@ errorCode initParser(Parser* parser, BinaryBuffer buffer, void* app_data)
 	return EXIP_OK;
 }
 
-errorCode parseHeader(Parser* parser, boolean outOfBandOpts)
+errorCode parseHeader(Parser* parser, bool outOfBandOpts)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 

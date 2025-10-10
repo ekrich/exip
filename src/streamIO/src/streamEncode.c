@@ -25,7 +25,7 @@
 errorCode encodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned long int_val)
 {
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> %lu [0x%lX] (%u bits)", int_val, int_val, n));
-	if(WITH_COMPRESSION(strm->header.opts.enumOpt) == FALSE && GET_ALIGNMENT(strm->header.opts.enumOpt) == BIT_PACKED)
+	if(WITH_COMPRESSION(strm->header.opts.enumOpt) == false && GET_ALIGNMENT(strm->header.opts.enumOpt) == BIT_PACKED)
 	{
 		return writeNBits(strm, n, int_val);
 	}
@@ -54,7 +54,7 @@ errorCode encodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned l
 	return EXIP_OK;
 }
 
-errorCode encodeBoolean(EXIStream* strm, boolean bool_val)
+errorCode encodeBoolean(EXIStream* strm, bool bool_val)
 {
 	//TODO:  when pattern facets are available in the schema datatype - handle it differently
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> 0x%X (bool)", bool_val));
@@ -161,7 +161,7 @@ errorCode encodeIntegerValue(EXIStream* strm, Integer sint_val)
 errorCode encodeDecimalValue(EXIStream* strm, Decimal dec_val)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	boolean sign;
+	bool sign;
 	UnsignedInteger integr_part = 0;
 	UnsignedInteger fract_part_rev = 0;
 	UnsignedInteger m;
@@ -169,12 +169,12 @@ errorCode encodeDecimalValue(EXIStream* strm, Decimal dec_val)
 
 	if(dec_val.mantissa >= 0)
 	{
-		sign = FALSE;
+		sign = false;
 		integr_part = (UnsignedInteger) dec_val.mantissa;
 	}
 	else
 	{
-		sign = TRUE;
+		sign = true;
 		integr_part = (UnsignedInteger) -dec_val.mantissa;
 	}
 
@@ -285,12 +285,12 @@ errorCode encodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime dt_v
 				fSecs = fSecs*10;
 			}
 
-			TRY(encodeBoolean(strm, TRUE));
+			TRY(encodeBoolean(strm, true));
 			TRY(encodeUnsignedInteger(strm, fSecs));
 		}
 		else
 		{
-			TRY(encodeBoolean(strm, FALSE));
+			TRY(encodeBoolean(strm, false));
 		}
 
 	}
@@ -299,7 +299,7 @@ errorCode encodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime dt_v
 	{
 		// 11-bit Unsigned Integer representing a signed integer offset by 896
 		unsigned int timeZone = 896;
-		TRY(encodeBoolean(strm, TRUE));
+		TRY(encodeBoolean(strm, true));
 		if(dt_val.TimeZone < -896)
 		{
 			timeZone = 0;
@@ -316,7 +316,7 @@ errorCode encodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime dt_v
 	}
 	else
 	{
-		TRY(encodeBoolean(strm, FALSE));
+		TRY(encodeBoolean(strm, false));
 	}
 
 	return EXIP_OK;

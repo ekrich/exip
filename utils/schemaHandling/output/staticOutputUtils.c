@@ -362,7 +362,7 @@ void staticEnumTableOutput(EXIPSchema* schema, char* prefix, FILE* out)
 			} break;
 			case VALUE_TYPE_BOOLEAN:
 				// NOT_IMPLEMENTED
-				assert(FALSE);
+				assert(false);
 				break;
 			case VALUE_TYPE_DATE_TIME:
 			case VALUE_TYPE_YEAR:
@@ -370,23 +370,23 @@ void staticEnumTableOutput(EXIPSchema* schema, char* prefix, FILE* out)
 			case VALUE_TYPE_MONTH:
 			case VALUE_TYPE_TIME:
 				// NOT_IMPLEMENTED
-				assert(FALSE);
+				assert(false);
 				break;
 			case VALUE_TYPE_DECIMAL:
 				// NOT_IMPLEMENTED
-				assert(FALSE);
+				assert(false);
 				break;
 			case VALUE_TYPE_FLOAT:
 				// NOT_IMPLEMENTED
-				assert(FALSE);
+				assert(false);
 				break;
 			case VALUE_TYPE_INTEGER:
 				// NOT_IMPLEMENTED
-				assert(FALSE);
+				assert(false);
 				break;
 			case VALUE_TYPE_SMALL_INTEGER:
 				// NOT_IMPLEMENTED
-				assert(FALSE);
+				assert(false);
 				break;
 			case VALUE_TYPE_NON_NEGATIVE_INT:
 				fprintf(out, "\nstatic CONST UnsignedInteger %senumValues_%u[%u] = { \n", prefix, (unsigned int) i, (unsigned int) tmpDef->count);

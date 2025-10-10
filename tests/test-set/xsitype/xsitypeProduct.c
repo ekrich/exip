@@ -39,7 +39,7 @@ static errorCode sample_stringData(const String value, void* app_data);
 static errorCode sample_decimalData(Decimal value, void* app_data);
 static errorCode sample_intData(Integer int_val, void* app_data);
 static errorCode sample_floatData(Float fl_val, void* app_data);
-static errorCode sample_booleanData(boolean bool_val, void* app_data);
+static errorCode sample_booleanData(bool bool_val, void* app_data);
 static errorCode sample_dateTimeData(EXIPDateTime dt_val, void* app_data);
 static errorCode sample_binaryData(const char* binary_val, Index nbytes, void* app_data);
 static errorCode sample_qnameData(const QName qname, void* app_data);
@@ -80,12 +80,12 @@ int main(int ac, char **av) {
 
 	serialize.initHeader(&testStrm);
 
-	testStrm.header.has_options = TRUE;
+	testStrm.header.has_options = true;
 
 	testStrm.header.opts.schemaIDMode = SCHEMA_ID_EMPTY;
 
 	if	(schemaPtr) {
-		tmp_err_code = asciiToString("product", &testStrm.header.opts.schemaID, &testStrm.memList, FALSE); check("")
+		tmp_err_code = asciiToString("product", &testStrm.header.opts.schemaID, &testStrm.memList, false); check("")
 		testStrm.header.opts.schemaIDMode = SCHEMA_ID_SET;
 		printf ("### schemaId %s\n", "product");
 	}
@@ -95,28 +95,28 @@ int main(int ac, char **av) {
 	tmp_err_code = serialize.startDocument(&testStrm); check("SD")
 
 	printf ("### startElement %s:%s\n", EXEMPLE, "product");
-	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("product", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("product", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE exe:product")
 
 	printf ("### startElement %s:%s\n", EXEMPLE, "subproduct");
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("subproduct", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("subproduct", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE exe:subproduct")
 
 	printf ("### attribute %s:%s\n", XSI, "type");
-	tmp_err_code += asciiToString(XSI, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, FALSE); check("")
-	tmp_err_code += serialize.attribute(&testStrm, qname, TRUE, &valueType); check("xsi:type")
+	tmp_err_code += asciiToString(XSI, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("type", &ln, &testStrm.memList, false); check("")
+	tmp_err_code += serialize.attribute(&testStrm, qname, true, &valueType); check("xsi:type")
 
 	printf ("### qnameData %s:%s\n", EXEMPLE, "ShirtType");
-	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("ShirtType", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString(EXEMPLE, &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("ShirtType", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.qnameData(&testStrm, qname); check("qnameData exe:ShirtType")
 
 	printf ("### startElement %s:%s valueType=%d\n", "", "number", valueType);
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("number", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("number", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE number")
 
 	if	(schemaPtr) {
@@ -125,7 +125,7 @@ int main(int ac, char **av) {
 	}
 	else {
 		printf ("### stringData %s\n", "12345");
-		tmp_err_code += asciiToString("12345", &chVal, &testStrm.memList, FALSE);
+		tmp_err_code += asciiToString("12345", &chVal, &testStrm.memList, false);
 		tmp_err_code += serialize.stringData(&testStrm, chVal); check("CH")
 	}
 
@@ -133,8 +133,8 @@ int main(int ac, char **av) {
 	tmp_err_code += serialize.endElement(&testStrm); check("EE number")
 
 	printf ("### startElement %s:%s valueType=%d\n", "", "size", valueType);
-	tmp_err_code += asciiToString("", &uri, &testStrm.memList, FALSE); check("")
-	tmp_err_code += asciiToString("size", &ln, &testStrm.memList, FALSE); check("")
+	tmp_err_code += asciiToString("", &uri, &testStrm.memList, false); check("")
+	tmp_err_code += asciiToString("size", &ln, &testStrm.memList, false); check("")
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType); check("SE size")
 
 	if	(schemaPtr) {
@@ -143,7 +143,7 @@ int main(int ac, char **av) {
 	}
 	else {
 		printf ("### stringData %s\n", "33");
-		tmp_err_code += asciiToString("33", &chVal, &testStrm.memList, FALSE);
+		tmp_err_code += asciiToString("33", &chVal, &testStrm.memList, false);
 		tmp_err_code += serialize.stringData(&testStrm, chVal); check("CH")
 	}
 
@@ -190,7 +190,7 @@ int main(int ac, char **av) {
 	testParser.handler.binaryData = sample_binaryData;
 	testParser.handler.qnameData = sample_qnameData;
 
-	tmp_err_code = parseHeader(&testParser, FALSE); check("")
+	tmp_err_code = parseHeader(&testParser, false); check("")
 
 	// IV.1: Set the schema to be used for parsing.
 	// The schemaID mode and schemaID field can be read at
@@ -317,7 +317,7 @@ static errorCode sample_intData(Integer int_val, void* app_data)
 	return EXIP_OK;
 }
 
-static errorCode sample_booleanData(boolean bool_val, void* app_data)
+static errorCode sample_booleanData(bool bool_val, void* app_data)
 {
 	return EXIP_OK;
 }

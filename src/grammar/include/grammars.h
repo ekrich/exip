@@ -100,11 +100,11 @@ errorCode createFragmentGrammar(EXIPSchema* schema, QNameID* elQnameArr, Index q
 	 * @param[in] evnt event type
 	 * @param[in] nonTermID unique identifier of right-hand side Non-terminal
 	 * @param[in] qname qname identifier of the Event Type corresponding to the inserted production
-	 * @param[in] hasSecondLevelProd FALSE if there are no second level productions (only possible in Fragment Grammar);
-	 * otherwise TRUE
+	 * @param[in] hasSecondLevelProd false if there are no second level productions (only possible in Fragment Grammar);
+	 * otherwise true
 	 * @return Error handling code
 	 */
-	errorCode insertZeroProduction(DynGrammarRule* rule, EventType evnt, SmallIndex nonTermID, QNameID* qname, boolean hasSecondLevelProd);
+	errorCode insertZeroProduction(DynGrammarRule* rule, EventType evnt, SmallIndex nonTermID, QNameID* qname, bool hasSecondLevelProd);
 #endif
 
 /**

@@ -60,12 +60,12 @@ errorCode createSimpleTypeGrammar(Index typeId, ProtoGrammar* simpleGrammar);
  *            It should be lexicographically sorted
  * @param[in] contentTypeGrammar the proto-grammar of the complex type content: either Simple Type Grammar,
  * or Particle grammar or empty
- * @param[in] isMixedContent if the complex types has mixed content type (TRUE) or not (FALSE)
+ * @param[in] isMixedContent if the complex types has mixed content type (true) or not (false)
  * @param[in, out] complexGrammar the resulted proto-grammar
  * @return Error handling code
  */
 errorCode createComplexTypeGrammar(ProtoGrammarArray* attrUseArray, ProtoGrammar* contentTypeGrammar,
-								boolean isMixedContent, ProtoGrammar* complexGrammar);
+								bool isMixedContent, ProtoGrammar* complexGrammar);
 
 /**
  * @brief Creates Complex Ur-Type Grammar from XML Schema complex ur-type
@@ -84,7 +84,7 @@ errorCode createComplexUrTypeGrammar(ProtoGrammar* result);
  * @param[in] qnameID uri/ln indices in the unsorted string tables
  * @return Error handling code
  */
-errorCode createAttributeUseGrammar(boolean required, Index typeId,
+errorCode createAttributeUseGrammar(bool required, Index typeId,
 									ProtoGrammar* attrGrammar, QNameID qnameID);
 
 /**

@@ -32,11 +32,11 @@ struct EXISerializer
 	errorCode (*endDocument)(EXIStream* strm);
 	errorCode (*startElement)(EXIStream* strm, QName qname, EXITypeClass* valueType);
 	errorCode (*endElement)(EXIStream* strm);
-	errorCode (*attribute)(EXIStream* strm, QName qname, boolean isSchemaType, EXITypeClass* valueType);
+	errorCode (*attribute)(EXIStream* strm, QName qname, bool isSchemaType, EXITypeClass* valueType);
 
 	// For handling the data
 	errorCode (*intData)(EXIStream* strm, Integer int_val);
-	errorCode (*booleanData)(EXIStream* strm, boolean bool_val);
+	errorCode (*booleanData)(EXIStream* strm, bool bool_val);
 	errorCode (*stringData)(EXIStream* strm, const String str_val);
 	errorCode (*floatData)(EXIStream* strm, Float float_val);
 	errorCode (*binaryData)(EXIStream* strm, const char* binary_val, Index nbytes);
@@ -47,7 +47,7 @@ struct EXISerializer
 
 	// Miscellaneous
 	errorCode (*processingInstruction)(EXIStream* strm); // TODO: define the parameters!
-	errorCode (*namespaceDeclaration)(EXIStream* strm, const String ns, const String prefix, boolean isLocalElementNS);
+	errorCode (*namespaceDeclaration)(EXIStream* strm, const String ns, const String prefix, bool isLocalElementNS);
 
 	// EXI specific
 	errorCode (*exiHeader)(EXIStream* strm);
@@ -117,14 +117,14 @@ errorCode endElement(EXIStream* strm);
  * @param[in, out] strm EXI stream object
  * @param[in] qname qualified name of the attribute
  * @param[in] isSchemaType for schema mode, define if the value of the
- * attribute is conforming to the type defined in the schema for that attribute. If in schemaless it should be TRUE;
- * @param[out] valueType In case of a schema mode and isSchemaType == TRUE - the EXI type class
+ * attribute is conforming to the type defined in the schema for that attribute. If in schemaless it should be true;
+ * @param[out] valueType In case of a schema mode and isSchemaType == true - the EXI type class
  * of the attribute. It should be used to determine which function for data handling
  * to be used for its content. Otherwise - VALUE_TYPE_NONE_CLASS
  * @return Error handling code
  * @todo Consider handling the lexicographical sorting of attributes by exip encoding utilities?
  */
-errorCode attribute(EXIStream* strm, QName qname, boolean isSchemaType, EXITypeClass* valueType);
+errorCode attribute(EXIStream* strm, QName qname, bool isSchemaType, EXITypeClass* valueType);
 
 // For handling the data
 
@@ -146,7 +146,7 @@ errorCode intData(EXIStream* strm, Integer int_val);
  * @return Error handling code
  * @note Use in schema mode only!
  */
-errorCode booleanData(EXIStream* strm, boolean bool_val);
+errorCode booleanData(EXIStream* strm, bool bool_val);
 
 /**
  * @brief Encodes string data for element or attribute
@@ -229,16 +229,16 @@ errorCode qnameData(EXIStream* strm, QName qname);
 errorCode processingInstruction(EXIStream* strm);
 
 /**
- * @brief Encode a namespace declaration when Preserve.prefixes == TRUE
+ * @brief Encode a namespace declaration when Preserve.prefixes == true
  *
  * @param[in, out] strm EXI stream object
  * @param[in] ns the namespace to be encoded
  * @param[in] prefix the prefix of the namespace to be encoded
- * @param[in] isLocalElementNS TRUE if this is the namespace locally defined for the element
+ * @param[in] isLocalElementNS true if this is the namespace locally defined for the element
  * that contains it (see local-element-ns flag in the EXI spec)
  * @return Error handling code
  */
-errorCode namespaceDeclaration(EXIStream* strm, const String ns, const String prefix, boolean isLocalElementNS);
+errorCode namespaceDeclaration(EXIStream* strm, const String ns, const String prefix, bool isLocalElementNS);
 
 // EXI specific
 

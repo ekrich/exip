@@ -1,8 +1,8 @@
 /**
  * @defgroup build_msvs Build using MSVS
  *
- * @brief Information on how to build exip using MS Visual Studio 2010.
- * @warning { The MSVS build is out-of-date since version 0.4.1 of exip! }
+ * @brief Information on how to build exip using MS Visual Studio 2022.
+ * @warning { The MSVS build works since version 0.5.4 of exip! }
  * 
  * This build is implemented as a visual studio solution (exip.sln) with the following projects:
  *   <ul>

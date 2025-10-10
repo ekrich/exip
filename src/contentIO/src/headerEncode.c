@@ -80,8 +80,8 @@ errorCode encodeHeader(EXIStream* strm)
 		options_strm.context.bufferIndx = strm->context.bufferIndx;
 		options_strm.context.currAttr.lnId = LN_MAX;
 		options_strm.context.currAttr.uriId = URI_MAX;
-		options_strm.context.expectATData = FALSE;
-		options_strm.context.isNilType = FALSE;
+		options_strm.context.expectATData = false;
+		options_strm.context.isNilType = false;
 		options_strm.context.attrTypeId = 0;
 		options_strm.gStack = NULL;
 		options_strm.schema = (EXIPSchema*) &ops_schema;
@@ -124,9 +124,9 @@ static errorCode serializeOptionsStream(EXIStream* options_strm, EXIOptions* opt
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	EventCode tmpEvCode;
-	boolean hasUncommon = FALSE;
-	boolean hasLesscommon = FALSE;
-	boolean hasCommon = FALSE;
+	bool hasUncommon = false;
+	bool hasLesscommon = false;
+	bool hasCommon = false;
 	unsigned int ruleContext = 0;
 
 	// Implicit serialize.startDocument (0 bits)
@@ -142,13 +142,13 @@ static errorCode serializeOptionsStream(EXIStream* options_strm, EXIOptions* opt
 			opts->valuePartitionCapacity != INDEX_MAX ||
 			opts->drMap != NULL)
 	{
-		hasUncommon = TRUE;
-		hasLesscommon = TRUE;
+		hasUncommon = true;
+		hasLesscommon = true;
 	}
 	else if(opts->preserve != 0 || opts->blockSize != 1000000)
 	{
 		// lesscommon options
-		hasLesscommon = TRUE;
+		hasLesscommon = true;
 	}
 
 	if(hasLesscommon)
@@ -335,7 +335,7 @@ static errorCode serializeOptionsStream(EXIStream* options_strm, EXIOptions* opt
 	// common options if any...
 	if(WITH_COMPRESSION(opts->enumOpt) || WITH_FRAGMENT(opts->enumOpt) || opts->schemaIDMode != SCHEMA_ID_ABSENT)
 	{
-		hasCommon = TRUE;
+		hasCommon = true;
 	}
 
 	if(hasCommon)
@@ -393,7 +393,7 @@ static errorCode serializeOptionsStream(EXIStream* options_strm, EXIOptions* opt
 				tmpEvCode.part[1] = 0;
 				tmpEvCode.bits[1] = 0;
 				TRY(serializeEvent(options_strm, tmpEvCode, &nil)); // serialize.attribute nil="true"
-				TRY(serialize.booleanData(options_strm, TRUE));
+				TRY(serialize.booleanData(options_strm, true));
 			}
 			else
 			{

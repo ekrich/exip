@@ -329,7 +329,7 @@ errorCode createUriTableEntry(UriTable* uriTable, const String uri, int createPf
 	return EXIP_OK;
 }
 
-errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema)
+errorCode createUriTableEntries(UriTable* uriTable, bool withSchema)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	String emptyStr;
@@ -340,7 +340,7 @@ errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema)
 	// URI 0: "" (empty string)
 	TRY(createUriTableEntry(uriTable,
 									   emptyStr,   // Namespace - empty string
-									   TRUE, // Create prefix entry
+									   true, // Create prefix entry
 									   emptyStr,   // Prefix entry - empty string
 									   NULL, // No local names
 									   0));
@@ -348,7 +348,7 @@ errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema)
 	// URI 1: "http://www.w3.org/XML/1998/namespace"
 	TRY(createUriTableEntry(uriTable,
 									   XML_NAMESPACE,     // URI: "http://www.w3.org/XML/1998/namespace"
-									   TRUE,      // Create prefix entry
+									   true,      // Create prefix entry
 									   URI_1_PFX, // Prefix: "xml"
 									   URI_1_LN,  // Add local names
 									   URI_1_LN_SIZE));
@@ -356,17 +356,17 @@ errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema)
 	// URI 2: "http://www.w3.org/2001/XMLSchema-instance"
 	TRY(createUriTableEntry(uriTable,
 									   XML_SCHEMA_INSTANCE,     // URI: "http://www.w3.org/2001/XMLSchema-instance"
-									   TRUE,		// Create prefix entry
+									   true,		// Create prefix entry
 									   URI_2_PFX, // Prefix: "xsi"
 									   URI_2_LN,  // Add local names
 									   URI_2_LN_SIZE));
 
-	if(withSchema == TRUE)
+	if(withSchema == true)
 	{
 		// URI 3: "http://www.w3.org/2001/XMLSchema"
 		TRY(createUriTableEntry(uriTable,
 										   XML_SCHEMA_NAMESPACE,    // URI: "http://www.w3.org/2001/XMLSchema"
-										   FALSE,    // No prefix entry (see http://www.w3.org/TR/exi/#initialPrefixValues) 
+										   false,    // No prefix entry (see http://www.w3.org/TR/exi/#initialPrefixValues) 
 										   emptyStr,     // (no prefix)
 										   URI_3_LN, // Add local names
 										   URI_3_LN_SIZE));
@@ -375,42 +375,42 @@ errorCode createUriTableEntries(UriTable* uriTable, boolean withSchema)
 	return EXIP_OK;
 }
 
-boolean lookupUri(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId)
+bool lookupUri(UriTable* uriTable, String uriStr, SmallIndex* uriEntryId)
 {
 	SmallIndex i;
 
 	if(uriTable == NULL)
-		return FALSE;
+		return false;
 
 	for(i = 0; i < uriTable->count; i++)
 	{
 		if(stringEqual(uriTable->uri[i].uriStr, uriStr))
 		{
 			*uriEntryId = i;
-			return TRUE;
+			return true;
 		}
 	}
-	return FALSE;
+	return false;
 }
 
-boolean lookupLn(LnTable* lnTable, String lnStr, Index* lnEntryId)
+bool lookupLn(LnTable* lnTable, String lnStr, Index* lnEntryId)
 {
 	Index i;
 
 	if(lnTable == NULL)
-		return FALSE;
+		return false;
 	for(i = 0; i < lnTable->count; i++)
 	{
 		if(stringEqual(lnTable->ln[i].lnStr, lnStr))
 		{
 			*lnEntryId = i;
-			return TRUE;
+			return true;
 		}
 	}
-	return FALSE;
+	return false;
 }
 
-boolean lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId)
+bool lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId)
 {
 	SmallIndex i;
 
@@ -419,21 +419,21 @@ boolean lookupPfx(PfxTable* pfxTable, String pfxStr, SmallIndex* pfxEntryId)
 		if(stringEqual(pfxTable->pfx[i], pfxStr))
 		{
 			*pfxEntryId = i;
-			return TRUE;
+			return true;
 		}
 	}
-	return FALSE;
+	return false;
 }
 
 #if VALUE_CROSSTABLE_USE
-boolean lookupVx(ValueTable* valueTable, VxTable* vxTable, String valueStr, Index* vxEntryId)
+bool lookupVx(ValueTable* valueTable, VxTable* vxTable, String valueStr, Index* vxEntryId)
 {
 	Index i;
 	VxEntry* vxEntry;
 	ValueEntry* valueEntry;
 
 	if(vxTable == NULL || vxTable->vx == NULL)
-		return FALSE;
+		return false;
 
 	for(i = 0; i < vxTable->count; i++)
 	{
@@ -444,14 +444,14 @@ boolean lookupVx(ValueTable* valueTable, VxTable* vxTable, String valueStr, Inde
 		if(stringEqual(valueEntry->valueStr, valueStr))
 		{
 			*vxEntryId = i;
-			return TRUE;
+			return true;
 		}
 	}
-	return FALSE;
+	return false;
 }
 #endif
 
-boolean lookupValue(ValueTable* valueTable, String valueStr, Index* valueEntryId)
+bool lookupValue(ValueTable* valueTable, String valueStr, Index* valueEntryId)
 {
 	Index i;
 	ValueEntry* valueEntry;
@@ -466,7 +466,7 @@ boolean lookupValue(ValueTable* valueTable, String valueStr, Index* valueEntryId
 		if(i != INDEX_MAX)
 		{
 			*valueEntryId = i;
-			return TRUE;
+			return true;
 		}
 	}
 	else
@@ -479,10 +479,10 @@ boolean lookupValue(ValueTable* valueTable, String valueStr, Index* valueEntryId
 			if(stringEqual(valueEntry->valueStr, valueStr))
 			{
 				*valueEntryId = i;
-				return TRUE;
+				return true;
 			}
 		}
 	}
 
-	return FALSE;
+	return false;
 }

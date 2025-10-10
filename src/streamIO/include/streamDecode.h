@@ -33,14 +33,14 @@ errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned l
 
 /**
  * @brief Decode EXI Boolean
- * Decode a single boolean value. The value false is represented by the bit
+ * Decode a single bool value. The value false is represented by the bit
  * (byte) 0, and the value true is represented by the bit (byte) 1.
  *
  * @param[in] strm EXI stream of bits
  * @param[out] bool_val 0-false, 1-true
  * @return Error handling code
  */
-errorCode decodeBoolean(EXIStream* strm, boolean* bool_val);
+errorCode decodeBoolean(EXIStream* strm, bool* bool_val);
 
 /**
  * @brief Decode EXI Unsigned Integer type
