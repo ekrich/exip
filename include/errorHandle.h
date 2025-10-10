@@ -110,7 +110,7 @@ extern "C" {
  */
 #if EXIP_DEBUG == ON
 
-#  include <stdio.h>
+#include <stdio.h>
 
 /* Platform specific debugging character output */
 # ifndef DEBUG_CHAR_OUTPUT
