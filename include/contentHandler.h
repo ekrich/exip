@@ -48,7 +48,7 @@ struct ContentHandler
 	errorCode (*decimalData)(Decimal dec_val, void* app_data);
 	errorCode (*listData)(EXITypeClass exiType, unsigned int itemCount, void* app_data);
 	errorCode (*qnameData)(const QName qname, void* app_data); // xsi:type value only
-
+	errorCode (*nilData)(const boolean* bool_val, const String* str_value, void* app_data); // xsi:nil value only
 	// Miscellaneous
 	errorCode (*processingInstruction)(void* app_data); // TODO: define the parameters!
 	errorCode (*namespaceDeclaration)(const String ns, const String prefix, boolean isLocalElementNS, void* app_data);
