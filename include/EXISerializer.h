@@ -122,7 +122,6 @@ errorCode endElement(EXIStream* strm);
  * of the attribute. It should be used to determine which function for data handling
  * to be used for its content. Otherwise - VALUE_TYPE_NONE_CLASS
  * @return Error handling code
- * @todo Consider handling the lexicographical sorting of attributes by exip encoding utilities?
  */
 errorCode attribute(EXIStream* strm, QName qname, bool isSchemaType, EXITypeClass* valueType);
 
@@ -224,7 +223,6 @@ errorCode qnameData(EXIStream* strm, QName qname);
  *
  * @param[in, out] strm EXI stream object
  * @return Error handling code
- * @todo define the parameters!
  */
 errorCode processingInstruction(EXIStream* strm);
 
@@ -247,7 +245,6 @@ errorCode namespaceDeclaration(EXIStream* strm, const String ns, const String pr
  *
  * @param[in, out] strm EXI stream object
  * @return Error handling code
- * @todo define the parameters!
  */
 errorCode selfContained(EXIStream* strm);
 
@@ -321,7 +318,7 @@ errorCode flushEXIData(EXIStream* strm, char* outBuf, unsigned int bufSize, unsi
  * To be used by code generation tools such as static XML bindings
  * and when efficiency is of high importance
  *
- * @param[in, out] strm EXI stream
+ * @param[in, out] strm EXI stream object
  * @param[in] ec EXI event code of the production
  * @param[in] qname used only for SE(*), AT(*), SE(uri:*), AT(uri:*) and when
  * a new prefix should be serialized in SE(QName) and AT(QName); NULL otherwise
