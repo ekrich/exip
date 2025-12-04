@@ -68,6 +68,29 @@ The easiest setup is to install Visual Studio 2019 to get the latest Windows 10 
 
 To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
 
+Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project installs `check:x86-windows` via the `vcpkg.json`. If behind a proxy and it fails to pull your dependency you can use the Developer Command prompt fro vs2022 set the proxy as follows depndening on your proxy setup"
+
+```sh
+set http_proxy=http://user:pass@host:port
+set https_proxy=http://user:pass@host:port
+```
+Visual Studio seems the pick that up sp then it compiles withing the app.
+
+Note: Attemped to use static linking and `clang` in the setup but failed pretty badly. Used these below.
+
+```sh
+vcpkg install check:x64-windows-static
+vcpkg install check:x64-windows
+```
+
+For future potential `cmake` setup.
+
+```
+  find_package(check CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE $<IF:$<TARGET_EXISTS:Check::check>,Check::check,Check::checkShared>)
+
+```
+
 If you don't have access to the Windows store the bootstrap will fail so you should download the the latest from https://github.com/microsoft/vcpkg-tool The version used here was `2024-11-12` for reference. You should check the SHA and then make the executable runnable.
 
 ## Documentation Dependency
