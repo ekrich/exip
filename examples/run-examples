@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# Run examples: use -help to see options
+# Run from exip directory: examples/run-examples
+#
+
+# Use -euxo for debug
+set -euo pipefail
+
+
+DIR="./bin/examples"
+
+if [ -z "$(ls -A "$DIR")" ]; then
+    echo "Directory '$DIR' is empty. Please run build first." >&2
+    exit 1
+else
+    echo "Running examples..."
+    cd ${DIR}
+    echo "exipd (decode)"
+    ./exipd -xml -schema=exipd-test-xsd.exi exipd-test.exi
+    ./exipd -exi -schema=exipd-test-xsd.exi exipd-test.exi
+    ./exipd -xml -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
+    ./exipd -exi -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
+    echo "exipd (encode)"
+    ./exipe -schema=exipe-test-xsd.exi,exipe-test-types-xsd.exi,exipe-test-nested-xsd.exi
+    echo "Done."
+fi
