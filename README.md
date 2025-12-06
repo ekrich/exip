@@ -113,6 +113,8 @@ Use one of the following commands to install `doxygen` and Valgrind for `run-tes
 
 ### macOS
 
+This doesn't work great so a `run-tests-macos-arm` was added that calls `leaks`.
+
 ```sh
 $ brew install doxygen
 $ brew tap LouisBrunner/valgrind
