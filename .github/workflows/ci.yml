@@ -35,7 +35,11 @@ jobs:
         if: startsWith(matrix.os, 'windows') == false
         run: |
             cd build/gcc
+            echo "Run build"
             make TARGET=pc clean all check examples utils doc
+            echo "Run examples"
+            cd ../..
+            examples/run-examples
 
       - name: Run tests ${{matrix.os}}
         if: (startsWith(matrix.os, 'windows-2022'))
