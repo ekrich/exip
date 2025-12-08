@@ -126,6 +126,10 @@ $ make TARGET=pc clean all check examples utils doc
 
 ## Building on Windows
 
-The normal way to build is to open Visual Studio and navigate to `build\vs2019` and then open the `exip.sln` solution file. Once the project is loaded you can right click to build or use the menus. Individual projects can be cleaned and compiled as well.
+The normal way to build is to open Visual Studio and navigate to `build\vs2022` and then open the `exip.sln` solution file. Once the project is loaded you can right click to build or use the menus. Individual projects can be cleaned and compiled as well.
 
 Note that the option `/FS` is added to the build as the different projects share the same output directory. This was the setup in `vs2010` that was upgraded so this was not changed. The extra `/FS` option can be seen in the `Configuration Properties / C/C++ / Command Line` menu. If you prefer to build on the command line, refer to the Github action and this will also provide clues on how to run the tests.
+
+### Running tests Using Visual Studio
+
+The tests (`check_*`) are individual projects so you can right click on the project and select `Debug -> Start Without Debugging` to run the unit test. Locally you can change to debugging if you wish without sharing and changing the project files.
