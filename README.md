@@ -17,7 +17,7 @@ Known to pass CI with the following configurations:
 | ---------- | ----- | ------------------------| --------------------|-----------------|
 | macOS      |   ✅  | 13.6.x                  | arm                 | gcc             |
 | Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
-| Windows    |   ✅  | Visual Studio 2019/2022 | x86/x86_64          | cl              |
+| Windows    |   ✅  | Visual Studio 2022      | x86/x86_64          | cl              |
 
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
@@ -62,19 +62,19 @@ $ apt-get install check
 
 ### Windows
 
-The easiest setup is to install Visual Studio 2019 to get the latest Windows 10 SDK and the MSVC v142 tools. You can also use Visual Studio 2022 along with MSVC v143 tools. The following is the installer setup used for the current vs2019 setup that succeeded.
+The easiest setup is to install Visual Studio 2022 to get the latest Windows 10 SDK and the MSVC v143 tools. The following is the installer setup used for the current vs2022 setup that succeeded.
 
-![Visual Studio Installed Image](doc/www/VS2019.png)
+![Visual Studio Installed Image](doc/www/vs2022.png)
 
 To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
 
-Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project installs `check:x86-windows` via the `vcpkg.json`. If behind a proxy and it fails to pull your dependency you can use the Developer Command prompt fro vs2022 set the proxy as follows depndening on your proxy setup"
+Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project installs `check:x86-windows` via the `vcpkg.json`. If behind a proxy and it fails to pull your dependency you can use the Developer Command prompt from vs2022 set the proxy as follows depending on your proxy setup.
 
 ```sh
 set http_proxy=http://user:pass@host:port
 set https_proxy=http://user:pass@host:port
 ```
-Visual Studio seems the pick that up sp then it compiles withing the app.
+Visual Studio seems the pick that up those variables so then it compiles within the app.
 
 Note: Attemped to use static linking and `clang` in the setup but failed pretty badly. Used these below.
 
