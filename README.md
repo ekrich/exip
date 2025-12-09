@@ -31,7 +31,7 @@ The following sections are for new contributors to EXIP or people wanting to try
 
 ## Miscellaneous
 
-The macOS `arm` processors have a non-standard include directory so there needs to be an entry in the `compile_flags.txt` file for `clangd` to support the Check library. This is at the root of the project.
+The macOS `arm` processors have a non-standard include directory so there needs to be an entry in the `compile_flags.txt` file for `clangd` to support the Check library. This files is at the root of the project.
 
 Adding architecture specific [code](https://stackoverflow.com/questions/714100/os-detecting-makefile) to the `Makefile` may not be so good but for now it works.
 
@@ -140,3 +140,8 @@ Once the project is built you can run the following `bat` file script from the r
 ```bat
 scripts/run-unit-tests.bat
 ```
+=======
+## Licenses
+
+ - Original license: [EISLAB](LICENSE-orig.txt)
+ - Additions: [Apache License, Version 2.0](LICENSE-2.0.txt)
