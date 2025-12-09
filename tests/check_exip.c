@@ -1234,7 +1234,7 @@ START_TEST (test_substitution_groups)
 	char buf[INPUT_BUFFER_SIZE];
 	char* schemafname[2] = {"exip/subsGroups/root-xsd.exi","exip/subsGroups/sub-xsd.exi"};
 	char *exifname = "exip/subsGroups/root.exi";
-	char exipath[MAX_PATH_LEN + strlen(exifname)];
+	char exipath[MAX_PATH_LEN + sizeof(exifname) - 1];
 	unsigned int eventCount;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	BinaryBuffer buffer;
@@ -2640,7 +2640,7 @@ static void parseSchema(char** xsdList, int count, EXIPSchema* schema)
 	FILE *schemaFile;
 	BinaryBuffer buffer[MAX_XSD_FILES_COUNT]; // up to 10 XSD files
 	size_t pathlen = strlen(dataDir);
-	char exipath[MAX_PATH_LEN + strlen(xsdList[0])];
+	char exipath[MAX_PATH_LEN + sizeof(xsdList[0]) - 1];
 	int i;
 
 	for (i = 0; i < count; i++)
