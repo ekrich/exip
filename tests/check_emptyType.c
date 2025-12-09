@@ -51,7 +51,7 @@ static void parseSchema(const char* fileName, EXIPSchema* schema)
 	BinaryBuffer buffer;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	size_t pathlen = strlen(dataDir);
-	char exipath[MAX_PATH_LEN + strlen(fileName)];
+	char exipath[MAX_PATH_LEN + sizeof(fileName) - 1];
 
 	memcpy(exipath, dataDir, pathlen);
 	exipath[pathlen] = '/';
@@ -232,7 +232,7 @@ START_TEST (test_default_options)
 	char buf[OUTPUT_BUFFER_SIZE];
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	BinaryBuffer buffer;
-	char exipath[MAX_PATH_LEN + strlen(EMPTY_TYPE_DEFAULT)];
+	char exipath[MAX_PATH_LEN + sizeof(EMPTY_TYPE_DEFAULT) - 1];
 	size_t pathlen;
 	FILE *infile;
 	struct appData parsingData;
@@ -306,7 +306,7 @@ START_TEST (test_strict_option)
 	char buf[OUTPUT_BUFFER_SIZE];
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	BinaryBuffer buffer;
-	char exipath[MAX_PATH_LEN + strlen(EMPTY_TYPE_DEFAULT)];
+	char exipath[MAX_PATH_LEN + sizeof(EMPTY_TYPE_DEFAULT) - 1];
 	size_t pathlen;
 	FILE *infile;
 	struct appData parsingData;

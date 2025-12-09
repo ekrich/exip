@@ -25,6 +25,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_builtin_grammer", "ch
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_exip", "check_exip.vcxproj", "{84E33E2A-6D3D-4294-957E-986803EAD61F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_emptyType", "check_emptyType.vcxproj", "{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -113,6 +115,14 @@ Global
 		{84E33E2A-6D3D-4294-957E-986803EAD61F}.Release|Win32.Build.0 = Release|Win32
 		{84E33E2A-6D3D-4294-957E-986803EAD61F}.Release|x64.ActiveCfg = Release|Win32
 		{84E33E2A-6D3D-4294-957E-986803EAD61F}.Release|x64.Build.0 = Release|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Debug|Win32.Build.0 = Debug|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Debug|x64.ActiveCfg = Debug|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Debug|x64.Build.0 = Debug|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|Win32.ActiveCfg = Release|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|Win32.Build.0 = Release|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|x64.ActiveCfg = Release|Win32
+		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|x64.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
