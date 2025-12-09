@@ -43,7 +43,7 @@ jobs:
             vcpkg integrate install
             msbuild.exe build\vs2022\exip.sln -property:Configuration=Debug
             echo "Run individual tests"
-            build\vs2022\Debug\check_builtin_grammer.exe ..\..\tests\test-set
+            build\vs2022\Debug\check_builtin_grammer.exe ../../tests/test-set
             build\vs2022\Debug\check_contentio.exe
             build\vs2022\Debug\check_grammar.exe
             build\vs2022\Debug\check_profile.exe

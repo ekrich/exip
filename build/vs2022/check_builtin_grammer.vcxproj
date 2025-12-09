@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5C3B23A8-20B1-480E-B4FA-A9B1A6CA70C5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>check_contentio</RootNamespace>
+    <RootNamespace>check_builtin_grammer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
