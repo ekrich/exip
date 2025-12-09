@@ -10,19 +10,12 @@ set "EXE_DIR=build\vs2022\Debug"
 
 echo Running tests ...
 :: List of test executables separated by spaces.
-set "testlist=%EXE_DIR%\check_builtin_grammer.exe
-    %EXE_DIR%\check_contentio.exe
-    %EXE_DIR%\check_emptyType.exe
-    %EXE_DIR%\check_exip.exe
-    %EXE_DIR%\check_grammar.exe
-    %EXE_DIR%\check_profile.exe
-    %EXE_DIR%\check_streamIO.exe
-    %EXE_DIR%\check_stringTables.exe"
+set "testlist=%EXE_DIR%\check_builtin_grammer.exe %EXE_DIR%\check_contentio.exe %EXE_DIR%\check_emptyType.exe %EXE_DIR%\check_exip.exe %EXE_DIR%\check_grammar.exe %EXE_DIR%\check_profile.exe %EXE_DIR%\check_streamIO.exe %EXE_DIR%\check_stringTables.exe"
 
 :: Run each test
 for %%x in (%testlist%) do (
-    echo Running %%x ...
-    %%x %TEST_DIR%
+    echo Running %%x %TEST_DIR%
+    %%x "%TEST_DIR%"
     set "err=!ERRORLEVEL!"
     if !err! neq 0 (
         echo %%x test failed with error code: !err!
