@@ -72,7 +72,7 @@ START_TEST (test_decode_ant_example01)
 	Parser testParser;
 	char buf[INPUT_BUFFER_SIZE];
 	const char *exifname = "Ant/build-build.bitPacked";
-	char exipath[MAX_PATH_LEN + strlen(exifname)];
+	char exipath[MAX_PATH_LEN + sizeof(exifname) - 1];
 	struct appData parsingData;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	BinaryBuffer buffer;

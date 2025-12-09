@@ -17,7 +17,7 @@ Known to pass CI with the following configurations:
 | ---------- | ----- | ------------------------| --------------------|-----------------|
 | macOS      |   ✅  | 13.6.x                  | arm                 | gcc             |
 | Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
-| Windows    |   ✅  | Visual Studio 2019/2022 | x86/x86_64          | cl              |
+| Windows    |   ✅  | Visual Studio 2022      | x86/x86_64          | cl              |
 
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
@@ -62,11 +62,35 @@ $ apt-get install check
 
 ### Windows
 
-The easiest setup is to install Visual Studio 2019 to get the latest Windows 10 SDK and the MSVC v142 tools. You can also use Visual Studio 2022 along with MSVC v143 tools. The following is the installer setup used for the current vs2019 setup that succeeded.
+The easiest setup is to install Visual Studio 2022 to get the latest Windows 10 SDK and the MSVC v143 tools. The following is the installer setup used for the current vs2022 setup that succeeded.
 
-![Visual Studio Installed Image](doc/www/VS2019.png)
+![Visual Studio Installed Image](doc/www/vs2022.png)
 
 To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
+
+Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project installs `check:x86-windows` via the `vcpkg.json`. If behind a basic auth proxy and it fails to pull your dependency you can use the Developer Command prompt from vs2022 set the proxy as follows depending on your proxy setup.
+
+```sh
+set http_proxy=http://user:pass@host:port
+set https_proxy=http://user:pass@host:port
+devenv
+```
+Visual Studio seems the pick that up those variables so then it compiles within the app.
+
+Note: Attemped to use static linking and `clang` in the setup but failed pretty badly. Used these below. The seems to be `-clang` artifacts add `x86` is the default build architecture so maybe those libraries might make more sense.
+
+```sh
+vcpkg install check:x64-windows-static
+vcpkg install check:x64-windows
+```
+
+For future potential `cmake` setup.
+
+```
+  find_package(check CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE $<IF:$<TARGET_EXISTS:Check::check>,Check::check,Check::checkShared>)
+
+```
 
 If you don't have access to the Windows store the bootstrap will fail so you should download the the latest from https://github.com/microsoft/vcpkg-tool The version used here was `2024-11-12` for reference. You should check the SHA and then make the executable runnable.
 
@@ -103,6 +127,16 @@ $ make TARGET=pc clean all check examples utils doc
 
 ## Building on Windows
 
-The normal way to build is to open Visual Studio and navigate to `build\vs2019` and then open the `exip.sln` solution file. Once the project is loaded you can right click to build or use the menus. Individual projects can be cleaned and compiled as well.
+The normal way to build is to open Visual Studio and navigate to `build\vs2022` and then open the `exip.sln` solution file. Once the project is loaded you can right click to build or use the menus. Individual projects can be cleaned and compiled as well.
 
 Note that the option `/FS` is added to the build as the different projects share the same output directory. This was the setup in `vs2010` that was upgraded so this was not changed. The extra `/FS` option can be seen in the `Configuration Properties / C/C++ / Command Line` menu. If you prefer to build on the command line, refer to the Github action and this will also provide clues on how to run the tests.
+
+### Running tests Using Visual Studio
+
+The tests (`check_*`) are individual projects so you can right click on the project and select `Debug -> Start Without Debugging` to run the unit test. If the unit test requires test files and doesn't run you can Right Click on the project and select `Properties -> Configuration Properties -> Debugging` and then add in `Command Arguments`, `../../tests/test-set` to give the path to the executable. The test source includes specific test files which are appended to this path.
+
+Once the project is built you can run the following `bat` file script from the root of the project.
+
+```bat
+scripts/run-unit-tests.bat
+```

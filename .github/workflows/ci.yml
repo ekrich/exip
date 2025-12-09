@@ -45,10 +45,7 @@ jobs:
         if: (startsWith(matrix.os, 'windows-2022'))
         run: |
             vcpkg integrate install
+            echo "Running build ..."
             msbuild.exe build\vs2022\exip.sln -property:Configuration=Debug
-            echo "Run individual tests"
-            build\vs2022\Debug\check_contentio.exe
-            build\vs2022\Debug\check_grammar.exe
-            build\vs2022\Debug\check_streamIO.exe
-            build\vs2022\Debug\check_stringTables.exe
+            scripts\run-unit-tests.bat
             echo "Run examples (todo)"

@@ -7,10 +7,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\examples\simpleEncoding\encodeTestEXI.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\examples\simpleEncoding\exipe.c">
+    <ClCompile Include="..\..\tests\check_exip.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
