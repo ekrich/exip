@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_exip", "check_exip.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_emptyType", "check_emptyType.vcxproj", "{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_xsi_type", "check_xsi_type.vcxproj", "{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -123,6 +125,14 @@ Global
 		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|Win32.Build.0 = Release|Win32
 		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|x64.ActiveCfg = Release|Win32
 		{19563CAF-C32A-4A94-9015-CC3A9DCBF9FE}.Release|x64.Build.0 = Release|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Debug|Win32.Build.0 = Debug|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Debug|x64.ActiveCfg = Debug|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Debug|x64.Build.0 = Debug|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Release|Win32.ActiveCfg = Release|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Release|Win32.Build.0 = Release|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Release|x64.ActiveCfg = Release|Win32
+		{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}.Release|x64.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

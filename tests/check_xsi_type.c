@@ -486,7 +486,7 @@ static void parseSchema(const char* fileName, EXIPSchema* schema)
 	BinaryBuffer buffer;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	size_t pathlen = strlen(dataDir);
-	char exipath[MAX_PATH_LEN + strlen(fileName)];
+	char exipath[MAX_PATH_LEN + sizeof(fileName) - 1];
 
 	memcpy(exipath, dataDir, pathlen);
 	exipath[pathlen] = '/';
