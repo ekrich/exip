@@ -12,6 +12,7 @@ echo Running tests ...
 :: List of test executables separated by spaces.
 set "testlist=%EXE_DIR%\check_builtin_grammer.exe
     %EXE_DIR%\check_contentio.exe
+    %EXE_DIR%\check_exip.exe
     %EXE_DIR%\check_grammar.exe
     %EXE_DIR%\check_profile.exe
     %EXE_DIR%\check_streamIO.exe

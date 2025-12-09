@@ -133,3 +133,9 @@ Note that the option `/FS` is added to the build as the different projects share
 ### Running tests Using Visual Studio
 
 The tests (`check_*`) are individual projects so you can right click on the project and select `Debug -> Start Without Debugging` to run the unit test. Locally you can change to debugging if you wish without sharing and changing the project files.
+
+Once the project is built you can run the following `bat` file script from the root of the project.
+
+```bat
+scripts/run-unit-tests.bat
+```
