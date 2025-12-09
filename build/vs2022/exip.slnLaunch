@@ -1,31 +1,6 @@
 [
   {
     "Name": "New Profile",
-    "Projects": [
-      {
-        "Path": "check_builtin_grammer.vcxproj",
-        "Action": "StartWithoutDebugging"
-      },
-      {
-        "Path": "check_contentio.vcxproj",
-        "Action": "StartWithoutDebugging"
-      },
-      {
-        "Path": "check_grammar.vcxproj",
-        "Action": "StartWithoutDebugging"
-      },
-      {
-        "Path": "check_streamIO.vcxproj",
-        "Action": "StartWithoutDebugging"
-      },
-      {
-        "Path": "check_stringTables.vcxproj",
-        "Action": "StartWithoutDebugging"
-      },
-      {
-        "Path": "check_profile.vcxproj",
-        "Action": "StartWithoutDebugging"
-      }
-    ]
+    "Projects": []
   }
 ]

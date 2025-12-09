@@ -68,15 +68,16 @@ The easiest setup is to install Visual Studio 2022 to get the latest Windows 10 
 
 To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
 
-Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project installs `check:x86-windows` via the `vcpkg.json`. If behind a proxy and it fails to pull your dependency you can use the Developer Command prompt from vs2022 set the proxy as follows depending on your proxy setup.
+Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project installs `check:x86-windows` via the `vcpkg.json`. If behind a basic auth proxy and it fails to pull your dependency you can use the Developer Command prompt from vs2022 set the proxy as follows depending on your proxy setup.
 
 ```sh
 set http_proxy=http://user:pass@host:port
 set https_proxy=http://user:pass@host:port
+devenv
 ```
 Visual Studio seems the pick that up those variables so then it compiles within the app.
 
-Note: Attemped to use static linking and `clang` in the setup but failed pretty badly. Used these below.
+Note: Attemped to use static linking and `clang` in the setup but failed pretty badly. Used these below. The seems to be `-clang` artifacts add `x86` is the default build architecture so maybe those libraries might make more sense.
 
 ```sh
 vcpkg install check:x64-windows-static
@@ -132,7 +133,7 @@ Note that the option `/FS` is added to the build as the different projects share
 
 ### Running tests Using Visual Studio
 
-The tests (`check_*`) are individual projects so you can right click on the project and select `Debug -> Start Without Debugging` to run the unit test. Locally you can change to debugging if you wish without sharing and changing the project files.
+The tests (`check_*`) are individual projects so you can right click on the project and select `Debug -> Start Without Debugging` to run the unit test. If the unit test requires test files and doesn't run you can Right Click on the project and select `Properties -> Configuration Properties -> Debugging` and then add in `Command Arguments`, `../../tests/test-set` to give the path to the executable. The test source includes specific test files which are appended to this path.
 
 Once the project is built you can run the following `bat` file script from the root of the project.
 
