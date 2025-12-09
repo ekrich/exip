@@ -3,6 +3,10 @@
     "Name": "New Profile",
     "Projects": [
       {
+        "Path": "check_builtin_grammer.vcxproj",
+        "Action": "StartWithoutDebugging"
+      },
+      {
         "Path": "check_contentio.vcxproj",
         "Action": "StartWithoutDebugging"
       },
