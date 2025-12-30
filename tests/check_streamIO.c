@@ -16,8 +16,12 @@
  * @par[Revision] $Id$
  */
 
+/* Important for _REENT macro - sys/reent.h for Newlib (libc) */
+#include <stdio.h>
+#include <string.h>
+/* Other standard C lib and then local includes */
 #include <stdlib.h>
-#include <check.h>
+#include <check.h> // test
 #include "streamRead.h"
 #include "streamWrite.h"
 #include "streamDecode.h"

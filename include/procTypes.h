@@ -18,10 +18,13 @@
 #ifndef PROCTYPES_H_
 #define PROCTYPES_H_
 
+/* Important for _REENT macro - sys/reent.h for Newlib (libc) */
+#include <stdio.h>
+#include <string.h>
+/* Other standard C lib and then local includes */
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h>
 #include <time.h>
 #include "errorHandle.h"
 #include "exipConfig.h"

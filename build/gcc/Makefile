@@ -159,7 +159,7 @@ INCDIRS += -I$(PROJECT_ROOT)/examples/simpleDecoding
 INCDIRS += -I$(PROJECT_ROOT)/tests
 INCDIRS += -I$(PROJECT_ROOT)/utils/schemaHandling/include
 
-LDFLAGS += -L$(LIB_BIN_DIR) 
+LDFLAGS += -L$(LIB_BIN_DIR) $(ADDITIONAL_LDFLAGS)
 
 # Tests all targets by default. May override in environment to specify checks to run, for example:
 #   $make check CHECK_TARGETS="streamio strict_grammar"
