@@ -15,6 +15,10 @@
  * @par[Revision] $Id$
  */
 
+/* Important for _REENT macro - sys/reent.h for Newlib (libc) */
+#include <stdio.h>
+#include <string.h>
+/* Other standard C lib and then local includes */
 #include "stringManipulate.h"
 #include "memManagement.h"
 

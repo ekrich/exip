@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  # This env var is used in build-params.mk
+  CONTIKI: ${{ github.workspace }}/contiki-ng
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: contiker/contiki-ng:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [contiki-ng]
+    steps:
+      - name: Checkout exip
+        uses: actions/checkout@v4
+        with:
+          path: exip # to checkout side by side in the workspace
+
+      - name: Checkout contiki-ng
+        uses: actions/checkout@v4
+        with:
+          repository: contiki-ng/contiki-ng
+          path: contiki-ng
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y check
+
+      - name: Verify Environment
+        run: |
+          echo -n "User: "
+          whoami
+          echo -n "Working Dir: "
+          pwd
+          echo "Working Dir Contents: "
+          ls
+          echo "EXIP Contents: "
+          ls exip
+          echo "Contiki-ng Contents: "
+          ls contiki-ng
+          echo "Container Root Dir: "
+          ls -C /
+
+      - name: Build contiki-ng
+        run: |
+            cd exip/build/gcc
+            echo "Run build and test"
+            make TARGET=zoul clean all
+
+      - name: Verify 32-bit ARM Architecture
+        run: |
+            # This proves the build actually produced a 32-bit ARM binary (.a is in bin/lib)
+            echo -n "Binary Specs: "
+            arm-none-eabi-readelf -h -A exip/bin/EXIParser.o \
+              | grep -E "Class:|Machine:|Flags:|Tag_THUMB_ISA_use:|Tag_ABI_VFP_args:" \
+              | xargs

@@ -14,8 +14,8 @@
  * @par[Revision] $Id$
  */
 
-#include "d_mem.h"
-#include <stdlib.h>
+
+#include "os/lib/heapmem.h"
 
 #ifndef EXIPCONFIG_H_
 #define EXIPCONFIG_H_
@@ -36,14 +36,15 @@
 #define DEBUG_CHAR_OUTPUT(character)	do {_printf ("%c", character);} while(0)
 #define DEBUG_OUTPUT(msg)	do {_printf msg;} while(0)
 
-#define assert(ignore)((void) 0)
+//#define assert(ignore)((void) 0)
 
 /**
  * Define the memory allocation and freeing functions
  */
-#define EXIP_MALLOC d_malloc
-#define EXIP_REALLOC d_realloc
-#define EXIP_MFREE d_free
+#define EXIP_MALLOC heapmem_alloc
+#define EXIP_REALLOC heapmem_realloc
+#define EXIP_MFREE heapmem_free
+#define HEAP_CONF_ARENA_SIZE 4096 /* 4 - 8 KB, zoul has 32 KB RAM */
 
 #define HASH_TABLE_USE OFF
 #define INITIAL_HASH_TABLE_SIZE 53
@@ -63,8 +64,8 @@ struct ThinFloat
 
 #define EXIP_FLOAT struct ThinFloat
 
-#define LLONG_MAX LONG_MAX
-#define LLONG_MIN LONG_MIN
+//#define LLONG_MAX LONG_MAX
+//#define LLONG_MIN LONG_MIN
 
 #define DEFAULT_GRAMMAR_TABLE         40
 #define DEFAULT_SIMPLE_GRAMMAR_TABLE  55
@@ -78,7 +79,7 @@ struct ThinFloat
 /**
  * Affects encoding only!
  * When an untyped value is expected in the EXI stream (encoded with
- * String according to the spec) passing a typed value different from String will require a
+ * String according to the spec) passing a typed value diferent from String will require a
  * conversion. If EXIP_IMPLICIT_DATA_TYPE_CONVERSION is enabled the
  * EXIP library takes care of that. Otherwise, if disabled, the applications
  * need to make sure they always pass String typed data when String/untyped value is
