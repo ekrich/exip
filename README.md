@@ -6,7 +6,7 @@
 
 ## Current status
 
-This project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed and of the rest of the work to date is to support the platforms shown in the table below. The project originally supported the embedded IoT [Contiki](https://github.com/contiki-ng/contiki-ng) platform but this support has not been addressed to date. See the following original links for more information:
+This project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed and of the rest of the work to date is to support the platforms shown in the table below. The project originally supported the Contiki embedded IoT platform and now compiles on the [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project. See the following original links for more information:
 
 * [Original README.txt](README.txt)
 * [Original Website](https://exip.sourceforge.net/)
