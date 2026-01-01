@@ -13,11 +13,12 @@ This project was not maintained on [SourceForge](https://sourceforge.net/project
 
 Known to pass CI with the following configurations:
 
-| OS         | Works | Version(s)              | Arch(s)             | Compiler(s)
-| ---------- | ----- | ------------------------| --------------------|-----------------|
-| macOS      |   ✅  | 13.6.x                  | arm                 | gcc             |
-| Linux      |   ✅  | Ubuntu 22.0.4           | x86_64              | gcc             |
-| Windows    |   ✅  | Visual Studio 2022      | x86/x86_64          | cl              |
+| OS         | Works | Version(s)              | Arch(s)                | Compiler(s)
+| ---------- | ----- | ----------------------- | ---------------------- | --------------- |
+| macOS      |   ✅  | 13.6.x                  | arm                    | gcc             |
+| Linux      |   ✅  | Ubuntu 22.0.4           | x86_64                 | gcc             |
+| Windows    |   ✅  | Visual Studio 2022      | x86/x86_64             | cl              |
+| Contiki-ng |   ✅  | latest                  | ARM Cortex-M3 (32-bit) | gcc (c11)       |
 
 * The build system calls `gcc`.
 * macOS system compiler `gcc` is aliased to `clang`.
@@ -93,7 +94,16 @@ For future potential `cmake` setup.
 ```
 
 If you don't have access to the Windows store the bootstrap will fail so you should download the the latest from https://github.com/microsoft/vcpkg-tool The version used here was `2024-11-12` for reference. You should check the SHA and then make the executable runnable.
+## contiki-ng (IoT support)
 
+Refer to the Github actions for more info on how it is built. I am not an expert on `contiki-ng` but they have a community starting from this link: https://www.contiki-ng.org/
+
+To run:
+
+```sh
+$ cd build/gcc
+$ make TARGET=zoul clean all
+```
 ## Documentation Dependency
 
 In order to `make` the documentation you need to install [doxygen](https://www.doxygen.nl/).
