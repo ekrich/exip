@@ -20,12 +20,12 @@ jobs:
         os: [contiki-ng]
     steps:
       - name: Checkout exip
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: exip # to checkout side by side in the workspace
 
       - name: Checkout contiki-ng
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: contiki-ng/contiki-ng
           path: contiki-ng
