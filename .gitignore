@@ -17,3 +17,6 @@ packages/
 
 # vcpkg generated
 vcpkg_installed/
+
+# run-tests log
+error.log

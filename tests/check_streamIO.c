@@ -94,7 +94,7 @@ START_TEST (test_readBits)
 {
   EXIStream testStream;
   char buf[2];
-  unsigned long bits_val = 0;
+  unsigned int bits_val = 0;
   errorCode err = EXIP_UNEXPECTED_ERROR;
 
   testStream.context.bitPointer = 0;
@@ -111,7 +111,7 @@ START_TEST (test_readBits)
   err = readBits(&testStream, 4, &bits_val);
 
   fail_unless (bits_val == 13,
-	       "The bits 1101 from the stream are read as %lu", bits_val);
+	       "The bits 1101 from the stream are read as %u", bits_val);
   fail_unless (err == EXIP_OK,
 	       "readBits returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 4,
@@ -123,7 +123,7 @@ START_TEST (test_readBits)
   err = readBits(&testStream, 5, &bits_val);
 
   fail_unless (bits_val == 6,
-		      "The bits 00110 from the stream are read as %lu", bits_val);
+		      "The bits 00110 from the stream are read as %u", bits_val);
   fail_unless (err == EXIP_OK,
     	       "readNextBit returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 4 && testStream.context.bufferIndx == 1,
@@ -251,7 +251,7 @@ START_TEST (test_decodeNBitUnsignedInteger)
   EXIStream testStream;
 
   char buf[2];
-  unsigned long bit_val = 0;
+  unsigned int bit_val = 0;
   errorCode err = EXIP_UNEXPECTED_ERROR;
 
   testStream.context.bitPointer = 0;
@@ -270,7 +270,7 @@ START_TEST (test_decodeNBitUnsignedInteger)
   err = decodeNBitUnsignedInteger(&testStream, 6, &bit_val);
 
   fail_unless (bit_val == 53,
-	       "The 110101 from the stream is read as %lu", bit_val);
+	       "The 110101 from the stream is read as %u", bit_val);
   fail_unless (err == EXIP_OK,
 	       "decodeNBitUnsignedInteger returns error code %d", err);
   fail_unless (testStream.context.bitPointer == 6,
