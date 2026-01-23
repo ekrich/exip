@@ -230,7 +230,7 @@ errorCode stringToInt64(const String* src, int64_t* number)
 	memcpy(buff, src->str, src->length);
 	buff[src->length] = '\0';
 
-	result = EXIP_STRTOLL(buff, &endPointer, 10);
+	result = strtoll(buff, &endPointer, 10);
 
 	if(result == LLONG_MAX || result == LLONG_MIN || *src->str == *endPointer)
 		return EXIP_INVALID_STRING_OPERATION;

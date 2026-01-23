@@ -53,14 +53,14 @@ jobs:
 
       - name: Build contiki-ng
         run: |
-            cd exip/build/gcc
-            echo "Run build and test"
-            make TARGET=zoul clean all
+          cd exip/build/gcc
+          echo "Run build and test"
+          make TARGET=zoul clean all
 
       - name: Verify 32-bit ARM Architecture
         run: |
-            # This proves the build actually produced a 32-bit ARM binary (.a is in bin/lib)
-            echo -n "Binary Specs: "
-            arm-none-eabi-readelf -h -A exip/bin/EXIParser.o \
-              | grep -E "Class:|Machine:|Flags:|Tag_THUMB_ISA_use:|Tag_ABI_VFP_args:" \
-              | xargs
+          # This proves the build actually produced a 32-bit ARM binary (.a is in bin/lib)
+          echo -n "Binary Specs: "
+          arm-none-eabi-readelf -h -A exip/bin/EXIParser.o \
+            | grep -E "Class:|Machine:|Flags:|Tag_THUMB_ISA_use:|Tag_ABI_VFP_args:" \
+            | xargs

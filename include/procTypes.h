@@ -296,12 +296,6 @@ typedef EXIP_SMALL_INDEX SmallIndex;
 
 typedef CHAR_TYPE CharType;
 
-
-#ifndef EXIP_STRTOLL
-/** strtoll() function */
-# define EXIP_STRTOLL strtoll
-#endif
-
 /**
  * Represents the length prefixed strings in EXIP
  */
