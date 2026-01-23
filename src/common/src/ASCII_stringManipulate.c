@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 /* Other standard C lib and then local includes */
+#include <stdlib.h>
 #include "stringManipulate.h"
 #include "memManagement.h"
 
