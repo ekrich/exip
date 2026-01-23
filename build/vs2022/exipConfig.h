@@ -74,7 +74,7 @@
 #define EXIP_MFREE free
 
 //Use MSVS equivalent for strtoll
-#define EXIP_STRTOLL _strtoi64
+// #define EXIP_STRTOLL _strtoi64
 
 /** @def HASH_TABLE_USE
  * 		Whether to use hash table for value partition table when in encoding mode
