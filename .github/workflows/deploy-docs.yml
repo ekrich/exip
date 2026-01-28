@@ -27,13 +27,13 @@ jobs:
           mkdir -p public/api public/user
           
           # 1. Landing page (www is now at the root of the artifact)
-          cp -r www/* public/
+          cp -r exip-docs/www/* public/
           
           # 2. User guide
-          cp -r user/* public/user/
+          cp -r exip-docs/user/* public/user/
           
           # 3. API docs (doxygen/html is now at the root of the artifact)
-          cp -r dev/doxygen/html/* public/api/
+          cp -r exip-docs/dev/doxygen/html/* public/api/
           
           touch public/.nojekyll
 
