@@ -2,9 +2,9 @@ name: Deploy EXIP Documentation
 
 on:
   workflow_run:
-    workflows: ["Main-CI", Contiki-CI]  # Must match the 'name:' in your ci.yml
+    workflows: ["Main-CI"]
     types: [completed]
-    branches: [main, topic/docs]
+    branches: [main]
 
 permissions:
   contents: write
