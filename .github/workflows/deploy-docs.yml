@@ -1,0 +1,44 @@
+name: Deploy EXIP Documentation
+
+on:
+  workflow_run:
+    workflows: ["Main-CI", Contiki-CI]  # Must match the 'name:' in your ci.yml
+    types: [completed]
+    branches: [main, topic/docs]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Download Artifact from CI
+        uses: actions/download-artifact@v4
+        with:
+          name: exip-docs
+          run_id: ${{ github.event.workflow_run.id }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assemble Site Structure
+        run: |
+          mkdir -p public/api public/user
+          
+          # 1. Landing page (www is now at the root of the artifact)
+          cp -r www/* public/
+          
+          # 2. User guide
+          cp -r user/* public/user/
+          
+          # 3. API docs (doxygen/html is now at the root of the artifact)
+          cp -r doxygen/html/* public/api/
+          
+          touch public/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: public
+          branch: gh-pages

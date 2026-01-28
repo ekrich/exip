@@ -1,4 +1,4 @@
-name: CI
+name: Main-CI
 
 on:
   pull_request:
@@ -49,3 +49,13 @@ jobs:
             msbuild.exe build\vs2022\exip.sln -property:Configuration=Debug
             scripts\run-unit-tests.bat
             echo "Run examples (todo)"
+
+      - name: Upload Documentation Artifacts
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: exip-docs
+          path: |
+            doc/dev/www
+            doc/dev/user
+            doc/dev/doxygen/html

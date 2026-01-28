@@ -1,4 +1,4 @@
-name: CI
+name: Contiki-CI
 
 on:
   pull_request:
