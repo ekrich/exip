@@ -1,0 +1,47 @@
+name: Deploy EXIP Documentation to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      # ... your existing build/make doc steps ...
+      
+      - name: Upload Docs Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-files
+          path: |
+            doc/dev/www
+            doc/dev/user
+            doc/dev/doxygen/html
+
+  deploy:
+    needs: build  # Ensures this runs AFTER the build job
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation-files
+          path: temp_docs
+
+      - name: Assemble and Deploy
+        run: |
+          mkdir -p public
+          cp -r temp_docs/doc/dev/www/* public/
+          cp -r temp_docs/doc/dev/user public/user
+          cp -r temp_docs/doc/dev/doxygen/html public/api
+          touch public/.nojekyll
+
+      - name: Push to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: public
+          branch: gh-pages
