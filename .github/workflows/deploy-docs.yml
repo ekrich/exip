@@ -1,46 +1,40 @@
-name: Deploy EXIP Documentation to GitHub Pages
+name: Deploy EXIP Documentation
 
 on:
-  push:
-    branches:
-      - main
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      # ... your existing build/make doc steps ...
-      
-      - name: Upload Docs Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: documentation-files
-          path: |
-            doc/dev/www
-            doc/dev/user
-            doc/dev/doxygen/html
+  workflow_run:
+    workflows: ["CI"]  # Must match the 'name:' in your ci.yml
+    types: [completed]
+    branches: [main, topic/docs]
 
+permissions:
+  contents: write
+  actions: read
+
+jobs:
   deploy:
-    needs: build  # Ensures this runs AFTER the build job
     runs-on: ubuntu-22.04
-    permissions:
-      contents: write
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Download Artifacts
+      - name: Download Artifact from CI
         uses: actions/download-artifact@v4
         with:
-          name: documentation-files
-          path: temp_docs
+          name: exip-docs
+          run_id: ${{ github.event.workflow_run.id }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Assemble and Deploy
+      - name: Assemble Site Structure
         run: |
-          mkdir -p public
-          cp -r temp_docs/doc/dev/www/* public/
-          cp -r temp_docs/doc/dev/user public/user
-          cp -r temp_docs/doc/dev/doxygen/html public/api
+          mkdir -p public/api public/user
+          # 1. Landing page (www contents to root)
+          cp -r doc/dev/www/* public/
+          # 2. User guide
+          cp -r doc/dev/user/* public/user/
+          # 3. API docs (mapped from doxygen/html to /api)
+          cp -r doc/dev/doxygen/html/* public/api/
+          
           touch public/.nojekyll
 
-      - name: Push to gh-pages
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: public
