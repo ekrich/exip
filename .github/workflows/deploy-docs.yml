@@ -2,9 +2,9 @@ name: Deploy EXIP Documentation
 
 on:
   workflow_run:
-    workflows: ["Main-CI", Contiki-CI]  # Must match the 'name:' in your ci.yml
+    workflows: ["Main-CI"]
     types: [completed]
-    branches: [main, topic/docs]
+    branches: [main]
 
 permissions:
   contents: write
@@ -19,8 +19,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: exip-docs
-          run_id: ${{ github.event.workflow_run.id }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Assemble Site Structure
         run: |
