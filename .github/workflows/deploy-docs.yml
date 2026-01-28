@@ -33,7 +33,7 @@ jobs:
           cp -r user/* public/user/
           
           # 3. API docs (doxygen/html is now at the root of the artifact)
-          cp -r doxygen/html/* public/api/
+          cp -r dev/doxygen/html/* public/api/
           
           touch public/.nojekyll
 
