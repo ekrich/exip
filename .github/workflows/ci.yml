@@ -56,6 +56,6 @@ jobs:
         with:
           name: exip-docs
           path: |
-            doc/dev/www
-            doc/dev/user
+            doc/www
+            doc/user
             doc/dev/doxygen/html
