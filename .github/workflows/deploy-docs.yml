@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: ["Main-CI"]
     types: [completed]
-    branches: [main]
+    branches: [main, topic/doc]
 
 permissions:
   contents: write
@@ -25,15 +25,20 @@ jobs:
       - name: Assemble Site Structure
         run: |
           mkdir -p public/api public/user
+
+          echo -n "Working Dir: "
+          pwd
+          echo "Working Dir Contents: "
+          ls
           
           # 1. Landing page (www is now at the root of the artifact)
-          cp -r exip-docs/www/* public/
+          cp -r ./www/* public/
           
           # 2. User guide
-          cp -r exip-docs/user/* public/user/
+          cp -r ./user/* public/user/
           
           # 3. API docs (doxygen/html is now at the root of the artifact)
-          cp -r exip-docs/dev/doxygen/html/* public/api/
+          cp -r ./dev/doxygen/html/* public/api/
           
           touch public/.nojekyll
 
