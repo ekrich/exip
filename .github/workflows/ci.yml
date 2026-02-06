@@ -52,7 +52,7 @@ jobs:
 
       - name: Upload Documentation Artifacts
         if: startsWith(matrix.os, 'ubuntu')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: exip-docs
           path: |
