@@ -51,7 +51,7 @@ jobs:
             echo "Run examples (todo)"
 
       - name: Prepare Pages Content
-        if: startsWith(matrix.os, 'ubuntu')
+        if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
         run: |
           mkdir staging
           # Copy your .nojekyll from root to staging
