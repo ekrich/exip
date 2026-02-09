@@ -51,7 +51,7 @@ jobs:
             echo "Run examples (todo)"
 
       - name: Prepare Pages Content
-        if: startsWith(matrix.os, 'ubuntu')
+        if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
         run: |
           mkdir staging
           # Copy your .nojekyll from root to staging
@@ -66,3 +66,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: staging/
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
