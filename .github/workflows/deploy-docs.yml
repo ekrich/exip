@@ -1,53 +1,27 @@
 name: Deploy EXIP Documentation
-
 on:
+  # This triggers the deployment whenever your main CI finishes
   workflow_run:
     workflows: ["Main-CI"]
-    types: [completed]
-    branches: [main, topic/doc]
+    types:
+      - completed
+    branches:
+      - main
+      - topic/doc
 
 permissions:
-  contents: write
-  actions: read
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-22.04
+    # Only deploy if the main CI actually succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment:
+      name: github-pages
     steps:
-      - name: Download Artifact from CI
-        uses: actions/download-artifact@v7
-        with:
-          name: exip-docs
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Assemble Site Structure
-        run: |
-          mkdir -p public/api public/user
-
-          echo -n "Working Dir: "
-          pwd
-          echo "Working Dir Contents: "
-          ls
-          
-          # 1. Landing page (www is now at the root of the artifact)
-          cp -r ./www/* public/
-          
-          # 2. User guide
-          cp -r ./user/* public/user/
-          
-          # 3. API docs (doxygen/html is now at the root of the artifact)
-          cp -r ./dev/doxygen/html/* public/api/
-          
-          touch public/.nojekyll
-
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public  # Must match your 'Assemble Site' output folder
-          publish_branch: gh-pages
-          # This automatically adds .nojekyll for you
-          enable_jekyll: false
-
+        id: deployment
+        uses: actions/deploy-pages@v4
