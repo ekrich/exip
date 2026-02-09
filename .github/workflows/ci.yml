@@ -3,7 +3,7 @@ name: Main-CI
 on:
   pull_request:
   push:
-    branches: [main, topic/doc]
+    branches: [main]
 
 jobs:
   build:
@@ -62,7 +62,7 @@ jobs:
           cp -r docs/dev/doxygen/html staging/doxygen
 
       - name: Upload Pages Artifact
-        if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/topic/doc')
+        if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
         uses: actions/upload-pages-artifact@v3
         with:
           path: staging/

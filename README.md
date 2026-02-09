@@ -65,7 +65,7 @@ $ apt-get install check
 
 The easiest setup is to install Visual Studio 2022 to get the latest Windows 10 SDK and the MSVC v143 tools. The following is the installer setup used for the current vs2022 setup that succeeded.
 
-![Visual Studio Installed Image](doc/www/vs2022.png)
+![Visual Studio Installed Image](images/vs2022.png)
 
 To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
 
