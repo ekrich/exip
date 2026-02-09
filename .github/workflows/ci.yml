@@ -50,12 +50,19 @@ jobs:
             scripts\run-unit-tests.bat
             echo "Run examples (todo)"
 
-      - name: Upload Documentation Artifacts
+      - name: Prepare Pages Content
         if: startsWith(matrix.os, 'ubuntu')
-        uses: actions/upload-artifact@v6
+        run: |
+          mkdir staging
+          # Copy your .nojekyll from root to staging
+          cp .nojekyll staging/
+          # Copy your new 'docs' content into staging
+          cp -r docs/www/* staging/
+          cp -r docs/user staging/user
+          cp -r docs/dev/doxygen/html staging/doxygen
+
+      - name: Upload Pages Artifact
+        if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: exip-docs
-          path: |
-            doc/www
-            doc/user
-            doc/dev/doxygen/html
+          path: staging/

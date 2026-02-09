@@ -1,44 +1,26 @@
 name: Deploy EXIP Documentation
-
 on:
+  # This triggers the deployment whenever your main CI finishes
   workflow_run:
     workflows: ["Main-CI"]
-    types: [completed]
-    branches: [main]
+    types:
+      - completed
+    branches:
+      - main
 
 permissions:
-  contents: write
-  actions: read
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
     runs-on: ubuntu-22.04
+    # Only deploy if the main CI actually succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment:
+      name: github-pages
     steps:
-      - name: Download Artifact from CI
-        uses: actions/download-artifact@v7
-        with:
-          name: exip-docs
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Assemble Site Structure
-        run: |
-          mkdir -p public/api public/user
-          
-          # 1. Landing page (www is now at the root of the artifact)
-          cp -r exip-docs/www/* public/
-          
-          # 2. User guide
-          cp -r exip-docs/user/* public/user/
-          
-          # 3. API docs (doxygen/html is now at the root of the artifact)
-          cp -r exip-docs/dev/doxygen/html/* public/api/
-          
-          touch public/.nojekyll
-
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: public
-          branch: gh-pages
+        id: deployment
+        uses: actions/deploy-pages@v4

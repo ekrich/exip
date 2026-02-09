@@ -29,7 +29,7 @@ CFLAGS += $(DEBUGGING)
 CFLAGS += $(ADDITIONAL_CFLAGS)
 
 # Library version
-EXIP_VERSION = 0.5.4
+EXIP_VERSION = 0.5.5
 
 # The project root directory
 PROJECT_ROOT = ../..
@@ -38,7 +38,7 @@ PROJECT_ROOT = ../..
 BIN_DIR = $(PROJECT_ROOT)/bin
 
 # The development documentation folder of the project
-DEV_DOC_DIR = $(PROJECT_ROOT)/doc/dev
+DEV_DOC_DIR = $(PROJECT_ROOT)/docs/dev
 
 # Unit tests test data directory
 TESTS_DATA_DIR = $(PROJECT_ROOT)/tests/test-set
