@@ -2,13 +2,20 @@
 
 ![CI](https://github.com/ekrich/exip/workflows/CI/badge.svg)
 
-![EXIP Logo](doc/www/logo.png)
+![EXIP Logo](docs/www/logo.png)
+
+## Overview
+
+The main objective of the EXIP project is to provide a C library for parsing and serialization of Efficient XML Interchange (EXI) Format streams. The focus is portability and efficiency for embedded systems development. The library features an efficient, typed, and low-level API.
+
+For the time being please refer to the [original README.txt](README.txt) for more details.
+
+The updated web site is available at [https://ekrich.github.io/exip/](https://ekrich.github.io/exip/).
 
 ## Current status
 
 This project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed and of the rest of the work to date is to support the platforms shown in the table below. The project originally supported the Contiki embedded IoT platform and now compiles on the [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project. See the following original links for more information:
 
-* [Original README.txt](README.txt)
 * [Original Website](https://exip.sourceforge.net/)
 
 Known to pass CI with the following configurations:
