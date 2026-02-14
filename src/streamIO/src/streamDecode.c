@@ -19,9 +19,8 @@
 #include "streamRead.h"
 #include "stringManipulate.h"
 #include "ioUtil.h"
-#include <math.h>
 
-errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned long* int_val)
+errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned int* int_val)
 {
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> (%d-bits uint)", n));
 	if(n == 0)
@@ -36,9 +35,9 @@ errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned l
 	}
 	else
 	{
-		unsigned int byte_number = ((unsigned int) n) / 8 + (n % 8 != 0);
-		unsigned long tmp_byte_buf = 0;
-		unsigned int i = 0;
+		uint8_t byte_number = ((unsigned int) n) / 8 + (n % 8 != 0);
+		uint16_t tmp_byte_buf = 0;
+		uint8_t i = 0;
 
 		if(strm->buffer.bufContent < strm->context.bufferIndx + byte_number)
 		{
@@ -51,7 +50,7 @@ errorCode decodeNBitUnsignedInteger(EXIStream* strm, unsigned char n, unsigned l
 		*int_val = 0;
 		for(i = 0; i < byte_number*8; i += 8)
 		{
-			tmp_byte_buf = strm->buffer.buf[strm->context.bufferIndx] << i;
+			tmp_byte_buf = ((uint8_t)strm->buffer.buf[strm->context.bufferIndx]) << i;
 			*int_val = *int_val | tmp_byte_buf;
 			strm->context.bufferIndx++;
 		}
@@ -63,7 +62,7 @@ errorCode decodeBoolean(EXIStream* strm, bool* bool_val)
 {
 	//TODO:  when pattern facets are available in the schema datatype - handle it differently
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned long lBoolVal;
+	unsigned int lBoolVal;
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> (bool)"));
 	TRY(decodeNBitUnsignedInteger(strm, 1, &lBoolVal));
 	*bool_val = (bool) lBoolVal;
@@ -74,7 +73,7 @@ errorCode decodeUnsignedInteger(EXIStream* strm, UnsignedInteger* int_val)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int i = 0;
-	unsigned long tmp_byte_buf = 0;
+	unsigned int tmp_byte_buf = 0;
 	*int_val = 0;
 
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> (uint)"));
@@ -127,7 +126,7 @@ errorCode decodeBinary(EXIStream* strm, char** binary_val, Index* nbytes)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	UnsignedInteger length = 0;
-	unsigned long int_val = 0;
+	unsigned int int_val = 0;
 	UnsignedInteger i = 0;
 
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> (binary)"));
@@ -250,8 +249,8 @@ errorCode decodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime* dt_
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	Integer year;
-	unsigned long monDay = 0;
-	unsigned long timeVal = 0;
+	unsigned int monDay = 0;
+	unsigned int timeVal = 0;
 	bool presence = false;
 
 	dt_val->presenceMask = 0;
@@ -273,8 +272,8 @@ errorCode decodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime* dt_
 	{
 		/* MonthDay component */
 		TRY(decodeNBitUnsignedInteger(strm, 9, &monDay));
-		dt_val->dateTime.tm_mon = (int) monDay / 32 - 1;
-		dt_val->dateTime.tm_mday = (int) monDay % 32;
+		dt_val->dateTime.tm_mon = monDay / 32 - 1;
+		dt_val->dateTime.tm_mday = monDay % 32;
 	}
 	else
 	{
@@ -331,14 +330,14 @@ errorCode decodeDateTimeValue(EXIStream* strm, EXIType dtType, EXIPDateTime* dt_
 
 	if(presence)
 	{
-		unsigned long tzone = 0;
+		unsigned int tzone = 0;
 		dt_val->presenceMask = dt_val->presenceMask | TZONE_PRESENCE;
 		TRY(decodeNBitUnsignedInteger(strm, 11, &tzone));
 
 		if(tzone > 1851)
 		{
 			tzone = 1851;
-			DEBUG_MSG(WARNING, DEBUG_STREAM_IO, (">Invalid TimeZone value: %lu\n", tzone));
+			DEBUG_MSG(WARNING, DEBUG_STREAM_IO, (">Invalid TimeZone value: %u\n", tzone));
 		}
 
 		dt_val->TimeZone = (int16_t) tzone - 896;

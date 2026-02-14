@@ -16,16 +16,11 @@
  */
 
 #include "headerDecode.h"
-#include "streamDecode.h"
 #include "streamRead.h"
 #include "contentHandler.h"
-#include "memManagement.h"
-#include "bodyDecode.h"
-#include "grammars.h"
 #include "EXIParser.h"
 #include "sTables.h"
 #include "stringManipulate.h"
-#include "initSchemaInstance.h"
 
 /** This is the statically generated EXIP schema definition for the EXI Options document*/
 extern const EXIPSchema ops_schema;
@@ -53,7 +48,7 @@ struct ops_AppData
 errorCode decodeHeader(EXIStream* strm, bool outOfBandOpts)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned long bits_val = 0;
+	unsigned int bits_val = 0;
 	bool boolVal = false;
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Start EXI header decoding\n"));

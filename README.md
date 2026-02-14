@@ -115,18 +115,24 @@ $ make TARGET=zoul clean all
 
 In order to `make` the documentation you need to install [doxygen](https://www.doxygen.nl/).
 
-Use one of the following commands to install `doxygen`:
+Use one of the following commands to install `doxygen` and Valgrind for `run-tests` in
+`tests/external/valgrind-checks`:
 
 ### macOS
 
+This doesn't work great so a `run-tests-macos-arm` was added that calls `leaks`.
+
 ```sh
 $ brew install doxygen
+$ brew tap LouisBrunner/valgrind
+$ brew install --HEAD LouisBrunner/valgrind/valgrind
 ```
 
 ### Linux (Ubuntu/Debian)
 
 ```sh
-$ apt-get install doxygen
+$ sudo apt-get install doxygen
+$ sudo apt-get install valgrind
 ```
 
 ### Windows

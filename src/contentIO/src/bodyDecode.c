@@ -15,8 +15,8 @@
  */
 
 #include "bodyDecode.h"
+#include "procTypes.h"
 #include "sTables.h"
-#include "memManagement.h"
 #include "ioUtil.h"
 #include "streamDecode.h"
 #include "grammars.h"
@@ -31,10 +31,10 @@ static errorCode decodeQNameValue(EXIStream* strm, ContentHandler* handler, Smal
 errorCode processNextProduction(EXIStream* strm, SmallIndex* nonTermID_out, ContentHandler* handler, void* app_data)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned int bitCount;
-	unsigned long tmp_bits_val = 0;
-	GrammarRule* currentRule;
-	Index prodCount;
+	unsigned int bitCount = 0;
+	unsigned int tmp_bits_val = 0;
+	GrammarRule* currentRule = NULL;
+	Index prodCount = 0;
 	SmallIndex currNonTermID = strm->gStack->currNonTermID;
 
 	// TODO: GR_CONTENT_2 is only needed when schema deviations are allowed.
@@ -165,7 +165,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned int prodCnt = 0;
-	unsigned long tmp_bits_val = 0;
+	unsigned int tmp_bits_val = 0;
 
 	if(IS_BUILT_IN_ELEM(strm->gStack->grammar->props))
 	{
@@ -177,7 +177,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 		 * The state depends on the input event code from the stream and the
 		 * available productions at level 2.
 		 * (Note this is the state for level 2 productions) */
-		unsigned long state = 0;
+		unsigned int state = 0;
 
 		/* The state mask stores the availability of the productions on level 2.
 		 * They are encoded ordered:
@@ -424,7 +424,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 	else
 	{
 		// Schema-informed element/type grammar
-		QName qname;
+		QName qname = {0};
 
 		if(WITH_STRICT(strm->header.opts.enumOpt))
 		{
@@ -435,7 +435,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			{
 				/* There are 2 possible states to exit the state machine: AT(xsi:type) and AT(xsi:nil)
 				 * (Note this is the state for level 2 productions) */
-				unsigned long state = 1;
+				unsigned int state = 1;
 				bool nil;
 
 				*nonTermID_out = GR_START_TAG_CONTENT;
@@ -518,7 +518,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			 * Availability for EE is encoded in position 0,
 			 * availability for AT(xsi:type) is encoded in position 1,
 			 * and so on. */
-			bool state_mask[11] = {false, false, false, false, false, false, false, false, false, false, false};
+			bool state_mask[11] = {0}; // all false
 			unsigned int i;
 			// Create a copy of the content grammar if and only if there are AT
 			// productions that point to the content grammar rule OR the content index is 0.
@@ -743,7 +743,7 @@ errorCode decodeQName(EXIStream* strm, QName* qname, QNameID* qnameID)
 errorCode decodeUri(EXIStream* strm, SmallIndex* uriId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned long tmp_val_buf = 0;
+	unsigned int tmp_val_buf = 0;
 	unsigned char uriBits = getBitsNumber(strm->schema->uriTable.count);
 
 	TRY(decodeNBitUnsignedInteger(strm, uriBits, &tmp_val_buf));
@@ -774,7 +774,7 @@ errorCode decodeLn(EXIStream* strm, Index uriId, Index* lnId)
 
 	if(tmpVar == 0) // local-name table hit
 	{
-		unsigned long l_lnId;
+		unsigned int l_lnId;
 		unsigned char lnBits = getBitsNumber((unsigned int)(strm->schema->uriTable.uri[uriId].lnTable.count - 1));
 		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">local-name table hit\n"));
 		TRY(decodeNBitUnsignedInteger(strm, lnBits, &l_lnId));
@@ -806,7 +806,7 @@ errorCode decodePfxQname(EXIStream* strm, QName* qname, SmallIndex uriId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	unsigned char prefixBits = 0;
-	unsigned long prefixID = 0;
+	unsigned int prefixID = 0;
 
 	qname->prefix = NULL;
 
@@ -834,7 +834,7 @@ errorCode decodePfxQname(EXIStream* strm, QName* qname, SmallIndex uriId)
 errorCode decodePfx(EXIStream* strm, SmallIndex uriId, SmallIndex* pfxId)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	unsigned long tmp_val_buf = 0;
+	unsigned int tmp_val_buf = 0;
 	unsigned char prfxBits = getBitsNumber(strm->schema->uriTable.uri[uriId].pfxTable.count);
 
 	TRY(decodeNBitUnsignedInteger(strm, prfxBits, &tmp_val_buf));
@@ -866,7 +866,7 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 	if(tmpVar == 0) // "local" value partition table hit
 	{
 #if VALUE_CROSSTABLE_USE
-		unsigned long vxEntryId = 0;
+		unsigned int vxEntryId = 0;
 		unsigned char vxBits;
 		VxTable* vxTable;
 
@@ -883,7 +883,7 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 	}
 	else if(tmpVar == 1)// global value partition table hit
 	{
-		unsigned long valueEntryID = 0;
+		unsigned int valueEntryID = 0;
 		unsigned char valueBits;
 		
 		valueBits = getBitsNumber(strm->valueTable.count - 1);
@@ -1047,8 +1047,8 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		break;
 		case VALUE_TYPE_SMALL_INTEGER:
 		{
-			unsigned long uintVal;
-			int64_t base;
+			unsigned int uintVal;
+			int base;
 			int64_t upLimit;
 
 			if(typeId >= strm->schema->simpleTypeTable.count)
@@ -1112,8 +1112,8 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		break;
 		case VALUE_TYPE_BINARY:
 		{
-			Index nbytes;
-			char *binary_val;
+			Index nbytes = 0;
+			char *binary_val = NULL;
 			//DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Binary value\n"));
 			TRY(decodeBinary(strm, &binary_val, &nbytes));
 
@@ -1192,9 +1192,9 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		break;
 		case VALUE_TYPE_LIST:
 		{
-			UnsignedInteger itemCount;
-			Index itemTypeId;
-			unsigned int i;
+			UnsignedInteger itemCount = 0;
+			Index itemTypeId = 0;
+			unsigned int i = 0;
 
 			TRY(decodeUnsignedInteger(strm, &itemCount));
 
@@ -1222,7 +1222,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		break;
 		default: // VALUE_TYPE_STRING || VALUE_TYPE_NONE || VALUE_TYPE_UNTYPED
 		{
-			String value;
+			String value = {0};
 			bool freeable = false;
 
 			/* ENUMERATION CHECK */
@@ -1231,7 +1231,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 				// There is enumeration defined
 				EnumDefinition eDefSearch;
 				EnumDefinition* eDefFound;
-				unsigned long indx;
+				unsigned int indx;
 
 				eDefSearch.typeId = typeId;
 				eDefFound = bsearch(&eDefSearch, strm->schema->enumTable.enumDef, strm->schema->enumTable.count, sizeof(EnumDefinition), compareEnumDefs);
@@ -1266,8 +1266,8 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 errorCode decodeNSEvent(EXIStream* strm, ContentHandler* handler, SmallIndex* nonTermID_out, void* app_data)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	SmallIndex ns_uriId;
-	SmallIndex pfxId;
+	SmallIndex ns_uriId = 0;
+	SmallIndex pfxId = 0;
 	bool bool_val = false;
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">NS event:\n"));
@@ -1289,7 +1289,7 @@ errorCode decodeSEWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	EXIGrammar* elemGrammar = NULL;
-	QName qname;
+	QName qname = {0};
 	QNameID qnameId = {URI_MAX, LN_MAX};
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(*) event\n"));
@@ -1423,7 +1423,7 @@ errorCode decodeSEWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 errorCode decodeATWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallIndex* nonTermID_out, void* app_data)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	QName qname;
+	QName qname = {0};
 	QNameID qnameId = {URI_MAX, LN_MAX};
 
 	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(*) event\n"));
@@ -1455,8 +1455,8 @@ static errorCode decodeQNameValue(EXIStream* strm, ContentHandler* handler, Smal
 {
 	// TODO: Add the case when Preserve.lexicalValues option value is true - instead of Qname decode it as String
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	QName qname;
-	QNameID qnameId;
+	QName qname = {0};
+	QNameID qnameId = {URI_MAX, LN_MAX};
 	EXIGrammar* newGrammar = NULL;
 
 	TRY(decodeQName(strm, &qname, &qnameId));
