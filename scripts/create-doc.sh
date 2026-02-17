@@ -6,4 +6,4 @@ set -eux
 cd "$(dirname "$0")/../docs/user"
 
 # Create the PDF and move into the www directory
-tectonic -X compile exip.tex  && mv exip.pdf ../www/exip-user-guide-1.pdf
+tectonic -X compile exip.tex && mv exip.pdf ../www/exip-user-guide-1.pdf
