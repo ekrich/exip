@@ -46,15 +46,16 @@ out-of-band.
 Currently, there are no XML Schema editing tools that are capable of saving the document in EXI format.
 For that reason it is required that you convert the text XML Schema to EXI encoding before using it
 with EXIP. You can use any of the open source Java implementations of EXI for that purpose.
-The latest distribution of the exip library includes a convenient GUI tool from OpenEXI project
-that can be used to encode XSD schema files into EXI representation. The tool is located
-under \texttt{externalTools/} folder of the source tree. OpenEXI graphical tool can
-be started with the following command:
+The latest distribution of the EXIP library doesn't includes a convenient GUI tool
+that can be used to encode XSD schema files into EXI representation. A Java GUI tool from EXIficient can be found
+at the following location: \href{https://exificient.github.io/java/}{(https://exificient.github.io/java/)}.
+Download the runnable JAR. The graphical tool can be started with the following command:
 \begin{lstlisting}
-java -jar OpenEXIGUI.jar
+java -jar exificient-gui-jar-with-dependencies.jar
 \end{lstlisting}
 When encoding the XML Schema file you should use schema-less mode indicated by ``Use Schema: None''
 and also set the Preserve.prefixes option by checking the ``Preserve Namespace Declarations''
 checkbox. It is recommended to encode these options in the header by setting
 ``Include options'' checkbox. If you leave the ``Include options'' unchecked, you need to use the \texttt{-ops=} argument
-of the exipg utility to specify the out-of-band options.
+of the exipg utility to specify the out-of-band options. Note: This formerly used the OpenEXI Java library found at
+\href{https://sourceforge.net/projects/openexi/files/}{(https://sourceforge.net/projects/openexi/files/)}.

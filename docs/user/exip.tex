@@ -8,16 +8,16 @@
 \documentclass[paper=a4, fontsize=11pt]{scrartcl}	% Article class of KOMA-script with 11pt font and a4 format
 
 \usepackage[english]{babel}															% English language/hyphenation
-\usepackage[protrusion=true,expansion=true]{microtype}				% Better typography
+\usepackage[protrusion=true,expansion=false]{microtype}			% Better typography
 \usepackage{amsmath,amsfonts,amsthm}										% Math packages
-\usepackage[pdftex]{graphicx}														% Enable pdflatex
+\usepackage{graphicx}															% Enable pdflatex
 %\usepackage{color,transparent}													% If you use color and/or transparency
 \usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption}	% Custom captions under/above floats
 \usepackage{epstopdf}																	% Converts .eps to .pdf
 \usepackage{subfig}																		% Subfigures
 \usepackage{booktabs}																	% Nicer tables
 \usepackage{indentfirst}
-\usepackage{hyperref}
+\usepackage[hypertexnames=false]{hyperref}
 \hypersetup{colorlinks=false,
 			linkbordercolor={1 1 1},
 			citebordercolor={1 1 1},
@@ -27,7 +27,6 @@
 \usepackage{verbatim}
 \usepackage{fancyvrb}
 \DefineShortVerb{\|}								% delimiter to display inline verbatim text
-
 
 %%% Custom sectioning (sectsty package)
 \usepackage{sectsty}								% Custom sectioning (see below)
@@ -40,7 +39,6 @@
 	\usefont{OT1}{bch}{b}{n}%					% bch-b-n: CharterBT-Bold font
 	\sectionrule{0pt}{0pt}{-5pt}{0.8pt}%	% Horizontal rule below section
 	}
-
 
 %%% Custom headers/footers (fancyhdr package)
 \usepackage{fancyhdr}
@@ -129,7 +127,7 @@ tabsize=2,
 
 \printauthor
 
-\textit{Copyright (c) 2011-2013, Rumen Kyusakov. This work is licensed under \href{http://creativecommons.org/licenses/by-sa/3.0/}{Creative Commons Attribution-ShareAlike 3.0 License}.}
+\textit{Copyright (c) 2011-2013 - Rumen Kyusakov, 2025-2026 - Eric K Richardson. This work is licensed under \href{http://creativecommons.org/licenses/by-sa/3.0/}{Creative Commons Attribution-ShareAlike 3.0 License}.}
 
 \clearpage
 
