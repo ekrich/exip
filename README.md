@@ -160,5 +160,5 @@ scripts/run-unit-tests.bat
 =======
 ## Licenses
 
+ - Current license: [Apache License, Version 2.0](LICENSE.txt)
  - Original license: [EISLAB](LICENSE-orig.txt)
- - Additions: [Apache License, Version 2.0](LICENSE.txt)
