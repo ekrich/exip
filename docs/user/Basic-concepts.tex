@@ -56,33 +56,33 @@ citing information from this guide or other EXIP documentation).
 \subsection{Project structure}
 \label{sec:project-structure}
 
-The EXIP library is an Eclipse C project (and MS Visual Studio 2010 solution)
-structured in the following subdirectories:
+The EXIP library is an C project and supports Windows via Visual Studio 2022, Linux via the GCC toolchain,
+and macOS via the Clang toolchain. The project is structured in the following subdirectories:
 \begin{itemize}
  \item \texttt{bin/} - this is the build output directory. It is automatically created/removed when
 doing builds of the project. The library binaries are located directly into the \texttt{bin/} folder
 while the examples and other utils are compiled in separate subfolders
 
  \item \texttt{build/} - this folder contains the build scripts of the project. The current release
-provides a MS VS 2010 build under \texttt{build/vs2010/} and \emph{GCC} toolchain builds under \texttt{build/gcc/}.
+provides a Microsoft Visual Studio 2022 build under \texttt{build/vs2022/} and \emph{GCC} toolchain builds under \texttt{build/gcc/}.
 The \texttt{build/gcc/} folder further contains platform-dependent parameters and
-headers located in subfolders - \texttt{build/gcc/contiki} for the Contiki sensor platform OS and
+headers located in subfolders - \texttt{build/gcc/contiki} for the Contiki-ng sensor platform OS and
 \texttt{build/gcc/pc} for desktop PCs. The build is started from \texttt{build/gcc/} with the following
 \texttt{make} build targets available:
 \begin{description}
  \item[all] compiles the EXIP library. The default target platform is PC. To change the target
-platform to Contiki for example, add \texttt{TARGET=contiki} as an argument of \texttt{make}
+platform to Contiki-ng for example, add \texttt{TARGET=zoul} as an argument of \texttt{make}
  \item[check] invokes the Check unit tests
  \item[clean] removes the \texttt{bin/} folder
- \item[doc] generates the project Doxygen documentation. The output directory is set to \texttt{doc/dev/doxygen/}
+ \item[docs] generates the project Doxygen documentation. The output directory is set to \texttt{docs/dev/doxygen/}
  \item[examples] compiles and builds the example executables
  \item[utils] compiles and builds the utils executables
  \item[dynlib] generates a dynamic library libexip.so in \texttt{bin/lib}
  \end{description}
 
- \item \texttt{doc/} - the project documentation: \texttt{doc/user/} contains the source of this user guide;
-    \texttt{doc/dev/} is the development documentation; 
-  \texttt{doc/www/} contains the information available on the project web page
+ \item \texttt{docs/} - the project documentation: \texttt{docs/user/} contains the source of this user guide;
+    \texttt{docs/dev/} is the development documentation;
+  \texttt{docs/www/} contains the information available on the project web page
 
  \item \texttt{examples/} - the root of the example applications shipped with EXIP
 
@@ -139,7 +139,7 @@ More fine-grained error messages can be acquired by turning on the debugging rou
 You have control over the level of verbosity (INFO, WARNING or ERROR) and the source of
 debugging information. All these parameters can be configured in the \texttt{exipConfig.h} header
 that is defined per target platform in \texttt{build/gcc/<target\_platform>} or
-\texttt{build/vs2010} for Windows.
+\texttt{build/vs2022} for Windows.
 When turned on the debugging information is by default printed on the standard output.
 
 EXIP has an internal memory management infrastructure and you are not required to
