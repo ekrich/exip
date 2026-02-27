@@ -3,8 +3,10 @@
 # .project
 # /.launches/
 
-# doxygen output
+# generated output
 /docs/dev/doxygen
+/bin/
+error.log
 
 # VSCode
 .vscode/
