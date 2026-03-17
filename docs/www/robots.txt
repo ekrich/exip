@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ekrich.github.io/exip/sitemap.xml

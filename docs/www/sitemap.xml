@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
+
+
+<url>
+  <loc>https://ekrich.github.io/exip/</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/index.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/documentation.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/publications.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/license.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/external_links.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/about.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/exip-user-guide.pdf</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/index.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/pubs/Rumen_Kyusakov_Thesis.pdf</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/pubs/EmbeddedWebEXI.pdf</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/pubs/PC_EXIP.pdf</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/group__common.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/group__streamIO.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/group__stringTables.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/group__grammar.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/group__contentIO.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+<url>
+  <loc>https://ekrich.github.io/exip/doxygen/group__grammarGen.html</loc>
+  <lastmod>2026-03-17T19:55:43+00:00</lastmod>
+  <priority>0.51</priority>
+</url>
+
+
+</urlset>
