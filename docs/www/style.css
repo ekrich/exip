@@ -27,3 +27,9 @@ line-height : 20px;
 	font-size : 14px;
 	font-weight: bold;
 }
+
+hr.divider
+{
+	border: none;
+	border-top: 10px solid #8bb5b2;
+}
