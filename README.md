@@ -16,7 +16,7 @@ We are working to improve this project so it can be used more widely. Quite a bi
 
 ## Short History
 
-The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed. The project originally supported the Contiki embedded IoT platform and now compiles on the next genreration [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project.
+The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed. The project originally supported the Contiki embedded IoT platform and now compiles on the next generation [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project.
 
 Formerly this project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). All historical information is found there as well as this [original README.txt](README.txt) which is in HTML format.
 
@@ -27,7 +27,7 @@ The library is highly portable C code and supports the platforms using CI as sho
 
 | OS         | Works | Version(s)              | Arch(s)                | Compiler(s)
 | ---------- | ----- | ----------------------- | ---------------------- | --------------- |
-| macOS      |   ✅  | 13.6.x                  | arm                    | gcc (clang)     |
+| macOS      |   ✅  | 13.6.x                  | arm64/aarch64          | gcc (clang)     |
 | Linux      |   ✅  | Ubuntu 22.0.4           | x86_64                 | gcc             |
 | Windows    |   ✅  | Visual Studio 2022      | x86/x86_64             | cl              |
 | Contiki-ng |   ✅  | latest                  | ARM Cortex-M3 (32-bit) | gcc (c11)       |
