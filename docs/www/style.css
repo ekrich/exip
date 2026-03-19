@@ -33,3 +33,8 @@ hr.divider
 	border: none;
 	border-top: 10px solid #8bb5b2;
 }
+
+.logo-img
+{
+	padding-left: 26px;
+}
