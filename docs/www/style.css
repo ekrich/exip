@@ -70,6 +70,7 @@ hr.divider
 .header-table td:last-child
 {
 	width: 25%;
+	text-align: right;
 }
 
 .content-row
