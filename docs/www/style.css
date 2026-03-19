@@ -102,4 +102,5 @@ hr.divider
 .last-updated
 {
 	vertical-align: bottom;
+	font-style: italic;
 }
