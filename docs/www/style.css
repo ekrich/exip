@@ -98,3 +98,8 @@ hr.divider
 	text-align: left;
 	vertical-align: top;
 }
+
+.last-updated
+{
+	vertical-align: bottom;
+}
