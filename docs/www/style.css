@@ -92,3 +92,9 @@ hr.divider
 	width: 25%;
 	vertical-align: bottom;
 }
+
+.main-table th
+{
+	text-align: left;
+	vertical-align: top;
+}
