@@ -71,3 +71,24 @@ hr.divider
 {
 	width: 25%;
 }
+
+.content-row
+{
+	height: 450px;
+}
+
+.content-row td
+{
+	vertical-align: top;
+}
+
+.content-row td:first-child
+{
+	width: 25%;
+}
+
+.content-row td:last-child
+{
+	width: 25%;
+	vertical-align: bottom;
+}
