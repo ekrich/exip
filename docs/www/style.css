@@ -105,3 +105,10 @@ hr.divider
 	vertical-align: bottom;
 	font-style: italic;
 }
+
+.footer-row td
+{
+	text-align: center;
+	vertical-align: middle;
+	padding-top: 26px;
+}
