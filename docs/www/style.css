@@ -50,3 +50,24 @@ hr.divider
 	border-spacing: 0;
 	margin-top: 5px;
 }
+
+.header-table
+{
+	width: 100%;
+}
+
+.header-table td:first-child
+{
+	width: 25%;
+}
+
+.header-table td:nth-child(2)
+{
+	width: 50%;
+	text-align: center;
+}
+
+.header-table td:last-child
+{
+	width: 25%;
+}
