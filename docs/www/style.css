@@ -21,11 +21,6 @@ body {
 	white-space: nowrap;
 }
 
-.title {
-	font-size: 14px;
-	font-weight: bold;
-}
-
 hr.divider {
 	border: none;
 	border-top: 10px solid #8bb5b2;
