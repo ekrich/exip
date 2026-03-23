@@ -2,6 +2,7 @@
 
 #menu {
 	width: 200px;
+	min-height: 706px;
 	border-style: solid solid none solid;
 	border-color: #94AA74;
 	border-width: 1px;
@@ -41,8 +42,4 @@
 	background: url(images/menu1.gif) 0 -64px;
 	background-repeat: no-repeat;
 	padding: 8px 0 0 10px;
-}
-
-.menu-spacer {
-	height: 450px;
 }
