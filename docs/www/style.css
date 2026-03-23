@@ -1,4 +1,4 @@
-@CHARSET "UTF-8";
+@charset "UTF-8";
 
 body
 {
@@ -94,21 +94,20 @@ hr.divider
 	vertical-align: bottom;
 }
 
-.main-table th
-{
-	text-align: left;
-	vertical-align: top;
-}
-
 .last-updated
 {
 	vertical-align: bottom;
 	font-style: italic;
 }
 
-.footer-row td
+footer
 {
 	text-align: center;
 	vertical-align: middle;
 	padding-top: 26px;
+}
+
+header
+{
+	margin-top: 5px;
 }
