@@ -72,7 +72,8 @@ hr.divider {
 footer {
 	text-align: center;
 	vertical-align: middle;
-	padding-top: 1.625rem;
+	padding-top: 0.875rem;
+	padding-bottom: 0.875rem;
 	background: #e6f9e6;
 }
 
