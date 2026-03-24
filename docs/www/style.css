@@ -28,21 +28,26 @@ hr.divider {
 	padding-left: 26px;
 }
 
-.header-table {
+.header-container {
+	display: flex;
+	align-items: center;
 	width: 100%;
 }
 
-.header-table td:first-child {
+.header-logo {
 	width: 25%;
+	flex-shrink: 0;
 }
 
-.header-table td:nth-child(2) {
+.header-title {
 	width: 50%;
+	flex-shrink: 0;
 	text-align: center;
 }
 
-.header-table td:last-child {
+.header-github {
 	width: 25%;
+	flex-shrink: 0;
 	text-align: right;
 }
 
@@ -59,8 +64,8 @@ footer {
 }
 
 header {
-	padding-top: 5px;
-	padding-bottom: 5px;
+	padding-top: 10px;
+	padding-bottom: 10px;
 	background: #e6f9e6;
 }
 
@@ -111,6 +116,6 @@ header {
 .external-link-icon {
 	font-size: 1.1em;
 	margin-left: 0.2em;
-	color: #666;
+	color: #0000EE;
 	font-weight: bold;
 }
