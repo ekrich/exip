@@ -33,12 +33,12 @@ h3 {
 
 hr.divider {
 	border: none;
-	border-top: 10px solid #8bb5b2;
+	border-top: 0.625rem solid #8bb5b2;
 }
 
 .logo-img {
-	padding-left: 26px;
-	padding-top: 6px;
+	padding-left: 1.625rem;
+	padding-top: 0.375rem;
 }
 
 .header-container {
@@ -72,20 +72,20 @@ hr.divider {
 footer {
 	text-align: center;
 	vertical-align: middle;
-	padding-top: 26px;
+	padding-top: 1.625rem;
 	background: #e6f9e6;
 }
 
 header {
-	padding-top: 6px;
-	padding-bottom: 6px;
+	padding-top: 0.375rem;
+	padding-bottom: 0.375rem;
 	background: #e6f9e6;
 }
 
 .content-wrapper {
 	display: flex;
 	background-color: #ffffff;
-	min-height: 450px;
+	min-height: 28.125rem;
 }
 
 .content-wrapper nav {
@@ -95,17 +95,17 @@ header {
 
 .content-wrapper main {
 	flex: 1;
-	padding-left: 20px;
-	padding-right: 40px;
+	padding-left: 1.25rem;
+	padding-right: 2.5rem;
 }
 
 .skip-link {
 	position: absolute;
-	top: -40px;
+	top: -2.5rem;
 	left: 0;
 	background: #000;
 	color: #fff;
-	padding: 8px;
+	padding: 0.5rem;
 	text-decoration: none;
 	z-index: 100;
 }
