@@ -78,12 +78,7 @@ header {
 .content-wrapper main {
 	flex: 1;
 	padding-left: 20px;
-	padding-right: 20px;
-}
-
-.content-wrapper aside {
-	width: 20px;
-	flex-shrink: 0;
+	padding-right: 40px;
 }
 
 .skip-link {
