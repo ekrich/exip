@@ -2,15 +2,27 @@
 
 body {
 	font-family: Verdana, Tahoma, Arial, Times New Roman;
-	font-size: 12px;
+	font-size: 1rem;
 	padding: 0;
 	margin: 0;
 	color: black;
-	line-height: 20px;
+	line-height: 1.5;
+}
+
+h1 {
+	font-size: 1.5rem;
+}
+
+h2 {
+	font-size: 1.25rem;
+}
+
+h3 {
+	font-size: 1.125rem;
 }
 
 .header {
-	font-size: 25pt;
+	font-size: 1.75rem;
 	font-family: Verdana, Tahoma, Arial, Times New Roman;
 	font-weight: bold;
 	font-style: italic;
