@@ -1,22 +1,21 @@
 /*        V2        */
 
 #menu {
-	width: 200px;
-	min-height: 706px;
+	width: 12.5rem;
+	min-height: 44.125rem;
 	border-style: solid solid none solid;
 	border-color: #94AA74;
-	border-width: 1px;
+	border-width: 0.0625rem;
 	background-color: #cad6b6;
 }
 
 #menu ul {
 	list-style: none;
-	padding: 0px;
-	margin: 0px;
+	padding: 0;
+	margin: 0;
 }
 
 #menu li a {
-	height: 24px;
 	text-decoration: none;
 	font-weight: normal;
 }
@@ -27,19 +26,19 @@
 	display: block;
 	background: url(images/menu1.gif);
 	background-repeat: no-repeat;
-	padding: 8px 0 0 10px;
+	padding: 0.25rem 0 0.25rem 0.625rem;
 }
 
 #menu li a:hover {
 	color: #26370A;
-	background: url(images/menu1.gif) 0 -32px;
+	background: url(images/menu1.gif) 0 -2rem;
 	background-repeat: no-repeat;
-	padding: 8px 0 0 10px;
+	padding: 0.25rem 0 0.25rem 0.625rem;
 }
 
 #menu li a:active {
 	color: #26370A;
-	background: url(images/menu1.gif) 0 -64px;
+	background: url(images/menu1.gif) 0 -4rem;
 	background-repeat: no-repeat;
-	padding: 8px 0 0 10px;
+	padding: 0.25rem 0 0.25rem 0.625rem;
 }
