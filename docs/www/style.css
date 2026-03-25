@@ -144,3 +144,70 @@ header {
 	color: #0000EE;
 	font-weight: bold;
 }
+
+/* Mobile responsive styles */
+@media (max-width: 48rem) {
+	/* Remove min-width constraint on mobile */
+	.header-container {
+		min-width: 0;
+		flex-direction: column;
+		text-align: center;
+	}
+
+	/* Header elements stack vertically, full width */
+	.header-logo,
+	.header-title,
+	.header-github {
+		width: 100%;
+	}
+
+	/* Remove desktop padding, add spacing between stacked elements */
+	.logo-img {
+		padding-left: 0;
+		padding-top: 0.5rem;
+	}
+
+	.header-title {
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+	}
+
+	/* Allow title wrapping on mobile */
+	.header {
+		white-space: normal;
+	}
+
+	.header-github {
+		text-align: center;
+		padding-bottom: 0.5rem;
+	}
+
+	/* Stack menu and content vertically */
+	.content-wrapper {
+		flex-direction: column;
+	}
+
+	/* Menu takes full width */
+	.content-wrapper nav {
+		width: 100%;
+	}
+
+	/* Menu styling for mobile */
+	#menu {
+		width: 100%;
+		border-style: solid;
+		border-bottom-width: 0.0625rem;
+	}
+
+	/* Content takes full width with reduced padding */
+	.content-wrapper main {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+
+	/* Make images responsive */
+	.content-wrapper main img {
+		max-width: 100%;
+		height: auto;
+	}
+}
