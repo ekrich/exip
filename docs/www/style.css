@@ -7,6 +7,9 @@ body {
 	margin: 0;
 	color: black;
 	line-height: 1.5;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
 }
 
 h1 {
@@ -51,6 +54,7 @@ hr.divider {
 	display: flex;
 	align-items: center;
 	width: 100%;
+	min-width: 50rem;
 }
 
 .header-logo {
@@ -92,7 +96,8 @@ header {
 .content-wrapper {
 	display: flex;
 	background-color: #ffffff;
-	min-height: 28.125rem;
+	min-height: 24rem;
+	flex: 1;
 }
 
 .content-wrapper nav {
