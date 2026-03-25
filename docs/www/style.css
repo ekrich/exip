@@ -51,6 +51,7 @@ hr.divider {
 	display: flex;
 	align-items: center;
 	width: 100%;
+	min-width: 50rem;
 }
 
 .header-logo {
