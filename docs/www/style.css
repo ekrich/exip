@@ -4,12 +4,13 @@ body {
 	font-family: Verdana, Tahoma, Arial, Times New Roman;
 	font-size: 1rem;
 	padding: 0;
-	margin: 0;
+	margin: 0 auto;
 	color: black;
 	line-height: 1.5;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
+	max-width: 90rem;
 }
 
 h1 {
