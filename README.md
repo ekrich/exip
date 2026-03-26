@@ -18,7 +18,7 @@ We are working to improve this project so it can be used more widely. Quite a bi
 
 The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed. The project originally supported the Contiki embedded IoT platform and now compiles on the next generation [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project.
 
-Formerly this project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). All historical information is found there as well as this [original README.txt](README.txt) which is in HTML format.
+Formerly this project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). All historical information is found there as well as the [original web site](https://exip.sourceforge.net/).
 
 ## Supported Platforms
 
@@ -45,7 +45,7 @@ Please clone the repository or download a version by clicking on the *Releases* 
 
 All the documentation and the User Guide is available via the web site found at [https://ekrich.github.io/exip/](https://ekrich.github.io/exip/).
 
-See the additional tool installation and setup documentation for [Developers](DEVELOPERS.md).
+See the additional tool installation and setup documentation for [Developers](info/DEVELOPERS.md).
 
 ## Licenses
 
