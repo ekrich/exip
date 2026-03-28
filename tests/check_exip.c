@@ -43,7 +43,7 @@ START_TEST (test_default_options)
 	Parser testParser;
 	String uri;
 	String ln;
-	QName qname= {&uri, &ln};
+	QName qname= {.uri = &uri, .localName = &ln, .prefix = NULL};
 	String chVal;
 	char buf[OUTPUT_BUFFER_SIZE];
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
@@ -152,7 +152,7 @@ START_TEST (test_fragment_option)
 	Parser testParser;
 	String uri;
 	String ln;
-	QName qname= {&uri, &ln};
+	QName qname= {.uri = &uri, .localName = &ln, .prefix = NULL};
 	String chVal;
 	char buf[OUTPUT_BUFFER_SIZE];
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
