@@ -4,7 +4,8 @@
 -I/opt/homebrew/include
 
 # Compile flags
--Wall
+-std=c99
+-Wpacked -Wall -Wextra
 
 # src
 -Iinclude
