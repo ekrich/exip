@@ -137,7 +137,7 @@ static void printfHelp()
     printf("           ops_mask:   Specify out-of-band options used for encoding. Fields are delimited by %%.\n");
     printf("                       Use this argument only for specifying out-of-band options. That is if no options are specified in the header of the <exi_in>\n");
     printf("                       The format is: <1>%%<2>%%<3>%%<4>%%<5> where:\n");
-    printf("                       <1> - Preservation Options: c - comments, d - dtds, l - lexicalvalues, p - pis, x- prefixes. If none set then \"-\" \n");
+    printf("                       <1> - Preservation Options: c - comments, d - dtds, l - lexicalvalues, p - pis, x - prefixes. If none set then \"-\" \n");
     printf("                       <2> - Other options: v - strict interpretation of schema, f - fragments\n");
     printf("                       r - selfContained, c - compression, p - pre-compression, a - aligned to bytes. If none set then \"-\"\n");
     printf("                       <3> - valuePartitionCapacity. If not set then \"-\"\n");
