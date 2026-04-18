@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	unsigned char outputFormat = OUT_EXIP;
 	int argIndex = 1;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	char prefix[20];
+	char prefix[20] = "prfx_"; // The default prefix
 	unsigned char mask = false;
 	EXIOptions maskOpt;
 	Deviations dvis = {0};
@@ -106,19 +106,25 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if(strlen(argv[argIndex]) >= 5 &&
-	   argv[argIndex][0] == '-' &&
-	   argv[argIndex][1] == 'p' &&
-	   argv[argIndex][2] == 'f' &&
-	   argv[argIndex][3] == 'x' &&
-	   argv[argIndex][4] == '=')
+	if(strncmp(argv[argIndex], opt_pfx, strlen(opt_pfx)) == 0)
 	{
-		strcpy(prefix, argv[argIndex] + 5);
+		char *pfxValue = argv[argIndex] + strlen(opt_pfx);
+
+		if(*pfxValue == '=')
+		{
+			pfxValue++;  // skip the '='
+			strcpy(prefix, pfxValue);
+		}
+		else
+		{
+			// -pfx without = or -pfxXXX
+			fprintf(stderr, "Invalid argument: %s\n", argv[argIndex]);
+			fprintf(stderr, "Expected: %s=<prefix>\n", opt_pfx);
+			printfHelp();
+			exit(1);
+		}
+
 		argIndex++;
-	}
-	else
-	{
-		strcpy(prefix, "prfx_"); // The default prefix
 	}
 
 	if(argc <= argIndex)
@@ -127,34 +133,43 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if(strlen(argv[argIndex]) >= 5 &&
-	   argv[argIndex][0] == '-' &&
-	   argv[argIndex][1] == 'o' &&
-	   argv[argIndex][2] == 'p' &&
-	   argv[argIndex][3] == 's' &&
-	   argv[argIndex][4] == '=')
+	if(strncmp(argv[argIndex], opt_ops, strlen(opt_ops)) == 0)
 	{
-		mask = true;
-		if(argv[argIndex][5] == '1')
-			SET_STRICT(maskOpt.enumOpt);
+		char *opsValue = argv[argIndex] + strlen(opt_ops);
 
-		if(argv[argIndex][6] == '1')
-			SET_SELF_CONTAINED(maskOpt.enumOpt);
+		if(*opsValue == '=')
+		{
+			opsValue++;  // skip the '='
+			mask = true;
+			if(opsValue[0] == '1')
+				SET_STRICT(maskOpt.enumOpt);
 
-		if(argv[argIndex][7] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_DTD);
+			if(opsValue[1] == '1')
+				SET_SELF_CONTAINED(maskOpt.enumOpt);
 
-		if(argv[argIndex][8] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_PREFIXES);
+			if(opsValue[2] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_DTD);
 
-		if(argv[argIndex][9] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_LEXVALUES);
+			if(opsValue[3] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_PREFIXES);
 
-		if(argv[argIndex][10] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_COMMENTS);
+			if(opsValue[4] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_LEXVALUES);
 
-		if(argv[argIndex][11] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_PIS);
+			if(opsValue[5] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_COMMENTS);
+
+			if(opsValue[6] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_PIS);
+		}
+		else
+		{
+			// -ops without = or -opsXXX
+			fprintf(stderr, "Invalid argument: %s\n", argv[argIndex]);
+			fprintf(stderr, "Expected: %s=<ops_mask>\n", opt_ops);
+			printfHelp();
+			exit(1);
+		}
 
 		argIndex++;
 	}
@@ -175,18 +190,11 @@ int main(int argc, char *argv[])
             xsdList++;  // skip the '='
             parseSchema(xsdList, &schema, mask, maskOpt);
         }
-        else if(*xsdList == '\0')
-        {
-            // -schema no =<xsd_in>
-			fprintf(stderr, "Missing schema files after %s\n", opt_schema);
-			printfHelp();
-		    exit(1);
-        }
         else
         {
-            // invalid: "-schemaXXX"
+            // -schema without = or -schemaXXX
             fprintf(stderr, "Invalid argument: %s\n", argv[argIndex]);
-            fprintf(stderr, "Expected: -schema=<xsd_in>\n");
+            fprintf(stderr, "Expected: %s=<xsd_in>\n", opt_schema);
             printfHelp();
             exit(1);
         }
