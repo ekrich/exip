@@ -6,7 +6,7 @@ This document provides guidelines for AI assistants (Claude, GPT, Copilot, etc.)
 
 **EXIP** (Embeddable EXI Processor in C) is a C library for parsing and serializing EXI (Efficient XML Interchange) streams. It's designed for embedded systems with emphasis on low memory footprint and portability.
 
-**License**: BSD 3-Clause (see [LICENSE.txt](LICENSE.txt))
+**License**: Apache 2.0 (see [LICENSE.txt](LICENSE.txt))
 
 ## Core Principles
 
@@ -48,11 +48,27 @@ All features must support **BOTH** processing modes:
 
 ## Coding Standards
 
+### File Headers
+
+All new source files should include the standard EXIP header:
+
+```c
+/*==================================================================*\
+|                EXIP - Embeddable EXI Processor in C                |
+|--------------------------------------------------------------------|
+|          Licensed under the Apache License, Version 2.0            |
+|  The full license terms and conditions are located in LICENSE.txt  |
+\===================================================================*/
+```
+
+**Note**: Some older files reference "BSD 3-Clause License" in headers. The project transitioned to Apache 2.0 for explicit patent grant protections. All new code should use the Apache 2.0 header above, as specified in LICENSE.txt.
+
 ### Naming Conventions
 
 - **Tools**: Prefix with `exip` (e.g., `exipcodegen`, `exipd`, `exipe`)
 - **Functions**: camelCase (e.g., `initParser`, `parseNext`)
 - **Types**: PascalCase (e.g., `EXIStream`, `Parser`)
+- **Struct members**: snake_case (e.g., `app_data`, `has_options`, `version_number`)
 - **Constants**: UPPER_SNAKE_CASE (e.g., `EXIP_OK`, `INDEX_MAX`)
 - **Macros**: UPPER_SNAKE_CASE (e.g., `SET_STRICT`, `WITH_COMPRESSION`)
 
@@ -234,19 +250,8 @@ When adding features, update:
 
 ## Key Files to Reference
 
-### Understanding the Codebase
 - [ARCHITECTURE.md](info/ARCHITECTURE.md) - System architecture and design
-- [include/procTypes.h](include/procTypes.h) - Core type definitions
-- [include/EXIParser.h](include/EXIParser.h) - Parser API
-- [include/EXISerializer.h](include/EXISerializer.h) - Serializer API
-
-### Working with the Code
-- [DECODING_TO_STRUCT.md](info/DECODING_TO_STRUCT.md) - Parse EXI to C structures
-- [DETECTING_SCHEMA_MODE.md](info/DETECTING_SCHEMA_MODE.md) - Determine encoding mode
-- [UNIFIED_DECODING_PATTERNS.md](info/UNIFIED_DECODING_PATTERNS.md) - Handle both modes
-
-### Future Development
-- [CODE_GENERATION_VISION.md](info/CODE_GENERATION_VISION.md) - Code generation tool design
+- [info/](info/) - Additional design documents and patterns
 
 ### Examples
 - [examples/simpleDecoding/exipd.c](examples/simpleDecoding/exipd.c) - Decoder example
@@ -279,7 +284,7 @@ Use these to encode XSD schemas to EXI format:
 
 ## Community
 
-- **License**: BSD 3-Clause - permissive for commercial use
+- **License**: Apache 2.0 - permissive for commercial use with patent grant protection
 - **Issues**: Report via project issue tracker
 - **Contributions**: Follow coding standards, test both modes
 - **Discussion**: Reference W3C EXI specification for clarification
@@ -309,5 +314,5 @@ Use these to encode XSD schemas to EXI format:
 
 ---
 
-**Last Updated**: 2024
+**Last Updated**: 2026
 **For EXIP Version**: 0.5+

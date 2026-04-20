@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 	unsigned char mask = false;
 	EXIOptions maskOpt;
 	Deviations dvis = {0};
+	char *schemaFiles = NULL;
 
 	makeDefaultOpts(&maskOpt);
 
@@ -188,7 +189,7 @@ int main(int argc, char *argv[])
         if(*xsdList == '=')
         {
             xsdList++;  // skip the '='
-            parseSchema(xsdList, &schema, mask, maskOpt);
+            schemaFiles = xsdList;
         }
         else
         {
@@ -212,6 +213,16 @@ int main(int argc, char *argv[])
 		}
 		argIndex += 1;
 	}
+
+	if(schemaFiles == NULL)
+	{
+		fprintf(stderr, "Missing required %s=<xsd_in> argument\n", opt_schema);
+		printfHelp();
+		return 1;
+	}
+
+	// Parse schema files and output now that all options are processed
+	parseSchema(schemaFiles, &schema, mask, maskOpt);
 
 	switch(outputFormat)
 	{
