@@ -5,8 +5,14 @@ setlocal EnableDelayedExpansion
 set EXITCODE=0
 :: Forward slash for C program arg
 set "TEST_DIR=tests/test-set"
+
+:: Default to Debug, but allow Release as first argument
+set "CONFIG=Debug"
+if /i "%~1"=="Release" set "CONFIG=Release"
+if /i "%~1"=="release" set "CONFIG=Release"
+
 :: Backslash for Win bat file
-set "EXE_DIR=build\vs2022\Debug"
+set "EXE_DIR=build\vs2022\%CONFIG%"
 
 echo Running tests ...
 :: List of test executables separated by spaces.

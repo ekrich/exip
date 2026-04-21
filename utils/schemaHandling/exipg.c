@@ -26,23 +26,31 @@
 
 static void printfHelp();
 static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, EXIOptions maskOpt);
+static bool validateAndParseUInt(const char *str, char **endPtr, unsigned int *result, char expectedDelim);
 
 int main(int argc, char *argv[])
 {
+	// options
+    const char *opt_help = "-help";
+	const char *opt_exip = "-exip";
+	const char *opt_text = "-text";
+	const char *opt_dynamic = "-dynamic";
+	const char *opt_static = "-static";
+	const char *opt_pfx = "-pfx";
+	const char *opt_ops = "-ops";
+	const char *opt_schema = "-schema";
+
 	FILE *outfile = stdout; // Default is the standard output
-	EXIPSchema schema;
+	EXIPSchema schema = {0};
 	unsigned char outputFormat = OUT_EXIP;
 	int argIndex = 1;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	char prefix[20];
+	char prefix[20] = "prfx_"; // The default prefix
 	unsigned char mask = false;
 	EXIOptions maskOpt;
-	Deviations dvis;
+	Deviations dvis = {0};
+	char *schemaFiles = NULL;
 
-	dvis.grammar = 0;
-	dvis.ln = 0;
-	dvis.url = 0;
-	dvis.pfx = 0;
 	makeDefaultOpts(&maskOpt);
 
 	if(argc == 1)
@@ -51,103 +59,71 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if(strcmp(argv[argIndex], "-help") == 0)
+	if(strcmp(argv[argIndex], opt_help) == 0)
 	{
 		printfHelp();
 		return 0;
 	}
-	else if(strcmp(argv[argIndex], "-exip") == 0)
+	else if(strcmp(argv[argIndex], opt_exip) == 0)
 	{
 		outputFormat = OUT_EXIP;
 		argIndex++;
 	}
-	else if(strcmp(argv[argIndex], "-text") == 0)
+	else if(strcmp(argv[argIndex], opt_text) == 0)
 	{
 		outputFormat = OUT_TEXT;
 		argIndex++;
 	}
-	else if(strcmp(argv[argIndex], "-dynamic") == 0)
+	else if(strcmp(argv[argIndex], opt_dynamic) == 0)
 	{
 		outputFormat = OUT_SRC_DYN;
 		argIndex++;
 	}
-	else if(strlen(argv[argIndex]) >= 7 &&
-			argv[argIndex][0] == '-' &&
-			   argv[argIndex][1] == 's' &&
-			   argv[argIndex][2] == 't' &&
-			   argv[argIndex][3] == 'a' &&
-			   argv[argIndex][4] == 't' &&
-			   argv[argIndex][5] == 'i' &&
-			   argv[argIndex][6] == 'c')
+	else if(strncmp(argv[argIndex], opt_static, strlen(opt_static)) == 0)
 	{
 		outputFormat = OUT_SRC_STAT;
-		if(strlen(argv[argIndex]) >= 15 && argv[argIndex][7] == '=' )
+
+        if(argv[argIndex][strlen(opt_static)] == '=')
+        {
+            char *pEnd;
+		    char *deviations = argv[argIndex] + strlen(opt_static) + 1; // 1 for =
+
+            if(!validateAndParseUInt(deviations, &pEnd, &dvis.url, ':') ||
+                !validateAndParseUInt(pEnd + 1, &pEnd, &dvis.ln, ':') ||
+                !validateAndParseUInt(pEnd + 1, &pEnd, &dvis.pfx, ':') ||
+                !validateAndParseUInt(pEnd + 1, &pEnd, &dvis.grammar, '\0'))  // ends with null
+            {
+                fprintf(stderr, "Invalid deviations format: %s\n", argv[argIndex]);
+                fprintf(stderr, "Expected: -static=<url>:<ln>:<pfx>:<grammars>\n");
+                exit(1);
+            }
+        }
+		argIndex++;
+	}
+
+	if(argc <= argIndex)
+	{
+		printfHelp();
+		return 0;
+	}
+
+	if(strncmp(argv[argIndex], opt_pfx, strlen(opt_pfx)) == 0)
+	{
+		char *pfxValue = argv[argIndex] + strlen(opt_pfx);
+
+		if(*pfxValue == '=')
 		{
-			char * pEnd;
-
-			dvis.url = (int) strtol (argv[argIndex] + 8, &pEnd, 10);
-			dvis.ln = (int) strtol (pEnd + 1, &pEnd, 10);
-			dvis.pfx = (int) strtol (pEnd + 1, &pEnd, 10);
-			dvis.grammar = (int) strtol (pEnd + 1, NULL, 10);
+			pfxValue++;  // skip the '='
+			strcpy(prefix, pfxValue);
 		}
-		argIndex++;
-	}
-
-	if(argc <= argIndex)
-	{
-		printfHelp();
-		return 0;
-	}
-
-	if(strlen(argv[argIndex]) >= 5 &&
-	   argv[argIndex][0] == '-' &&
-	   argv[argIndex][1] == 'p' &&
-	   argv[argIndex][2] == 'f' &&
-	   argv[argIndex][3] == 'x' &&
-	   argv[argIndex][4] == '=')
-	{
-		strcpy(prefix, argv[argIndex] + 5);
-		argIndex++;
-	}
-	else
-	{
-		strcpy(prefix, "prfx_"); // The default prefix
-	}
-
-	if(argc <= argIndex)
-	{
-		printfHelp();
-		return 0;
-	}
-
-	if(strlen(argv[argIndex]) >= 5 &&
-	   argv[argIndex][0] == '-' &&
-	   argv[argIndex][1] == 'o' &&
-	   argv[argIndex][2] == 'p' &&
-	   argv[argIndex][3] == 's' &&
-	   argv[argIndex][4] == '=')
-	{
-		mask = true;
-		if(argv[argIndex][5] == '1')
-			SET_STRICT(maskOpt.enumOpt);
-
-		if(argv[argIndex][6] == '1')
-			SET_SELF_CONTAINED(maskOpt.enumOpt);
-
-		if(argv[argIndex][7] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_DTD);
-
-		if(argv[argIndex][8] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_PREFIXES);
-
-		if(argv[argIndex][9] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_LEXVALUES);
-
-		if(argv[argIndex][10] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_COMMENTS);
-
-		if(argv[argIndex][11] == '1')
-			SET_PRESERVED(maskOpt.preserve, PRESERVE_PIS);
+		else
+		{
+			// -pfx without = or -pfxXXX
+			fprintf(stderr, "Invalid argument: %s\n", argv[argIndex]);
+			fprintf(stderr, "Expected: %s=<prefix>\n", opt_pfx);
+			printfHelp();
+			exit(1);
+		}
 
 		argIndex++;
 	}
@@ -158,19 +134,74 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if(strstr(argv[argIndex], "-schema") != NULL)
+	if(strncmp(argv[argIndex], opt_ops, strlen(opt_ops)) == 0)
 	{
-		char *xsdList = argv[argIndex] + 7;
+		char *opsValue = argv[argIndex] + strlen(opt_ops);
 
-		parseSchema(xsdList, &schema, mask, maskOpt);
+		if(*opsValue == '=')
+		{
+			opsValue++;  // skip the '='
+			mask = true;
+			if(opsValue[0] == '1')
+				SET_STRICT(maskOpt.enumOpt);
 
-		argIndex += 1;
+			if(opsValue[1] == '1')
+				SET_SELF_CONTAINED(maskOpt.enumOpt);
+
+			if(opsValue[2] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_DTD);
+
+			if(opsValue[3] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_PREFIXES);
+
+			if(opsValue[4] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_LEXVALUES);
+
+			if(opsValue[5] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_COMMENTS);
+
+			if(opsValue[6] == '1')
+				SET_PRESERVED(maskOpt.preserve, PRESERVE_PIS);
+		}
+		else
+		{
+			// -ops without = or -opsXXX
+			fprintf(stderr, "Invalid argument: %s\n", argv[argIndex]);
+			fprintf(stderr, "Expected: %s=<ops_mask>\n", opt_ops);
+			printfHelp();
+			exit(1);
+		}
+
+		argIndex++;
 	}
-	else
+
+	if(argc <= argIndex)
 	{
+		fprintf(stderr, "Missing required %s=<xsd_in> argument\n", opt_schema);
 		printfHelp();
 		return 0;
 	}
+
+	if(strncmp(argv[argIndex], opt_schema, strlen(opt_schema)) == 0)
+    {
+        char *xsdList = argv[argIndex] + strlen(opt_schema);
+
+        if(*xsdList == '=')
+        {
+            xsdList++;  // skip the '='
+            schemaFiles = xsdList;
+        }
+        else
+        {
+            // -schema without = or -schemaXXX
+            fprintf(stderr, "Invalid argument: %s\n", argv[argIndex]);
+            fprintf(stderr, "Expected: %s=<xsd_in>\n", opt_schema);
+            printfHelp();
+            exit(1);
+        }
+
+        argIndex += 1;
+    }
 
 	if(argc > argIndex)
 	{
@@ -182,6 +213,16 @@ int main(int argc, char *argv[])
 		}
 		argIndex += 1;
 	}
+
+	if(schemaFiles == NULL)
+	{
+		fprintf(stderr, "Missing required %s=<xsd_in> argument\n", opt_schema);
+		printfHelp();
+		return 1;
+	}
+
+	// Parse schema files and output now that all options are processed
+	parseSchema(schemaFiles, &schema, mask, maskOpt);
 
 	switch(outputFormat)
 	{
@@ -253,7 +294,7 @@ static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, E
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	FILE *schemaFile;
 	BinaryBuffer buffer[MAX_XSD_FILES_COUNT]; // up to 10 XSD files
-	char schemaFileName[50];
+	char schemaFileName[FILENAME_MAX];
 	unsigned int schemaFilesCount = 0;
 	unsigned int i;
 	char *token;
@@ -262,7 +303,7 @@ static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, E
 	if(mask)
 		opt = &maskOpt;
 
-	for (token = strtok(xsdList, "=,"), i = 0; token != NULL; token = strtok(NULL, "=,"), i++)
+	for (token = strtok(xsdList, ","), i = 0; token != NULL; token = strtok(NULL, ","), i++)
 	{
 		schemaFilesCount++;
 		if(schemaFilesCount > MAX_XSD_FILES_COUNT)
@@ -271,7 +312,17 @@ static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, E
 			exit(1);
 		}
 
-		strcpy(schemaFileName, token);
+        if(strlen(token) < FILENAME_MAX)
+		{
+            strcpy(schemaFileName, token);  // adds \0
+		}
+        else
+        {
+            fprintf(stderr, "Schema filename too long: %zu chars (max %d): %s\n",
+				strlen(token), FILENAME_MAX - 1, token);
+            exit(1);
+        }
+
 		schemaFile = fopen(schemaFileName, "rb" );
 		if(!schemaFile)
 		{
@@ -317,4 +368,17 @@ static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, E
 		printf("\nGrammar generation error occurred: %d", tmp_err_code);
 		exit(1);
 	}
+}
+
+static bool validateAndParseUInt(const char *str, char **endPtr, unsigned int *result, char expectedDelim)
+{
+   *result = (unsigned int) strtoul(str, endPtr, 10);
+    if(**endPtr != expectedDelim)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }

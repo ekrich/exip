@@ -15,7 +15,11 @@ error.log
 .vs/
 *.user
 Debug/
+Release/
 packages/
 
 # vcpkg generated
 vcpkg_installed/
+
+# AI stuff
+.claude/
