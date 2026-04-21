@@ -15,6 +15,7 @@ error.log
 .vs/
 *.user
 Debug/
+Release/
 packages/
 
 # vcpkg generated

@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	const char *opt_schema = "-schema";
 
 	FILE *outfile = stdout; // Default is the standard output
-	EXIPSchema schema;
+	EXIPSchema schema = {0};
 	unsigned char outputFormat = OUT_EXIP;
 	int argIndex = 1;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
