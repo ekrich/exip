@@ -1494,6 +1494,23 @@ END_TEST
 /**********************************************************************/
 /* END THE LKAB DEMO SUIT*/
 
+/* Tests whiteSpace facet handling in schema grammar generation */
+START_TEST (test_whitespace_facets)
+{
+	EXIPSchema schema;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+
+	parseSchema("whitespace/whitespace-test.xsd.exi", &schema);
+
+	// Before fix: generateSchemaInformedGrammars returns EXIP_NOT_IMPLEMENTED_YET
+	// After fix: should return EXIP_OK and load all whiteSpace facets
+
+	destroySchema(&schema);
+}
+END_TEST
+
 /* Test suite */
 
 Suite* exip_suite(void)
@@ -1506,6 +1523,7 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_acceptance_for_A_01_exip1);
 	  tcase_add_test (tc_builtin, test_acceptance_for_A_01b);
 	  tcase_add_test (tc_builtin, test_lkab_demo_suit);
+	  tcase_add_test (tc_builtin, test_whitespace_facets);
 	  suite_add_tcase (s, tc_builtin);
 	}
 

@@ -5,7 +5,7 @@
 
 # Compile flags
 -std=c99
--Wpacked -Wall -Wextra
+-Wpacked -Wall -Wextra -Wuninitialized -Wconditional-uninitialized
 
 # src
 -Iinclude
