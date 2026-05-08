@@ -1713,6 +1713,7 @@ static errorCode getRestrictionSimpleProtoGrammar(BuildContext* ctx, QualifiedTr
 	newSimpleType.max = ctx->schema->simpleTypeTable.sType[typeId].max;
 	newSimpleType.min = ctx->schema->simpleTypeTable.sType[typeId].min;
 	newSimpleType.length = ctx->schema->simpleTypeTable.sType[typeId].length;
+	newSimpleType.whiteSpace = ctx->schema->simpleTypeTable.sType[typeId].whiteSpace;
 
 	tmpEntry = resEntry->entry->child.entry;
 
@@ -2072,6 +2073,7 @@ static errorCode getListProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry*
 	listSimpleType.max = 0;
 	listSimpleType.min = 0;
 	listSimpleType.length = 0;
+	listSimpleType.whiteSpace = WHITESPACE_COLLAPSE; // List types always use collapse (spaces separate items)
 
 	if(!isStringEmpty(&listEntry->entry->attributePointers[ATTRIBUTE_ITEM_TYPE]))
 	{

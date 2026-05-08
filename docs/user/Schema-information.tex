@@ -55,12 +55,20 @@ java -jar exificient-gui-jar-with-dependencies.jar
 \end{lstlisting}
 When encoding the XML Schema file, configure the following settings:
 \begin{itemize}
-\item \textbf{Use Schema: None} (schema-less mode)
-\item \textbf{Preserve Namespace Declarations} (enables Preserve.prefixes)
-\item \textbf{Include options} (recommended - embeds options in EXI header)
+\item Alignment: \textbf{BIT\_PACKED} (default)
+\item \textbf{Preserve Prefixes} (must check this box)
+\item Schema Information: \textbf{Schema-less} (default)
+\item Click \textbf{Configure Advanced Encoding Options} button:
+\begin{itemize}
+\item \textbf{Include cookie} (includes EXI header with cookie)
+\item \textbf{Include options} (embeds options in EXI header)
+\end{itemize}
+\item Select the \textbf{XML to EXI} tab (default)
+\item Select XML file (input XSD file)
+\item EXI output file (output .exi file)
 \end{itemize}
 
-If you leave ``Include options'' unchecked, you need to use the \texttt{-ops=0001000} argument
+If you leave ``Include cookie'' and ``Include options'' unchecked, you need to use the \texttt{-ops=0001000} argument
 of the exipg utility to specify the out-of-band options (bit 4 enables Preserve.prefixes).
 
 Note: This formerly used the OpenEXI Java library found at

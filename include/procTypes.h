@@ -926,7 +926,28 @@ typedef struct UriTable UriTable;
 #define REMOVE_TYPE_FACET(content, facet) (content = (content & ~facet))
 
 /**
- * Attributes of a schema simple type, including EXI datatype for the simple content. 
+ * @name Handling of whitespace facets
+ * #x20 (space), #x9 (tab), #xA (linefeed), and #xD (carriage return)
+ *
+ * WSType options:
+ * @def WHITESPACE_PRESERVE
+ *      whitespace characters are kept unchanged
+ * @def WHITESPACE_REPLACE
+ *      all instances of whitespace are replaced with a space
+ * @def WHITESPACE_COLLAPSE
+ *      leading and trailing whitespace is removed and all the other sequences of contiguous whitespace are replaced by a single space
+ * @see https://www.w3.org/TR/xmlschema-2/#rf-whiteSpace
+ */
+enum WSType
+{
+	WHITESPACE_PRESERVE = 0, // Default for xs:string
+	WHITESPACE_REPLACE  = 1, // Default for xs:normalizedString
+	WHITESPACE_COLLAPSE = 2  // Default for xs:token, numeric, boolean, date types
+};
+typedef enum WSType WSType;
+
+/**
+ * Attributes of a schema simple type, including EXI datatype for the simple content.
  */
 struct SimpleType {
 	/** The content of the simple type consists of two parts:
@@ -950,6 +971,13 @@ struct SimpleType {
 	/**
 	 * either minInclusive or minExclusive or minLength (they are mutually exclusive) */
 	int64_t min;
+
+	/**
+	 * whitespace normalization when whitespace instructions are defined for the restriction. May be used as facet for: xs:ENTITIES,
+	 * xs:ENTITY, xs:ID, xs:IDREF, xs:IDREFS, xs:language, xs:Name, xs:NCName, xs:NMTOKEN, xs:NMTOKENS,
+	 * xs:normalizedString, xs:string, xs:token
+	 */
+	WSType whiteSpace;
 };
 
 typedef struct SimpleType SimpleType;

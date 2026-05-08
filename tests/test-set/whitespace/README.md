@@ -73,16 +73,20 @@ java -jar exificient-gui-jar-with-dependencies.jar
 ```
 
 **Required settings:**
-- ☑ **Use Schema: None** (schema-less mode)
-- ☑ **Preserve Namespace Declarations** (enables Preserve.prefixes)
-- ☑ **Include options** (embeds options in EXI header - no out-of-band needed)
-- Input: `whitespace-test.xsd`
-- Output: `whitespace-test-xsd.exi`
+- Alignment: **BIT_PACKED** (default)
+- ☑ **Preserve Prefixes** (must check this box)
+- Schema Information: **Schema-less** (default)
+- Click **Configure Advanced Encoding Options** button:
+  - ☑ **Include cookie** (includes EXI header with cookie)
+  - ☑ **Include options** (embeds options in EXI header)
+- Select the **XML to EXI** tab (default)
+- Select XML file: `whitespace-test.xsd`
+- EXI output file: `whitespace-test-xsd.exi`
 
 **Why these settings:**
 - Schema-less encoding prevents circularity (encoding a schema with itself)
-- Preserve.prefixes required for correct QName handling in schema processing
-- Including options in header avoids need for `-ops=` argument with exipg
+- Preserve prefixes (Preserve.prefixes) required for correct QName handling in schema processing
+- Including cookie and options in header avoids need for out-of-band configuration
 
 ## Expected Test Behavior
 
