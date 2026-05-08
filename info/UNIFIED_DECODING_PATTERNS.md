@@ -601,6 +601,26 @@ float stringToFloat(const String* str);
 // Bad: Inline conversions everywhere
 ```
 
+**Note on EXIP String Type**: These helpers work with EXIP's length-prefixed `String` type (not null-terminated C strings):
+```c
+// EXIP String structure
+struct StringType {
+    CharType* str;    // NOT null-terminated!
+    Index length;     // Length in characters
+};
+
+// Helper must handle non-null-terminated strings
+static int stringToInt(const String* str) {
+    char buf[32];
+    size_t len = str->length < 31 ? str->length : 31;
+    memcpy(buf, str->str, len);  // Copy to temp buffer
+    buf[len] = '\0';              // Add null terminator
+    return atoi(buf);
+}
+```
+
+For schema-less **encoding**, you'd need the reverse (C types → strings). EXIP has unimplemented stub functions for this (see [UNIMPLEMENTED_FEATURES.md](UNIMPLEMENTED_FEATURES.md)). Currently use `snprintf()` and `asciiToString()`.
+
 ### 3. Handle Unknown Fields Gracefully
 
 ```c

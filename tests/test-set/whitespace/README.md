@@ -63,17 +63,26 @@ This schema defines three custom string types, each with explicit `whiteSpace` f
 2. Stores the value in the grammar
 3. Doesn't crash with `EXIP_NOT_IMPLEMENTED_YET`
 
-### whitespace-test.xsd.exi
+### whitespace-test-xsd.exi
 
 EXI-encoded version of the schema for use with `generateSchemaInformedGrammars()`.
 
-**To generate:**
+**To generate using EXIficient GUI:**
 ```bash
-# Using EXIficient GUI (if available)
 java -jar exificient-gui-jar-with-dependencies.jar
-
-# Or using another EXI encoder with schema-informed encoding
 ```
+
+**Required settings:**
+- ☑ **Use Schema: None** (schema-less mode)
+- ☑ **Preserve Namespace Declarations** (enables Preserve.prefixes)
+- ☑ **Include options** (embeds options in EXI header - no out-of-band needed)
+- Input: `whitespace-test.xsd`
+- Output: `whitespace-test-xsd.exi`
+
+**Why these settings:**
+- Schema-less encoding prevents circularity (encoding a schema with itself)
+- Preserve.prefixes required for correct QName handling in schema processing
+- Including options in header avoids need for `-ops=` argument with exipg
 
 ## Expected Test Behavior
 

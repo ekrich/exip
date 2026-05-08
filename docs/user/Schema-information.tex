@@ -53,9 +53,15 @@ Download the runnable JAR. The graphical tool can be started with the following 
 \begin{lstlisting}
 java -jar exificient-gui-jar-with-dependencies.jar
 \end{lstlisting}
-When encoding the XML Schema file you should use schema-less mode indicated by ``Use Schema: None''
-and also set the Preserve.prefixes option by checking the ``Preserve Namespace Declarations''
-checkbox. It is recommended to encode these options in the header by setting
-``Include options'' checkbox. If you leave the ``Include options'' unchecked, you need to use the \texttt{-ops=} argument
-of the exipg utility to specify the out-of-band options. Note: This formerly used the OpenEXI Java library found at
+When encoding the XML Schema file, configure the following settings:
+\begin{itemize}
+\item \textbf{Use Schema: None} (schema-less mode)
+\item \textbf{Preserve Namespace Declarations} (enables Preserve.prefixes)
+\item \textbf{Include options} (recommended - embeds options in EXI header)
+\end{itemize}
+
+If you leave ``Include options'' unchecked, you need to use the \texttt{-ops=0001000} argument
+of the exipg utility to specify the out-of-band options (bit 4 enables Preserve.prefixes).
+
+Note: This formerly used the OpenEXI Java library found at
 \href{https://sourceforge.net/projects/openexi/files/}{(https://sourceforge.net/projects/openexi/files/)}.
