@@ -81,7 +81,7 @@ java -jar exificient-gui-jar-with-dependencies.jar
   - ☑ **Include options** (embeds options in EXI header)
 - Select the **XML to EXI** tab (default)
 - Select XML file: `whitespace-test.xsd`
-- EXI output file: `whitespace-test-xsd.exi`
+- EXI output file: `whitespace-test.xsd.exi` (default)
 
 **Why these settings:**
 - Schema-less encoding prevents circularity (encoding a schema with itself)
