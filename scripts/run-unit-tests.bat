@@ -16,7 +16,7 @@ set "EXE_DIR=build\vs2022\%CONFIG%"
 
 echo Running tests ...
 :: List of test executables separated by spaces.
-set "testlist=%EXE_DIR%\check_builtin_grammer.exe %EXE_DIR%\check_contentio.exe %EXE_DIR%\check_emptyType.exe %EXE_DIR%\check_exip.exe %EXE_DIR%\check_grammar.exe %EXE_DIR%\check_profile.exe %EXE_DIR%\check_streamIO.exe %EXE_DIR%\check_stringTables.exe %EXE_DIR%\check_xsi_type.exe"
+set "testlist=%EXE_DIR%\check_builtin_grammer.exe %EXE_DIR%\check_contentio.exe %EXE_DIR%\check_emptyType.exe %EXE_DIR%\check_exip.exe %EXE_DIR%\check_grammar.exe %EXE_DIR%\check_profile.exe %EXE_DIR%\check_streamIO.exe %EXE_DIR%\check_stringTables.exe %EXE_DIR%\check_strict_grammar.exe %EXE_DIR%\check_xsi_type.exe"
 
 :: Run each test
 for %%x in (%testlist%) do (

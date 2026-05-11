@@ -23,6 +23,7 @@
 #include "EXIParser.h"
 #include "stringManipulate.h"
 #include "grammarGenerator.h"
+#include "initSchemaInstance.h"
 #include "memManagement.h"
 
 #define INPUT_BUFFER_SIZE 200
@@ -63,7 +64,7 @@ static void parseSchema(const char* fileName, EXIPSchema* schema)
 	BinaryBuffer buffer;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	size_t pathlen = strlen(dataDir);
-	char exipath[MAX_PATH_LEN + strlen(fileName)];
+	char exipath[MAX_PATH_LEN + sizeof(fileName - 1)];
 
 	memcpy(exipath, dataDir, pathlen);
 	exipath[pathlen] = '/';
@@ -276,7 +277,7 @@ START_TEST (test_acceptance_for_A_01)
 	char buf[INPUT_BUFFER_SIZE];
 	const char *schemafname = "testStates/acceptance-xsd.exi";
 	const char *exifname = "testStates/acceptance_a_01.exi";
-	char exipath[MAX_PATH_LEN + strlen(exifname)];
+	char exipath[MAX_PATH_LEN + sizeof(exifname - 1)];
 	struct appData parsingData;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	BinaryBuffer buffer;
@@ -438,7 +439,7 @@ START_TEST (test_acceptance_for_A_01_exip1)
 	char buf[INPUT_BUFFER_SIZE];
 	const char *schemafname = "testStates/acceptance-xsd.exi";
 	const char *exifname = "testStates/acceptance_a_01a.exi";
-	char exipath[MAX_PATH_LEN + strlen(exifname)];
+	char exipath[MAX_PATH_LEN + sizeof(exifname - 1)];
 	struct appData parsingData;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	BinaryBuffer buffer;
@@ -1502,9 +1503,9 @@ START_TEST (test_whitespace_facets)
 
 	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
 
-	parseSchema("whitespace/whitespace-test.xsd.exi", &schema);
+	parseSchema("xsWhitespace/whitespace-test.xsd.exi", &schema);
 
-	// Before fix: generateSchemaInformedGrammars returns EXIP_NOT_IMPLEMENTED_YET
+	// Before fix: parseSchema fails with EXIP_NOT_IMPLEMENTED_YET
 	// After fix: should return EXIP_OK and load all whiteSpace facets
 
 	destroySchema(&schema);
