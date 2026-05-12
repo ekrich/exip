@@ -891,7 +891,7 @@ Potential areas for extension:
 4. **Streaming Optimizations**: Zero-copy buffer handling
 5. **Validation**: Runtime schema validation (partially implemented)
 6. **Restricted Character Sets**: Parse XSD pattern facets (regex) to derive and apply restricted character set encodings for improved compression. This includes validation of pattern facets in strict mode (e.g., email patterns, alphanumeric constraints)
-7. **Hex and Binary Encoding Utilities**: Add built-in support for hexBinary and base64Binary encoding/decoding to avoid external library dependencies
+7. **Hex and Binary Encoding Utilities**: Add built-in support for hexBinary and base64Binary encoding/decoding as a separate optional utility library (`libexip-utils` or `libexip-xml`). This would support EXI→XML text conversion (e.g., `exipd -text` output) and server-side use cases (Python/Scala bindings for AI/storage workflows) without adding bloat to embedded deployments. Core `libexip` remains zero-dependency; utilities are only linked when XML text I/O is needed
 
 ## References
 
