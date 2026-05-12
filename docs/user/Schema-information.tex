@@ -3,7 +3,7 @@
 
 This section examines different ways of constructing \texttt{EXIPSchema} object
 containing the XML schema definitions and constrains. The header file \texttt{grammarGenerator.h}
-defines a function \texttt{generateSchemaInformedGrammars()} that takes a XML schema document(s) and converts them to 
+defines a function \texttt{generateSchemaInformedGrammars()} that takes a XML schema document(s) and converts them to
 \texttt{EXIPSchema} object. This function can be used to dynamically (at run-time)
 parse a schema and generate the EXI grammar constructs for schema-enabled
 parsing and serialization. The \texttt{EXIPSchema} object can be used to process
@@ -53,9 +53,22 @@ Download the runnable JAR. The graphical tool can be started with the following 
 \begin{lstlisting}
 java -jar exificient-gui-jar-with-dependencies.jar
 \end{lstlisting}
-When encoding the XML Schema file you should use schema-less mode indicated by ``Use Schema: None''
-and also set the Preserve.prefixes option by checking the ``Preserve Namespace Declarations''
-checkbox. It is recommended to encode these options in the header by setting
-``Include options'' checkbox. If you leave the ``Include options'' unchecked, you need to use the \texttt{-ops=} argument
-of the exipg utility to specify the out-of-band options. Note: This formerly used the OpenEXI Java library found at
+When encoding the XML Schema file, configure the following settings:
+\begin{itemize}
+\item Alignment \& StringTable: \textbf{BIT\_PACKED} (default)
+\item Schema Information: \textbf{Schema-less} (default)
+\item Coding Options: \textbf{Preserve Prefixes} (required - to map elements to built in XML Schema namespace)
+\item Click \textbf{Configure Advanced Encoding Options} button:
+\begin{itemize}
+\item EXI Header: \textbf{Include EXI options} (recommended - out-of-band options not needed)
+\end{itemize}
+\item Select the \textbf{XML to EXI} tab (default)
+\item Select XML file (input XSD file)
+\item EXI output file (output .exi file)
+\end{itemize}
+
+If you leave ``Include EXI options'' unchecked, you need to use the \texttt{-ops=0001000} argument
+of the \texttt{exipg utility} to specify the out-of-band options (bit 4 enables Preserve Prefixes).
+
+Note: This formerly used the OpenEXI Java library found at
 \href{https://sourceforge.net/projects/openexi/files/}{(https://sourceforge.net/projects/openexi/files/)}.

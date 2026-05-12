@@ -43,7 +43,7 @@ struct GlobalElemQNameTable
 typedef struct GlobalElemQNameTable GlobalElemQNameTable;
 
 /**
- * Context/State data used to generate EXIPSchema grammars from a source TreeTable 
+ * Context/State data used to generate EXIPSchema grammars from a source TreeTable
  * (schema tree).
  */
 struct buildContext
@@ -551,7 +551,7 @@ static errorCode handleElementEl(BuildContext* ctx, QualifiedTreeTableEntry* tre
 		else if(treeTEntry->entry->child.entry->element == ELEMENT_ELEMENT)
 		{
 			// In case of ref="..." attribute
-			
+
 			return handleElementEl(ctx, &treeTEntry->entry->child, true, qNmGrIndex);
 		}
 		else
@@ -788,7 +788,7 @@ static errorCode getAttributeProtoGrammar(BuildContext* ctx, QualifiedTreeTableE
 	*attr = (ProtoGrammar*) memManagedAllocate(&ctx->tmpMemList, sizeof(ProtoGrammar));
 	if(*attr == NULL)
 		return EXIP_MEMORY_ALLOCATION_ERROR;
-	
+
 	TRY(createAttributeUseGrammar(required, typeId, *attr, atQnameID));
 
 	return EXIP_OK;
@@ -978,7 +978,7 @@ static errorCode getAttributeUseProtoGrammars(BuildContext* ctx, QualifiedTreeTa
 		if(attrEntry->entry->child.entry->element == ELEMENT_ATTRIBUTE ||
 				attrEntry->entry->child.entry->element == ELEMENT_ATTRIBUTE_GROUP ||
 				attrEntry->entry->child.entry->element == ELEMENT_ANY_ATTRIBUTE)
-		{	
+		{
 			attrUse = attrEntry->entry->child;
 		}
 		else if(attrEntry->entry->child.entry->next != NULL &&
@@ -1713,6 +1713,7 @@ static errorCode getRestrictionSimpleProtoGrammar(BuildContext* ctx, QualifiedTr
 	newSimpleType.max = ctx->schema->simpleTypeTable.sType[typeId].max;
 	newSimpleType.min = ctx->schema->simpleTypeTable.sType[typeId].min;
 	newSimpleType.length = ctx->schema->simpleTypeTable.sType[typeId].length;
+	newSimpleType.whiteSpace = ctx->schema->simpleTypeTable.sType[typeId].whiteSpace;
 
 	tmpEntry = resEntry->entry->child.entry;
 
@@ -1780,7 +1781,46 @@ static errorCode getRestrictionSimpleProtoGrammar(BuildContext* ctx, QualifiedTr
 		else if(tmpEntry->element == ELEMENT_WHITE_SPACE)
 		{
 			SET_TYPE_FACET(newSimpleType.content, TYPE_FACET_WHITE_SPACE);
-			return EXIP_NOT_IMPLEMENTED_YET;
+			String tempStr;
+			WSType baseWhitespace;
+			WSType newWhitespace;
+
+			static const char* STR_PRESERVE = "preserve";
+			static const char* STR_REPLACE = "replace";
+			static const char* STR_COLLAPSE = "collapse";
+
+			SET_TYPE_FACET(newSimpleType.content, TYPE_FACET_WHITE_SPACE);
+			tempStr = tmpEntry->attributePointers[ATTRIBUTE_VALUE];
+			baseWhitespace = ctx->schema->simpleTypeTable.sType[typeId].whiteSpace;
+
+			// Parse the whitespace value
+			if (tempStr.length == strlen(STR_PRESERVE) && strncmp(tempStr.str, STR_PRESERVE, tempStr.length) == 0)
+			{
+				newWhitespace = WHITESPACE_PRESERVE;
+			}
+			else if (tempStr.length == strlen(STR_REPLACE) && strncmp(tempStr.str, STR_REPLACE, tempStr.length) == 0)
+			{
+				newWhitespace = WHITESPACE_REPLACE;
+			}
+			else if (tempStr.length == strlen(STR_COLLAPSE) && strncmp(tempStr.str, STR_COLLAPSE, tempStr.length) == 0)
+			{
+				newWhitespace = WHITESPACE_COLLAPSE;
+			}
+			else
+			{
+				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\n>Invalid whiteSpace facet value in schema"));
+				return EXIP_UNEXPECTED_ERROR;
+			}
+
+			// Validate restriction: preserve(0) → replace(1) → collapse(2)
+			// whiteSpace can only be restricted further, not relaxed
+			if (newWhitespace < baseWhitespace)
+			{
+				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\n>whiteSpace facet cannot be relaxed (base=%d, new=%d)", baseWhitespace, newWhitespace));
+				return EXIP_UNEXPECTED_ERROR;
+			}
+
+			newSimpleType.whiteSpace = newWhitespace;
 		}
 		else if(tmpEntry->element == ELEMENT_ENUMERATION)
 		{
@@ -2072,6 +2112,7 @@ static errorCode getListProtoGrammar(BuildContext* ctx, QualifiedTreeTableEntry*
 	listSimpleType.max = 0;
 	listSimpleType.min = 0;
 	listSimpleType.length = 0;
+	listSimpleType.whiteSpace = WHITESPACE_COLLAPSE; // List types always use collapse (spaces separate items)
 
 	if(!isStringEmpty(&listEntry->entry->attributePointers[ATTRIBUTE_ITEM_TYPE]))
 	{

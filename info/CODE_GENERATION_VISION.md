@@ -713,6 +713,81 @@ errorCode person_to_xml(const Person* person, FILE* output);
 6. **Maintainability** - Regenerate when schema changes
 7. **Documentation** - Generated code is readable
 
+## Type Conversion Strategy
+
+### Generated Structs Use Standard C Types
+
+Generated structs use familiar C types for user-friendliness:
+```c
+struct Person {
+    int id;              // C int, not EXIP Integer
+    char name[256];      // Null-terminated C string, not EXIP String
+    bool active;         // C bool, not custom type
+};
+```
+
+**Rationale:**
+- Users don't need to understand EXIP internal types
+- Works with standard C functions (`printf`, `strcmp`, etc.)
+- Fixed buffers are embedded-friendly (no malloc needed)
+
+### Internal Conversion Layer
+
+Generated marshal/unmarshal code handles conversion between C types and EXIP types:
+
+**Schema-informed mode** (typed encoding):
+```c
+// Marshal: C int → EXIP binary integer
+serialize.intData(stream, obj->id);  // Direct, no conversion needed
+
+// Unmarshal: EXIP Integer → C int
+int handle_intData(Integer int_val, void* app_data) {
+    Person* obj = (Person*)app_data;
+    obj->id = (int)int_val;  // Simple cast
+}
+```
+
+**Schema-less mode** (string encoding):
+```c
+// Marshal: C int → C string → EXIP String
+char buf[32];
+snprintf(buf, sizeof(buf), "%d", obj->id);  // C int → C string
+asciiToString(buf, &strVal, &stream->memList, false);  // C string → EXIP String
+serialize.stringData(stream, strVal);  // Encode EXIP String
+
+// Unmarshal: EXIP String → C string → C int
+int handle_stringData(const String value, void* app_data) {
+    Person* obj = (Person*)app_data;
+    char buf[32];
+    size_t len = value.length < 31 ? value.length : 31;
+    memcpy(buf, value.str, len);  // EXIP String → C string buffer
+    buf[len] = '\0';
+    obj->id = atoi(buf);  // C string → C int
+}
+```
+
+### EXIP String Type
+
+EXIP uses **length-prefixed strings** (not null-terminated):
+```c
+struct StringType {
+    CharType* str;    // Pointer to characters (NOT null-terminated!)
+    Index length;     // String length in characters
+};
+typedef struct StringType String;
+```
+
+Generated code must convert between:
+- **C strings** (`char[]`, null-terminated) ↔ **EXIP Strings** (`String`, length-prefixed)
+- **C types** (`int`, `float`, `bool`) ↔ **C strings** (for schema-less mode)
+
+### Unimplemented Conversion Functions
+
+EXIP has stub functions for typed-to-string conversions (see [UNIMPLEMENTED_FEATURES.md](UNIMPLEMENTED_FEATURES.md)):
+- `integerToString()`, `booleanToString()`, `floatToString()`, etc.
+
+These would return **EXIP `String` types**, not C strings. Generated code currently uses `snprintf()` instead, which works but is repetitive. Implementing these functions would clean up generated code but isn't essential.
+
 ## Challenges
 
 1. **Complex XSD Features** - Some advanced XSD features are hard to map to C
@@ -720,6 +795,7 @@ errorCode person_to_xml(const Person* person, FILE* output);
 3. **Error Handling** - Need good error messages from generated code
 4. **Large Schemas** - Code size could be significant for huge schemas
 5. **Circular References** - Need forward declarations and careful ordering
+6. **Type Conversions** - Schema-less mode requires string conversions for all typed fields
 
 ## Similar Projects
 

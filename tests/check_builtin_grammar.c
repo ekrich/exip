@@ -88,11 +88,11 @@ START_TEST (test_decode_ant_example01)
 	memcpy(exipath, dataDir, pathlen);
 	exipath[pathlen] = '/';
 	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
-	
+
 	infile = fopen(exipath, "rb" );
 	if(!infile)
 		fail("Unable to open file %s", exipath);
-	
+
 	buffer.ioStrm.readWriteToStream = readFileInputStream;
 	buffer.ioStrm.stream = infile;
 
@@ -122,10 +122,10 @@ START_TEST (test_decode_ant_example01)
 		tmp_err_code = parseNext(&testParser);
 		parsingData.eventCount++;
 	}
-	
-	fail_unless(parsingData.eventCount == 401, 
+
+	fail_unless(parsingData.eventCount == 401,
 	            "Unexpected event count: %u", parsingData.eventCount);
-	fail_unless(parsingData.attributeCount == 171, 
+	fail_unless(parsingData.attributeCount == 171,
 	            "Unexpected attribute count: %u", parsingData.attributeCount);
 
 	// VI: Free the memory allocated by the parser object
@@ -165,7 +165,7 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 	dataDir = argv[1];
-	
+
 	int number_failed;
 	Suite *s = exip_suite();
 	SRunner *sr = srunner_create (s);
@@ -178,4 +178,3 @@ int main (int argc, char *argv[])
 	srunner_free (sr);
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

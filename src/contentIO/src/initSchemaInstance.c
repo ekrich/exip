@@ -208,6 +208,10 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	SimpleType sType;
 	Index elID;
 
+	// All built-in derived types use WHITESPACE_COLLAPSE (derived from xs:token or similar)
+	// This sets the default for all entries; individual entries can override if needed
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
+
 	// entities
 	sType.content = 0;
 	SET_EXI_TYPE(sType.content, VALUE_TYPE_LIST);
@@ -521,6 +525,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_REPLACE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Positive Integer
@@ -550,6 +555,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_PRESERVE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// time

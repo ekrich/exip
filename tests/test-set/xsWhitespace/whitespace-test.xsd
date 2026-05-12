@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/whitespace-test"
+           xmlns:tns="http://example.com/whitespace-test"
+           elementFormDefault="qualified">
+
+  <!-- Test explicit whiteSpace facets on xs:string (default: preserve) -->
+  <xs:simpleType name="PreservedString">
+    <xs:restriction base="xs:string">
+      <xs:whiteSpace value="preserve"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ReplacedString">
+    <xs:restriction base="xs:string">
+      <xs:whiteSpace value="replace"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="CollapsedString">
+    <xs:restriction base="xs:string">
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test explicit whiteSpace on xs:normalizedString (default: replace) -->
+  <xs:simpleType name="NormalizedStringReplace">
+    <xs:restriction base="xs:normalizedString">
+      <xs:whiteSpace value="replace"/>
+      <xs:maxLength value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="NormalizedStringCollapsed">
+    <xs:restriction base="xs:normalizedString">
+      <xs:whiteSpace value="collapse"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test explicit whiteSpace on xs:token (default: collapse) -->
+  <xs:simpleType name="TokenWithCollapse">
+    <xs:restriction base="xs:token">
+      <xs:whiteSpace value="collapse"/>
+      <xs:maxLength value="50"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test types using DEFAULTS (no explicit whiteSpace facet) -->
+  <xs:simpleType name="DefaultString">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="200"/>
+      <!-- No whiteSpace specified - should default to preserve -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DefaultNormalizedString">
+    <xs:restriction base="xs:normalizedString">
+      <xs:minLength value="1"/>
+      <!-- No whiteSpace specified - should default to replace -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DefaultToken">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1"/>
+      <!-- No whiteSpace specified - should default to collapse -->
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test types that inherit collapse from xs:token -->
+  <xs:simpleType name="RestrictedName">
+    <xs:restriction base="xs:Name">
+      <xs:maxLength value="32"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="RestrictedNCName">
+    <xs:restriction base="xs:NCName">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="64"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test numeric type with collapse (implicitly) -->
+  <xs:simpleType name="RestrictedInteger">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test boolean (implicitly collapse) -->
+  <xs:simpleType name="RestrictedBoolean">
+    <xs:restriction base="xs:boolean">
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test date type (implicitly collapse) -->
+  <xs:simpleType name="RestrictedDate">
+    <xs:restriction base="xs:date">
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test list type (lists always use collapse) -->
+  <xs:simpleType name="TokenList">
+    <xs:list itemType="xs:token"/>
+  </xs:simpleType>
+
+  <xs:element name="test">
+    <xs:complexType>
+      <xs:sequence>
+        <!-- Explicit whiteSpace facets -->
+        <xs:element name="preserved" type="tns:PreservedString"/>
+        <xs:element name="replaced" type="tns:ReplacedString"/>
+        <xs:element name="collapsed" type="tns:CollapsedString"/>
+        <xs:element name="normalizedReplace" type="tns:NormalizedStringReplace"/>
+        <xs:element name="normalizedCollapsed" type="tns:NormalizedStringCollapsed"/>
+        <xs:element name="tokenCollapsed" type="tns:TokenWithCollapse"/>
+
+        <!-- Types relying on defaults (no explicit whiteSpace) -->
+        <xs:element name="defaultString" type="tns:DefaultString"/>
+        <xs:element name="defaultNormalized" type="tns:DefaultNormalizedString"/>
+        <xs:element name="defaultToken" type="tns:DefaultToken"/>
+
+        <!-- Types with implicit defaults from built-in types -->
+        <xs:element name="name" type="tns:RestrictedName"/>
+        <xs:element name="ncname" type="tns:RestrictedNCName"/>
+        <xs:element name="number" type="tns:RestrictedInteger"/>
+        <xs:element name="flag" type="tns:RestrictedBoolean"/>
+        <xs:element name="date" type="tns:RestrictedDate"/>
+
+        <!-- List type (always collapse) -->
+        <xs:element name="tokens" type="tns:TokenList"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
