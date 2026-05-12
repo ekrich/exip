@@ -525,6 +525,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_REPLACE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Positive Integer
@@ -554,6 +555,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_PRESERVE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// time
