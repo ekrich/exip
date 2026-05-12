@@ -120,6 +120,14 @@ This document assesses when Unicode support is needed versus when ASCII is suffi
   <setpoint>75.5</setpoint>
   <timestamp>1711468200</timestamp>
 </control:Command>
+
+<!-- Telemetry -->
+<telemetry:Reading>
+  <sensor>TEMP-01</sensor>
+  <value>23.5</value>
+  <unit>C</unit>
+  <timestamp>2024-03-26T14:30:00Z</timestamp>
+</telemetry:Reading>
 ```
 
 **Character set**: 99% ASCII
@@ -201,7 +209,7 @@ C2 requirements:
 - **MIP (Multilateral Interoperability Programme)**
 - **Link 16 tactical data link**
 - **Messages**: Mostly ASCII field codes
-- **Unicode need**: LOW (maybe location names)
+- **Unicode need**: MEDIUM (NATO interop needs international location names: "Ramstein", "Büchel", "Αθήνα" Athens, "Warszawa")
 
 #### Emergency Services
 - **CAP (Common Alerting Protocol)**
@@ -215,6 +223,12 @@ C2 requirements:
 - **Messages**: Structured data, ASCII IDs
 - **Unicode need**: LOW (operator notes only)
 
+#### Space/Satellite Systems
+- **CCSDS (Consultative Committee for Space Data Systems)**
+- **XTCE (XML Telemetric and Command Exchange)**
+- **Messages**: Telemetry, commands, housekeeping data
+- **Unicode need**: VERY LOW (mission data is numeric/ASCII)
+
 #### Drone/Robotics Control
 - **MAVLink (micro air vehicle)**
 - **ROS (Robot Operating System)**
@@ -225,7 +239,8 @@ C2 requirements:
 
 | C2 Domain | ASCII Sufficient? | UTF-8 Needed? |
 |-----------|-------------------|---------------|
-| Military tactical | ✅ YES | ❌ No |
+| Military tactical (NATO) | ⚠️ Maybe | ✅ Yes (international location names) |
+| Space/Satellite (CCSDS/XTCE) | ✅ YES | ❌ No |
 | Emergency alerts | ⚠️ Maybe | ✅ Yes (public messages) |
 | SCADA/Industrial | ✅ YES | ❌ No |
 | Drone/Robotics | ✅ YES | ❌ No |
@@ -366,9 +381,3 @@ C2 requirements:
 - Unicode support can be added later as needed
 
 **Design principle**: Keep UTF-8 support as an **optional, compile-time feature** rather than default, maintaining EXIP's embedded-friendly footprint.
-
----
-
-**Document Version**: 1.0
-**Last Updated**: 2024
-**Related**: [AGENTS.md](../AGENTS.md), [ARCHITECTURE.md](ARCHITECTURE.md)

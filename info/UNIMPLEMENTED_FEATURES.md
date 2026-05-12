@@ -1,63 +1,50 @@
-# Unimplemented Features in EXIP
+# Unimplemented Features
 
-## Overview
+Features that return `EXIP_NOT_IMPLEMENTED_YET` or are incomplete.
 
-This document tracks features that return `EXIP_NOT_IMPLEMENTED_YET` in the EXIP codebase.
+## HIGH Priority - Blocks Common Schemas
 
-## Schema Grammar Generation
+**Wildcards** - [treeTableToGrammars.c](../src/grammarGen/src/treeTableToGrammars.c)
+- `xs:any` and `xs:anyAttribute` - Code exists but crashes on schemas with wildcards
+- Critical for schema evolution and extensibility patterns
+- See [WILDCARD_CRASH_ISSUE.md](../WILDCARD_CRASH_ISSUE.md)
 
-Located in [src/grammarGen/src/treeTableToGrammars.c](../src/grammarGen/src/treeTableToGrammars.c):
+## MEDIUM Priority - Useful Features
 
-- **Line 1539**: `xs:all` compositor - allows unordered child elements
-- **Line 1699**: Anonymous simple type in restriction - "very weird use case" per code comment
-- **Line 1778**: **Pattern facet** (regex) - currently logged but not enforced
-- **Line 1783**: **whiteSpace facet** - **IN PROGRESS (PR #2)** - controls string normalization
-- **Lines 1906-1925**: Enumerations for non-string types (boolean, date/time, decimal, float, integer)
+**Non-string enumerations** - [treeTableToGrammars.c:1946-1976](../src/grammarGen/src/treeTableToGrammars.c)
+- Typed enums: boolean, integer, decimal, float, dateTime
+- String enums work; missing typed enums require runtime conversions
 
-Located in [src/grammarGen/src/treeTableBuild.c](../src/grammarGen/src/treeTableBuild.c):
+**Pattern facet** - [treeTableToGrammars.c:1778](../src/grammarGen/src/treeTableToGrammars.c)
+- Regex patterns logged but not enforced
+- Could enable restricted character set encoding (better compression)
 
-- **Line 168**: Schema imports/includes - multi-file schemas not supported
+**Schema imports/includes** - [treeTableBuild.c:168](../src/grammarGen/src/treeTableBuild.c)
+- `xs:import` and `xs:include` not processed automatically
+- Workaround: compile each schema to EXI, pass all on command line (up to 10 schemas): `exipg -schema=main.xsd.exi,imported1.xsd.exi,imported2.xsd.exi`
 
-Located in [src/grammarGen/src/genUtils.c](../src/grammarGen/src/genUtils.c):
+## LOW Priority - Rarely Needed
 
-- **Lines 361, 648**: Various utility functions
+**`xs:all` compositor** - [treeTableToGrammars.c:1539](../src/grammarGen/src/treeTableToGrammars.c)
+- Unordered child elements (N! grammar permutations)
+- Rarely used; workaround: `xs:sequence` with `minOccurs="0"`
 
-## String Conversion (Optional Feature)
+**Anonymous simple type in restriction** - [treeTableToGrammars.c:1699](../src/grammarGen/src/treeTableToGrammars.c)
+- Restriction without base attribute
+- "Very weird use case... does not bring useful features"
 
-Located in [src/common/src/ASCII_stringManipulate.c](../src/common/src/ASCII_stringManipulate.c):
+## Optional Features (Conditionally Compiled)
 
-Only used when `EXIP_IMPLICIT_DATA_TYPE_CONVERSION` is enabled:
+**Type-to-string conversions** - [ASCII_stringManipulate.c:250-270](../src/common/src/ASCII_stringManipulate.c)
+- `integerToString()`, `booleanToString()`, `floatToString()`, `decimalToString()`, `dateTimeToString()`
+- Only for `EXIP_IMPLICIT_DATA_TYPE_CONVERSION` mode
+- Needed for JAXB-style code generation with schema-less fallback
 
-- **Line 250**: `integerToString()`
-- **Line 255**: `booleanToString()`
-- **Line 260**: `floatToString()`
-- **Line 265**: `decimalToString()`
-- **Line 270**: `dateTimeToString()`
+## Runtime Edge Cases
 
-**Note**: These functions would be essential for code generation (JAXB-style) that supports both schema-informed and schema-less modes. When encoding schema-less EXI from typed C structs, typed fields (int, float, bool) need conversion to strings since schema-less only supports string values. Currently users must use `sprintf()` manually (see exipd example).
+Various runtime encoding/decoding code paths return `EXIP_NOT_IMPLEMENTED_YET`. These are scattered throughout:
+- [EXISerializer.c](../src/contentIO/src/EXISerializer.c) - Self-contained elements, DTD preservation, various value types
+- [bodyEncode.c](../src/contentIO/src/bodyEncode.c) / [bodyDecode.c](../src/contentIO/src/bodyDecode.c) - Edge cases in encoding/decoding
+- [headerEncode.c](../src/contentIO/src/headerEncode.c) - Preserve options encoding
 
-## Runtime Encoding/Decoding
-
-Located in [src/contentIO/src/EXISerializer.c](../src/contentIO/src/EXISerializer.c):
-
-- Self-contained elements (lines 154, 334, 474)
-- DTD preservation (lines 965, 1026)
-- Various value type encodings (lines 1092-1228)
-
-Located in [src/contentIO/src/bodyEncode.c](../src/contentIO/src/bodyEncode.c):
-
-- Various encoding edge cases (lines 327-618)
-
-Located in [src/contentIO/src/bodyDecode.c](../src/contentIO/src/bodyDecode.c):
-
-- Various decoding edge cases (lines 274-1072)
-
-Located in [src/contentIO/src/headerEncode.c](../src/contentIO/src/headerEncode.c):
-
-- **Line 240**: Preserve options encoding
-
-## Schema Handling Utilities
-
-Located in [utils/schemaHandling/createGrammars.c](../utils/schemaHandling/createGrammars.c):
-
-- **Lines 208, 213**: Utility functions
+Search for `EXIP_NOT_IMPLEMENTED_YET` in these files to identify specific cases.
