@@ -1495,7 +1495,9 @@ END_TEST
 /**********************************************************************/
 /* END THE LKAB DEMO SUIT*/
 
-/* Tests whiteSpace facet handling in schema grammar generation */
+/* Tests whiteSpace facet handling in schema grammar generation
+ * Fixes issue #72 - Add support for whiteSpace facet
+ */
 START_TEST (test_whitespace_facets)
 {
 	EXIPSchema schema;
