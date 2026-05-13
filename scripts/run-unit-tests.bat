@@ -19,21 +19,24 @@ echo Running tests ...
 set "testlist=%EXE_DIR%\check_builtin_grammer.exe %EXE_DIR%\check_contentio.exe %EXE_DIR%\check_emptyType.exe %EXE_DIR%\check_exip.exe %EXE_DIR%\check_grammar.exe %EXE_DIR%\check_profile.exe %EXE_DIR%\check_streamIO.exe %EXE_DIR%\check_stringTables.exe %EXE_DIR%\check_strict_grammar.exe %EXE_DIR%\check_xsi_type.exe"
 
 :: Run each test
+set TEST_COUNT=0
 for %%x in (%testlist%) do (
-    echo Running %%x %TEST_DIR%
+    set /a TEST_COUNT+=1
+    echo [!TEST_COUNT!] Running %%x %TEST_DIR%
     %%x "%TEST_DIR%"
     set "err=!ERRORLEVEL!"
     if !err! neq 0 (
-        echo %%x test failed with error code: !err!
+        echo [!TEST_COUNT!] FAILED with error code: !err!
         set "EXITCODE=!err!"
     )
 )
 
 :: Report error or success
+echo.
 if %EXITCODE% neq 0 (
-    echo *** One or more tests failed. ***
+    echo *** One or more of !TEST_COUNT! test suites failed. ***
 ) else (
-    echo All tests ran successfully.
+    echo All !TEST_COUNT! test suites ran successfully.
 )
 
 :: Return without terminating shell
