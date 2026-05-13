@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/malformed-test"
+           xmlns:tns="http://example.com/malformed-test"
+           elementFormDefault="qualified">
+
+  <!-- Test 1: Annotation AFTER type definition (invalid placement) -->
+  <xs:element name="test1">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="field" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+    <xs:annotation>
+      <!-- MALFORMED: annotation should be BEFORE complexType, not after -->
+      <xs:documentation>This annotation is in the wrong place</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!-- Test 2: Annotation between elements in sequence (invalid) -->
+  <xs:complexType name="Test2Type">
+    <xs:sequence>
+      <xs:element name="field1" type="xs:string"/>
+      <xs:annotation>
+        <!-- MALFORMED: annotation between sequence elements -->
+        <xs:documentation>Invalid annotation placement</xs:documentation>
+      </xs:annotation>
+      <xs:element name="field2" type="xs:int"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Test 3: Annotation AFTER restriction facets (invalid) -->
+  <xs:simpleType name="Test3Type">
+    <xs:restriction base="xs:string">
+      <xs:maxLength value="10"/>
+      <xs:annotation>
+        <!-- MALFORMED: annotation should be before facets -->
+        <xs:documentation>Wrong placement after facet</xs:documentation>
+      </xs:annotation>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Test 4: Multiple annotations at same level (allowed but unusual) -->
+  <xs:element name="test4" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>First annotation</xs:documentation>
+    </xs:annotation>
+    <xs:annotation>
+      <!-- MALFORMED: Only one annotation allowed per schema component -->
+      <xs:documentation>Second annotation at same level</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+
+  <!-- Test 5: Annotation as last child (edge case) -->
+  <xs:complexType name="Test5Type">
+    <xs:sequence>
+      <xs:element name="field" type="xs:string"/>
+    </xs:sequence>
+    <xs:attribute name="attr" type="xs:int"/>
+    <xs:annotation>
+      <!-- MALFORMED: annotation should be first child -->
+      <xs:documentation>Annotation as last child</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+
+</xs:schema>

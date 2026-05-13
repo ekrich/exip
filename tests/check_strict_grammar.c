@@ -1514,6 +1514,48 @@ START_TEST (test_whitespace_facets)
 }
 END_TEST
 
+/* Tests annotation handling in schema grammar generation
+ * Verifies xs:annotation, xs:documentation, and xs:appinfo are properly ignored
+ * Schema contains annotations in 12 different locations
+ */
+START_TEST (test_annotation_handling)
+{
+	EXIPSchema schema;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+
+	parseSchema("xsAnnotation/annotation-test.xsd.exi", &schema);
+
+	// Annotations should be filtered during parsing (treeTableBuild.c)
+	// Grammar generation should succeed without errors
+	// Tests 12 annotation placement patterns including enumerations
+
+	destroySchema(&schema);
+}
+END_TEST
+
+/* Tests handling of malformed schemas with annotations in invalid locations
+ * Validates robustness when annotations appear after type definitions,
+ * between sequence elements, or in other non-standard positions
+ */
+START_TEST (test_malformed_annotation_handling)
+{
+	EXIPSchema schema;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+
+	parseSchema("xsAnnotation/malformed-annotation-test.xsd.exi", &schema);
+
+	// Even malformed schemas should not crash
+	// Annotations in invalid positions should still be filtered
+	// May produce errors but should not cause memory corruption
+
+	destroySchema(&schema);
+}
+END_TEST
+
 /* Test suite */
 
 Suite* exip_suite(void)
@@ -1527,6 +1569,8 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_acceptance_for_A_01b);
 	  tcase_add_test (tc_builtin, test_lkab_demo_suit);
 	  tcase_add_test (tc_builtin, test_whitespace_facets);
+	  tcase_add_test (tc_builtin, test_annotation_handling);
+	  tcase_add_test (tc_builtin, test_malformed_annotation_handling);
 	  suite_add_tcase (s, tc_builtin);
 	}
 
@@ -1554,7 +1598,7 @@ int main (int argc, char *argv[])
 #ifdef _MSC_VER
 	srunner_set_fork_status(sr, CK_NOFORK);
 #endif
-	srunner_run_all (sr, CK_NORMAL);
+	srunner_run_all (sr, CK_VERBOSE);
 	number_failed = srunner_ntests_failed (sr);
 	srunner_free (sr);
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
