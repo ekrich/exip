@@ -12,13 +12,15 @@ The main objective of the EXIP project is to provide a C library for parsing and
 
 ## Current status
 
-We are working to improve this project so it can be used more widely. Quite a bit of work has been done to resurrect the project with documentation and code improvements. Contributions are encouraged but can be slow to adopt based on time available, level of effort, and knowledge of the code base.
+Maintenance and developement is ongoing so EXIP can be used more widely. Significant work has been done to resurrect the project with documentation and code improvements. Contributions and feedback are encouraged.
 
 ## Short History
 
-The code was pulled from the SourceForge SVN repository with all commits and tags. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that has been fixed. The project originally supported the Contiki embedded IoT platform and now compiles on the next generation [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project.
+The project was created by [Rumen Kyusakov](https://github.com/kjussakov) as part of his PhD program at Luleå University of Technology. His thesis is titled [*Efficient Web Services for End-To-End Interoperability of Embedded Systems*](https://www.diva-portal.org/smash/record.jsf?pid=diva2:991136). Rumen was a [W3C Invited Expert in the Efficient XML Interchange Working Group](https://www.w3.org/groups/wg/exi/former-participants/) and contributed to the [EXI memory profile](https://www.w3.org/TR/exi-profile/) with feedback to the document.
 
-Formerly this project was not maintained on [SourceForge](https://sourceforge.net/projects/exip/). All historical information is found there as well as the [original web site](https://exip.sourceforge.net/).
+The code was pulled from the [SourceForge](https://sourceforge.net/projects/exip/) SVN repository with all commits and tags in July of 2024. There was [one outstanding issue](https://github.com/ekrich/exip/issues/1) that was fixed. The project originally supported the Contiki embedded IoT platform and now compiles on the next generation [Contiki-ng](https://github.com/contiki-ng/contiki-ng) project. All historical information is found on SourceForge (link above) as well as the [original web site](https://exip.sourceforge.net/).
+
+The first version `0.5.5` was released here on Apr 2, 2025. See the release details on [GitHub](https://github.com/ekrich/exip/releases/tag/v0.5.5).
 
 ## Supported Platforms
 
