@@ -11,12 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\utils\schemaGen\createGrammars.c" />
-    <ClCompile Include="..\..\utils\schemaGen\exipg.c" />
-    <ClCompile Include="..\..\utils\schemaGen\output\dynOutputUtils.c" />
-    <ClCompile Include="..\..\utils\schemaGen\output\exipOutputUtils.c" />
-    <ClCompile Include="..\..\utils\schemaGen\output\staticOutputUtils.c" />
-    <ClCompile Include="..\..\utils\schemaGen\output\textOutputUtils.c" />
+    <ClCompile Include="..\..\utils\codeGen\exipb.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="exip.vcxproj">
@@ -24,9 +19,9 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9A0CA3D2-2F8A-402B-A994-CA55DA17AA12}</ProjectGuid>
+    <ProjectGuid>{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>exipg</RootNamespace>
+    <RootNamespace>exipb</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

@@ -15,7 +15,7 @@
 -Isrc/grammarGen/include
 -Isrc/streamIO/include
 -Isrc/stringTables/include
--Iutils/schemaHandling/include
+-Iutils/schemaGen/include
 
 # test src
 -Itests
