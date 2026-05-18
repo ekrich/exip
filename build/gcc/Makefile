@@ -91,6 +91,7 @@ VPATH += $(PROJECT_ROOT)/src/streamIO/src
 VPATH += $(PROJECT_ROOT)/src/stringTables/src
 VPATH += $(PROJECT_ROOT)/examples/simpleDecoding
 VPATH += $(PROJECT_ROOT)/examples/simpleEncoding
+VPATH += $(PROJECT_ROOT)/utils
 VPATH += $(PROJECT_ROOT)/utils/schemaGen
 VPATH += $(PROJECT_ROOT)/utils/schemaGen/output
 VPATH += $(PROJECT_ROOT)/tests
@@ -119,7 +120,8 @@ STRING_TABLES_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/stringTables/src/*.c
 TESTS_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/tests/*.c)) 
 
 # Source files for the utils
-EXIPG_UTIL_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/*.c))
+EXIPG_UTIL_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/utils/*.c))
+EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/*.c))
 EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/output/*.c))
 
 # Source files for the examples
@@ -157,6 +159,7 @@ INCDIRS += -I$(TARGET)
 INCDIRS += -I$(PROJECT_ROOT)/examples/simpleEncoding
 INCDIRS += -I$(PROJECT_ROOT)/examples/simpleDecoding
 INCDIRS += -I$(PROJECT_ROOT)/tests
+INCDIRS += -I$(PROJECT_ROOT)/utils
 INCDIRS += -I$(PROJECT_ROOT)/utils/schemaGen/include
 
 LDFLAGS += -L$(LIB_BIN_DIR) $(ADDITIONAL_LDFLAGS)
