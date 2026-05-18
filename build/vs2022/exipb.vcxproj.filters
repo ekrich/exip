@@ -7,7 +7,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\utils\schemaGen\exipb.c">
+    <ClCompile Include="..\..\utils\codeGen\exipb.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
