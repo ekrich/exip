@@ -225,14 +225,14 @@ $(BIN_DIR)/%.o: %.c
 		$(COMPILE) -c $< -o $@
 
 # Build the tests
-$(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o
-		$(COMPILE) $(LDFLAGS) $< -lcheck -lexip $(EXTRA_LINK_FLAGS) -o $@
+$(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o $(BIN_DIR)/schemaLoader.o
+		$(COMPILE) $(LDFLAGS) $^ -lcheck -lexip $(EXTRA_LINK_FLAGS) -o $@
 		
-# Build for the examples		
-$(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS)
+# Build for the examples
+$(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS) $(BIN_DIR)/schemaLoader.o
 		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@
-		
-$(EXAMPLES_BIN_DIR)/exipd: $(EXIPD_OBJECTS)
+
+$(EXAMPLES_BIN_DIR)/exipd: $(EXIPD_OBJECTS) $(BIN_DIR)/schemaLoader.o
 		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@	
 		
 # Build for the utils
