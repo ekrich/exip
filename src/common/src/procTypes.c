@@ -20,16 +20,39 @@
 
 void makeDefaultOpts(EXIOptions* opts)
 {
-	opts->enumOpt = 0;
-	opts->preserve = 0; // all preserve flags are false by default
-	opts->blockSize = 1000000;
-	opts->valueMaxLength = INDEX_MAX;
-	opts->valuePartitionCapacity = INDEX_MAX;
-	opts->user_defined_data = NULL;
-	opts->schemaIDMode = SCHEMA_ID_ABSENT;
-	opts->schemaID.str = NULL;
-	opts->schemaID.length = 0;
-	opts->drMap = NULL;
+	*opts = (EXIOptions){
+		.enumOpt = 0,
+		.preserve = 0,
+		.blockSize = 1000000,
+		.valueMaxLength = INDEX_MAX,
+		.valuePartitionCapacity = INDEX_MAX,
+		.user_defined_data = NULL,
+		.schemaIDMode = SCHEMA_ID_ABSENT,
+		.schemaID = {.str = NULL, .length = 0},
+		.drMap = NULL
+	};
+}
+
+void initBinaryBuffer(BinaryBuffer* buf, char* data, const Index bufLen,
+                      const Index bufContent,
+                      size_t (*readWriteToStream)(void* buf, size_t size, void* stream),
+                      void* stream)
+{
+	*buf = (BinaryBuffer){
+		.buf = data,
+		.bufLen = bufLen,
+		.bufContent = bufContent,
+		.ioStrm = {.readWriteToStream = readWriteToStream, .stream = stream}
+	};
+}
+
+void freeBinaryBuffer(BinaryBuffer* buf)
+{
+	if (buf != NULL && buf->buf != NULL)
+	{
+		free(buf->buf);
+		buf->buf = NULL;
+	}
 }
 
 errorCode checkOptionValues(EXIOptions* opts)

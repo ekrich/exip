@@ -25,7 +25,6 @@
 #define OUT_SRC_STAT 3
 
 static void printfHelp();
-static void parseSchema(char* xsdList, EXIPSchema* schema, EXIOptions* opt);
 static bool validateAndParseUInt(const char *str, char **endPtr, unsigned int *result, char expectedDelim);
 
 int main(int argc, char *argv[])
@@ -220,7 +219,54 @@ int main(int argc, char *argv[])
 	}
 
 	// Parse schema files and output now that all options are processed
-	parseSchema(schemaFiles, &schema, &maskOpt);
+	{
+		BinaryBuffer buffer[MAX_XSD_FILES_COUNT];
+		char schemaFileName[FILENAME_MAX];
+		unsigned int count = 0;
+		unsigned int i;
+		char *token;
+		const char* filenames[MAX_XSD_FILES_COUNT];
+
+		for (token = strtok(schemaFiles, ","), i = 0; token != NULL; token = strtok(NULL, ","), i++)
+		{
+			count++;
+			if(count > MAX_XSD_FILES_COUNT)
+			{
+				fprintf(stderr, "Too many xsd files given as an input: %d\n", count);
+				exit(1);
+			}
+
+			if(strlen(token) < FILENAME_MAX)
+			{
+				strcpy(schemaFileName, token);
+				filenames[i] = token;
+			}
+			else
+			{
+				fprintf(stderr, "Schema filename too long: %zu chars (max %d): %s\n",
+					strlen(token), FILENAME_MAX - 1, token);
+				exit(1);
+			}
+		}
+
+		tmp_err_code = loadSchemaFiles(filenames, count, buffer);
+		if(tmp_err_code != EXIP_OK)
+		{
+			printf("\nError loading schema files: %d", tmp_err_code);
+			exit(1);
+		}
+
+		tmp_err_code = generateSchemaInformedGrammars(buffer, count,
+		                                               SCHEMA_FORMAT_XSD_EXI, &maskOpt, &schema, NULL);
+
+		freeBinaryBuffers(buffer, count);
+
+		if(tmp_err_code != EXIP_OK)
+		{
+			printf("\nGrammar generation error occurred: %d", tmp_err_code);
+			exit(1);
+		}
+	}
 
 	switch(outputFormat)
 	{
@@ -285,17 +331,6 @@ static void printfHelp()
     printf("           grammar_out  :   Destination file for the grammar output (Default is the standard output) \n\n");
     printf("  Purpose: Manipulation of EXIP schemas\n");
     printf("\n" );
-}
-
-static void parseSchema(char* xsdList, EXIPSchema* schema, EXIOptions* opt)
-{
-	errorCode tmp_err_code = loadSchemaFiles(xsdList, schema, opt);
-
-	if(tmp_err_code != EXIP_OK)
-	{
-		printf("\nGrammar generation error occurred: %d", tmp_err_code);
-		exit(1);
-	}
 }
 
 static bool validateAndParseUInt(const char *str, char **endPtr, unsigned int *result, char expectedDelim)

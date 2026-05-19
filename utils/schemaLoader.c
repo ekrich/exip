@@ -17,77 +17,59 @@
 #include <stdlib.h>
 #include <string.h>
 
-errorCode loadSchemaFiles(char* xsdList,
-                          EXIPSchema* schema,
-                          EXIOptions* opt)
+errorCode loadSchemaFile(const char* filename, BinaryBuffer* buffer)
 {
-	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	FILE *schemaFile;
-	BinaryBuffer buffer[MAX_XSD_FILES_COUNT];
-	char schemaFileName[FILENAME_MAX];
-	unsigned int schemaFilesCount = 0;
-	unsigned int i;
-	char *token;
-
-	for (token = strtok(xsdList, ","), i = 0; token != NULL; token = strtok(NULL, ","), i++)
+	FILE* file = fopen(filename, "rb");
+	if (!file)
 	{
-		schemaFilesCount++;
-		if(schemaFilesCount > MAX_XSD_FILES_COUNT)
-		{
-			fprintf(stderr, "Too many xsd files given as an input: %d\n", schemaFilesCount);
-			return EXIP_UNEXPECTED_ERROR;
-		}
-
-		if(strlen(token) < FILENAME_MAX)
-		{
-			strcpy(schemaFileName, token);
-		}
-		else
-		{
-			fprintf(stderr, "Schema filename too long: %zu chars (max %d): %s\n",
-				strlen(token), FILENAME_MAX - 1, token);
-			return EXIP_UNEXPECTED_ERROR;
-		}
-
-		schemaFile = fopen(schemaFileName, "rb");
-		if(!schemaFile)
-		{
-			fprintf(stderr, "Unable to open file %s\n", schemaFileName);
-			return EXIP_UNEXPECTED_ERROR;
-		}
-
-		// Get file length
-		fseek(schemaFile, 0, SEEK_END);
-		buffer[i].bufLen = ftell(schemaFile) + 1;
-		fseek(schemaFile, 0, SEEK_SET);
-
-		// Allocate memory
-		buffer[i].buf = (char *) malloc(buffer[i].bufLen);
-		if (!buffer[i].buf)
-		{
-			fprintf(stderr, "Memory allocation error!\n");
-			fclose(schemaFile);
-			return EXIP_MEMORY_ALLOCATION_ERROR;
-		}
-
-		// Read file contents into buffer
-		fread(buffer[i].buf, buffer[i].bufLen, 1, schemaFile);
-		fclose(schemaFile);
-
-		buffer[i].bufContent = buffer[i].bufLen;
-		buffer[i].ioStrm.readWriteToStream = NULL;
-		buffer[i].ioStrm.stream = NULL;
+		fprintf(stderr, "Unable to open file %s\n", filename);
+		return EXIP_UNEXPECTED_ERROR;
 	}
 
-	// Generate the EXI grammars based on the schema information
-	tmp_err_code = generateSchemaInformedGrammars(buffer, schemaFilesCount,
-	                                               SCHEMA_FORMAT_XSD_EXI, opt, schema, NULL);
+	// Get file length
+	fseek(file, 0, SEEK_END);
+	size_t fileLen = ftell(file) + 1;
+	fseek(file, 0, SEEK_SET);
 
-	// Free buffers
-	for(i = 0; i < schemaFilesCount; i++)
+	// Allocate and read file contents
+	char* fileBuf = (char *) malloc(fileLen);
+	if (!fileBuf)
 	{
-		free(buffer[i].buf);
+		fprintf(stderr, "Memory allocation error!\n");
+		fclose(file);
+		return EXIP_MEMORY_ALLOCATION_ERROR;
+	}
+	fread(fileBuf, fileLen, 1, file);
+	fclose(file);
+
+	// Initialize buffer in file mode
+	initBinaryBuffer(buffer, fileBuf, fileLen, fileLen, NULL, NULL);
+
+	return EXIP_OK;
+}
+
+void freeBinaryBuffers(BinaryBuffer* buffers, unsigned int count)
+{
+	for (unsigned int i = 0; i < count; i++)
+	{
+		freeBinaryBuffer(&buffers[i]);
+	}
+}
+
+errorCode loadSchemaFiles(const char** filenames, unsigned int count,
+                           BinaryBuffer* buffers)
+{
+	errorCode tmp_err_code = EXIP_OK;
+
+	for (unsigned int i = 0; i < count; i++)
+	{
+		tmp_err_code = loadSchemaFile(filenames[i], &buffers[i]);
+		if (tmp_err_code != EXIP_OK)
+		{
+			freeBinaryBuffers(buffers, i);
+			return tmp_err_code;
+		}
 	}
 
-	return tmp_err_code;
+	return EXIP_OK;
 }
