@@ -21,7 +21,7 @@ else
     ./exipd -exi -schema=exipd-test-xsd.exi exipd-test.exi
     ./exipd -xml -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
     ./exipd -exi -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
-    echo "exipd (encode)"
+    echo "exipe (encode)"
     ./exipe -schema=exipe-test-xsd.exi,exipe-test-types-xsd.exi,exipe-test-nested-xsd.exi
     echo "Done."
 fi
