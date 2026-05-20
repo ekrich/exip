@@ -52,7 +52,7 @@ echo exipe (encode)
 echo.
 
 echo [5] Encoding with multiple schemas
-%EXE_DIR%\exipe.exe -schema=%EXAMPLE_DIR%\exipe-test-xsd.exi,%EXAMPLE_DIR%\exipe-test-types-xsd.exi,%EXAMPLE_DIR%\exipe-test-nested-xsd.exi
+%EXE_DIR%\exipe.exe -schema=examples\simpleEncoding\exipe-test-xsd.exi,examples\simpleEncoding\exipe-test-types-xsd.exi,examples\simpleEncoding\exipe-test-nested-xsd.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
 :: Report error or success
