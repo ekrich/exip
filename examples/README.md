@@ -12,9 +12,9 @@ scripts/run-examples.bat
 ## Example Files
 
 ### Schema Files
-- `exipd-test.xsd` - Source XML Schema document (1182 bytes)
-- `exipd-test-xsd.exi` - Schema encoded in **schema-less mode** (354 bytes)
-- `exipd-test-schema-xsd.exi` - Schema encoded in **schema mode** using XML Schema grammar (217 bytes, 39% smaller)
+- `exipd-test.xsd` - Source XML Schema document **xml** (1182 bytes)
+- `exipd-test-xsd.exi` - Schema encoded in **schema-less exi** (354 bytes)
+- `exipd-test-schema-xsd.exi` - Schema encoded in **schema-informed exi** using XML Schema grammar (217 bytes, **39% smaller**)
 
 ### Data Files
 - `exipd-test.exi` - Test data encoded with schema
@@ -24,10 +24,10 @@ scripts/run-examples.bat
 
 ### Creating exipd-test-xsd.exi (Schema-Less Mode)
 
-1. Start with: `exipd-test.xsd` (1182 bytes)
+1. Start with: `exipd-test.xsd`
 2. Encode in **schema-less mode** with Preserve.prefixes
 3. No schema grammar needed - uses built-in EXI rules
-4. Results in: `exipd-test-xsd.exi` (354 bytes)
+4. Results in: `exipd-test-xsd.exi`
 
 **Characteristics:**
 - No schema required during encoding
@@ -37,11 +37,11 @@ scripts/run-examples.bat
 
 ### Creating exipd-test-schema-xsd.exi (Schema Mode)
 
-1. Start with: `exipd-test.xsd` (1182 bytes)
+1. Start with: `exipd-test.xsd`
 2. Since exipd-test.xsd is an XML Schema document, it follows the W3C XML Schema specification
 3. Provide the XML Schema grammar to the encoder: `XMLSchema.xsd` + `xml.xsd` (both encoded as .exi files)
 4. The encoder uses that grammar to compress the file
-5. Results in: `exipd-test-schema-xsd.exi` (217 bytes, **39% smaller!**)
+5. Results in: `exipd-test-schema-xsd.exi`
 
 **Characteristics:**
 - Requires schema grammar during encoding
@@ -53,13 +53,13 @@ scripts/run-examples.bat
 
 To encode/decode XML Schema files in schema mode, EXIP includes built-in support for the W3C XML Schema specification:
 
-**Linux/GCC (build/gcc/Makefile):**
+**Linux/macOS** (build/gcc/Makefile):
 ```makefile
 CFLAGS += -DGRAMMAR_GEN_SCHEMA
 LIB_SOURCES += staticXmlSchema.c
 ```
 
-**Windows/VS2022 (build/vs2022/exip.vcxproj):**
+**Windows/VS2022** (build/vs2022/exip.vcxproj):
 ```xml
 <PreprocessorDefinitions>GRAMMAR_GEN_SCHEMA;...</PreprocessorDefinitions>
 <ClCompile Include="..\..\src\grammarGen\xmlSchema\staticXmlSchema.c" />
