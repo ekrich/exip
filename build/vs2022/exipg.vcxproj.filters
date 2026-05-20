@@ -7,22 +7,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\utils\schemaHandling\createGrammars.c">
+    <ClCompile Include="..\..\utils\schemaGen\createGrammars.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\schemaHandling\output\dynOutputUtils.c">
+    <ClCompile Include="..\..\utils\schemaGen\output\dynOutputUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\schemaHandling\output\exipOutputUtils.c">
+    <ClCompile Include="..\..\utils\schemaGen\output\exipOutputUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\schemaHandling\output\staticOutputUtils.c">
+    <ClCompile Include="..\..\utils\schemaGen\output\staticOutputUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\schemaHandling\output\textOutputUtils.c">
+    <ClCompile Include="..\..\utils\schemaGen\output\textOutputUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\schemaHandling\exipg.c">
+    <ClCompile Include="..\..\utils\schemaGen\exipg.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

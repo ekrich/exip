@@ -17,15 +17,14 @@
 
 #include "createGrammars.h"
 #include "grammarGenerator.h"
+#include "schemaLoader.h"
 
-#define MAX_XSD_FILES_COUNT 10 // up to 10 XSD files
 #define OUT_EXIP     0
 #define OUT_TEXT     1
 #define OUT_SRC_DYN  2
 #define OUT_SRC_STAT 3
 
 static void printfHelp();
-static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, EXIOptions maskOpt);
 static bool validateAndParseUInt(const char *str, char **endPtr, unsigned int *result, char expectedDelim);
 
 int main(int argc, char *argv[])
@@ -46,7 +45,6 @@ int main(int argc, char *argv[])
 	int argIndex = 1;
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	char prefix[20] = "prfx_"; // The default prefix
-	unsigned char mask = false;
 	EXIOptions maskOpt;
 	Deviations dvis = {0};
 	char *schemaFiles = NULL;
@@ -141,7 +139,6 @@ int main(int argc, char *argv[])
 		if(*opsValue == '=')
 		{
 			opsValue++;  // skip the '='
-			mask = true;
 			if(opsValue[0] == '1')
 				SET_STRICT(maskOpt.enumOpt);
 
@@ -222,7 +219,54 @@ int main(int argc, char *argv[])
 	}
 
 	// Parse schema files and output now that all options are processed
-	parseSchema(schemaFiles, &schema, mask, maskOpt);
+	{
+		BinaryBuffer buffer[MAX_XSD_FILES_COUNT];
+		char schemaFileName[FILENAME_MAX];
+		unsigned int count = 0;
+		unsigned int i;
+		char *token;
+		const char* filenames[MAX_XSD_FILES_COUNT];
+
+		for (token = strtok(schemaFiles, ","), i = 0; token != NULL; token = strtok(NULL, ","), i++)
+		{
+			count++;
+			if(count > MAX_XSD_FILES_COUNT)
+			{
+				fprintf(stderr, "Too many xsd files given as an input: %d\n", count);
+				exit(1);
+			}
+
+			if(strlen(token) < FILENAME_MAX)
+			{
+				strcpy(schemaFileName, token);
+				filenames[i] = token;
+			}
+			else
+			{
+				fprintf(stderr, "Schema filename too long: %zu chars (max %d): %s\n",
+					strlen(token), FILENAME_MAX - 1, token);
+				exit(1);
+			}
+		}
+
+		tmp_err_code = loadSchemaFiles(filenames, count, buffer);
+		if(tmp_err_code != EXIP_OK)
+		{
+			printf("\nError loading schema files: %d", tmp_err_code);
+			exit(1);
+		}
+
+		tmp_err_code = generateSchemaInformedGrammars(buffer, count,
+		                                               SCHEMA_FORMAT_XSD_EXI, &maskOpt, &schema, NULL);
+
+		freeBinaryBuffers(buffer, count);
+
+		if(tmp_err_code != EXIP_OK)
+		{
+			printf("\nGrammar generation error occurred: %d", tmp_err_code);
+			exit(1);
+		}
+	}
 
 	switch(outputFormat)
 	{
@@ -287,87 +331,6 @@ static void printfHelp()
     printf("           grammar_out  :   Destination file for the grammar output (Default is the standard output) \n\n");
     printf("  Purpose: Manipulation of EXIP schemas\n");
     printf("\n" );
-}
-
-static void parseSchema(char* xsdList, EXIPSchema* schema, unsigned char mask, EXIOptions maskOpt)
-{
-	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	FILE *schemaFile;
-	BinaryBuffer buffer[MAX_XSD_FILES_COUNT]; // up to 10 XSD files
-	char schemaFileName[FILENAME_MAX];
-	unsigned int schemaFilesCount = 0;
-	unsigned int i;
-	char *token;
-	EXIOptions* opt = NULL;
-
-	if(mask)
-		opt = &maskOpt;
-
-	for (token = strtok(xsdList, ","), i = 0; token != NULL; token = strtok(NULL, ","), i++)
-	{
-		schemaFilesCount++;
-		if(schemaFilesCount > MAX_XSD_FILES_COUNT)
-		{
-			fprintf(stderr, "Too many xsd files given as an input: %d", schemaFilesCount);
-			exit(1);
-		}
-
-        if(strlen(token) < FILENAME_MAX)
-		{
-            strcpy(schemaFileName, token);  // adds \0
-		}
-        else
-        {
-            fprintf(stderr, "Schema filename too long: %zu chars (max %d): %s\n",
-				strlen(token), FILENAME_MAX - 1, token);
-            exit(1);
-        }
-
-		schemaFile = fopen(schemaFileName, "rb" );
-		if(!schemaFile)
-		{
-			fprintf(stderr, "Unable to open file %s", schemaFileName);
-			exit(1);
-		}
-		else
-		{
-			//Get file length
-			fseek(schemaFile, 0, SEEK_END);
-			buffer[i].bufLen = ftell(schemaFile) + 1;
-			fseek(schemaFile, 0, SEEK_SET);
-
-			//Allocate memory
-			buffer[i].buf = (char *) malloc(buffer[i].bufLen);
-			if (!buffer[i].buf)
-			{
-				fprintf(stderr, "Memory allocation error!");
-				fclose(schemaFile);
-				exit(1);
-			}
-
-			//Read file contents into buffer
-			fread(buffer[i].buf, buffer[i].bufLen, 1, schemaFile);
-			fclose(schemaFile);
-
-			buffer[i].bufContent = buffer[i].bufLen;
-			buffer[i].ioStrm.readWriteToStream = NULL;
-			buffer[i].ioStrm.stream = NULL;
-		}
-	}
-
-	// Generate the EXI grammars based on the schema information
-	tmp_err_code = generateSchemaInformedGrammars(buffer, schemaFilesCount, SCHEMA_FORMAT_XSD_EXI, opt, schema, NULL);
-
-	for(i = 0; i < schemaFilesCount; i++)
-	{
-		free(buffer[i].buf);
-	}
-
-	if(tmp_err_code != EXIP_OK)
-	{
-		printf("\nGrammar generation error occurred: %d", tmp_err_code);
-		exit(1);
-	}
 }
 
 static bool validateAndParseUInt(const char *str, char **endPtr, unsigned int *result, char expectedDelim)

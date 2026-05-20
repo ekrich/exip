@@ -17,8 +17,7 @@
 
 #include "encodeTestEXI.h"
 #include "grammarGenerator.h"
-
-#define MAX_XSD_FILES_COUNT 10 // up to 10 XSD files
+#include "schemaLoader.h"
 
 static void printfHelp();
 size_t writeFileOutputStream(void* buf, size_t readSize, void* stream);
@@ -107,62 +106,37 @@ size_t writeFileOutputStream(void* buf, size_t readSize, void* stream)
 static void parseSchema(char* xsdList, EXIPSchema* schema)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	FILE *schemaFile;
-	BinaryBuffer buffer[MAX_XSD_FILES_COUNT]; // up to 10 XSD files
+	BinaryBuffer buffer[MAX_XSD_FILES_COUNT];
 	char schemaFileName[500];
-	unsigned int schemaFilesCount = 0;
+	unsigned int count = 0;
 	unsigned int i;
 	char *token;
+	const char* filenames[MAX_XSD_FILES_COUNT];
 
 	for (token = strtok(xsdList, "=,"), i = 0; token != NULL; token = strtok(NULL, "=,"), i++)
 	{
-		schemaFilesCount++;
-		if(schemaFilesCount > MAX_XSD_FILES_COUNT)
+		count++;
+		if(count > MAX_XSD_FILES_COUNT)
 		{
-			fprintf(stderr, "Too many xsd files given as an input: %d", schemaFilesCount);
+			fprintf(stderr, "Too many xsd files given as an input: %d", count);
 			exit(1);
 		}
 
 		strcpy(schemaFileName, token);
-		schemaFile = fopen(schemaFileName, "rb" );
-		if(!schemaFile)
-		{
-			fprintf(stderr, "Unable to open file %s", schemaFileName);
-			exit(1);
-		}
-		else
-		{
-			//Get file length
-			fseek(schemaFile, 0, SEEK_END);
-			buffer[i].bufLen = ftell(schemaFile) + 1;
-			fseek(schemaFile, 0, SEEK_SET);
+		filenames[i] = token;
+	}
 
-			//Allocate memory
-			buffer[i].buf = (char *) malloc(buffer[i].bufLen);
-			if (!buffer[i].buf)
-			{
-				fprintf(stderr, "Memory allocation error!");
-				fclose(schemaFile);
-				exit(1);
-			}
-
-			//Read file contents into buffer
-			fread(buffer[i].buf, buffer[i].bufLen, 1, schemaFile);
-			fclose(schemaFile);
-
-			buffer[i].bufContent = buffer[i].bufLen;
-			buffer[i].ioStrm.readWriteToStream = NULL;
-			buffer[i].ioStrm.stream = NULL;
-		}
+	tmp_err_code = loadSchemaFiles(filenames, count, buffer);
+	if(tmp_err_code != EXIP_OK)
+	{
+		fprintf(stderr, "Error loading schema files: %d", tmp_err_code);
+		exit(1);
 	}
 
 	// Generate the EXI grammars based on the schema information
-	tmp_err_code = generateSchemaInformedGrammars(buffer, schemaFilesCount, SCHEMA_FORMAT_XSD_EXI, NULL, schema, NULL);
+	tmp_err_code = generateSchemaInformedGrammars(buffer, count, SCHEMA_FORMAT_XSD_EXI, NULL, schema, NULL);
 
-	for(i = 0; i < schemaFilesCount; i++)
-	{
-		free(buffer[i].buf);
-	}
+	freeBinaryBuffers(buffer, count);
 
 	if(tmp_err_code != EXIP_OK)
 	{

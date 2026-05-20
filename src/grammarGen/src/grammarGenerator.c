@@ -30,101 +30,124 @@ static int compareUri(const void* uriRow1, const void* uriRow2);
  */
 static void sortUriTable(UriTable* uriTable);
 
-errorCode generateSchemaInformedGrammars(BinaryBuffer* buffers, unsigned int bufCount, SchemaFormat schemaFormat, EXIOptions* opt, EXIPSchema* schema,
+errorCode generateOptimizedTreeTable(const BinaryBuffer* buffers, const unsigned int bufCount, const SchemaFormat schemaFormat, const EXIOptions* opt,
+		TreeTable** treeT, unsigned int* treeTCount, SubstituteTable* subsTbl, EXIPSchema* schema,
 		errorCode (*loadSchemaHandler) (String* namespace, String* schemaLocation, BinaryBuffer** buffers, unsigned int* bufCount, SchemaFormat* schemaFormat, EXIOptions** opt))
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	TreeTable* treeT;
-	SubstituteTable substituteTbl;
-	unsigned int treeTCount = bufCount;
 	unsigned int i = 0;
 
 	// TODO: again in error cases all the memory must be released
 
-	treeT = (TreeTable*) EXIP_MALLOC(sizeof(TreeTable)*bufCount);
-	if(treeT == NULL)
+	*treeT = (TreeTable*) EXIP_MALLOC(sizeof(TreeTable)*bufCount);
+	if(*treeT == NULL)
 		return EXIP_MEMORY_ALLOCATION_ERROR;
 
+	*treeTCount = bufCount;
+
 	/* Initialize the SubstituteTable in case there are substitution groups defined in the schema */
-	TRY(createDynArray(&substituteTbl.dynArray, sizeof(SubtGroupHead), 5));
+	TRY(createDynArray(&subsTbl->dynArray, sizeof(SubtGroupHead), 5));
 
 	for(i = 0; i < bufCount; i++)
 	{
-		TRY(initTreeTable(&treeT[i]));
+		TRY(initTreeTable(&(*treeT)[i]));
 	}
 
-	TRY(initSchema(schema, INIT_SCHEMA_SCHEMA_ENABLED));
+	if(schema != NULL)
+	{
+		TRY(initSchema(schema, INIT_SCHEMA_SCHEMA_ENABLED));
+	}
 
 	for(i = 0; i < bufCount; i++)
 	{
-		TRY(generateTreeTable(buffers[i], schemaFormat, opt, &treeT[i], schema));
+		TRY(generateTreeTable(buffers[i], schemaFormat, (EXIOptions*)opt, &(*treeT)[i], schema));
 	}
 
-	TRY(resolveIncludeImportReferences(schema, &treeT, &treeTCount, loadSchemaHandler));
+	TRY(resolveIncludeImportReferences(schema, treeT, treeTCount, loadSchemaHandler));
 
 #if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	{
 		unsigned int j;
-		for(i = 0; i < treeTCount; i++)
+		for(i = 0; i < *treeTCount; i++)
 		{
 			DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\nElement tree %d before resolving:\n", i));
-			for(j = 0; j < treeT[i].count; j++)
+			for(j = 0; j < (*treeT)[i].count; j++)
 			{
 				DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\n>(Before) Tree Table Entry %d:\n", j));
-				printTreeTableEntry(&treeT[i].tree[j], 0, "");
+				printTreeTableEntry(&(*treeT)[i].tree[j], 0, "");
 			}
 
 			DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\nPrefix Namespace Table\n"));
-			for(j = 0; j < treeT[i].globalDefs.pfxNsTable.count; j++)
+			for(j = 0; j < (*treeT)[i].globalDefs.pfxNsTable.count; j++)
 			{
 				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("index: %u\n", j));
 				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("prf: "));
-				printString(&treeT[i].globalDefs.pfxNsTable.pfxNs[j].pfx);
+				printString(&(*treeT)[i].globalDefs.pfxNsTable.pfxNs[j].pfx);
 				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\n"));
 				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("uri: "));
-				printString(&treeT[i].globalDefs.pfxNsTable.pfxNs[j].ns);
+				printString(&(*treeT)[i].globalDefs.pfxNsTable.pfxNs[j].ns);
 				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\n"));
 			}
 		}
 
-		DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\nURI Table\n"));
-		for(i = 0; i < schema->uriTable.count; i++)
+		if(schema != NULL)
 		{
-			DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("index: %u\n", i));
-			DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("uri: "));
-			printString(&schema->uriTable.uri[i].uriStr);
-			DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\n"));
+			DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\nURI Table\n"));
+			for(i = 0; i < schema->uriTable.count; i++)
+			{
+				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("index: %u\n", i));
+				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("uri: "));
+				printString(&schema->uriTable.uri[i].uriStr);
+				DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\n"));
+			}
 		}
 	}
 #endif
 
-	// Sort the string tables
-	sortUriTable(&schema->uriTable);
-
-	// Find the correct targetNsId in the string tables for each TreeTable
-	for(i = 0; i < treeTCount; i++)
+	if(schema != NULL)
 	{
-		if(!lookupUri(&schema->uriTable, treeT[i].globalDefs.targetNs, &treeT[i].globalDefs.targetNsId))
-			return EXIP_UNEXPECTED_ERROR;
+		// Sort the string tables
+		sortUriTable(&schema->uriTable);
+
+		// Find the correct targetNsId in the string tables for each TreeTable
+		for(i = 0; i < *treeTCount; i++)
+		{
+			if(!lookupUri(&schema->uriTable, (*treeT)[i].globalDefs.targetNs, &(*treeT)[i].globalDefs.targetNsId))
+				return EXIP_UNEXPECTED_ERROR;
+		}
 	}
 
-	TRY(resolveTypeHierarchy(schema, treeT, treeTCount, &substituteTbl));
+	TRY(resolveTypeHierarchy(schema, *treeT, *treeTCount, subsTbl));
 
 #if DEBUG_GRAMMAR_GEN == ON && EXIP_DEBUG_LEVEL == INFO
 	{
 		unsigned int j;
 
-		for(i = 0; i < treeTCount; i++)
+		for(i = 0; i < *treeTCount; i++)
 		{
 			DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\nElement tree %d after resolving:\n", i));
-			for(j = 0; j < treeT[i].count; j++)
+			for(j = 0; j < (*treeT)[i].count; j++)
 			{
 				DEBUG_MSG(INFO, DEBUG_GRAMMAR_GEN, ("\n>(After) Tree Table Entry %d:\n", j));
-				printTreeTableEntry(&treeT[i].tree[j], 0, "");
+				printTreeTableEntry(&(*treeT)[i].tree[j], 0, "");
 			}
 		}
 	}
 #endif
+
+	return tmp_err_code;
+}
+
+errorCode generateSchemaInformedGrammars(BinaryBuffer* buffers, unsigned int bufCount, SchemaFormat schemaFormat, EXIOptions* opt, EXIPSchema* schema,
+		errorCode (*loadSchemaHandler) (String* namespace, String* schemaLocation, BinaryBuffer** buffers, unsigned int* bufCount, SchemaFormat* schemaFormat, EXIOptions** opt))
+{
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	TreeTable* treeT = NULL;
+	SubstituteTable substituteTbl = {0};
+	unsigned int treeTCount = 0;
+	unsigned int i = 0;
+
+	TRY(generateOptimizedTreeTable(buffers, bufCount, schemaFormat, opt, &treeT, &treeTCount, &substituteTbl, schema, loadSchemaHandler));
 
 	TRY(convertTreeTablesToExipSchema(treeT, treeTCount, schema, &substituteTbl));
 

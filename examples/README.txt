@@ -1,11 +1,11 @@
 /**
- * @defgroup exmaples Example applications
+ * @defgroup examples Example applications
  *
  * @brief Information on the included example applications and how to build and run them.
  *
  * Demo applications:
  *   <dl>
- *     <dt>exipd</dt> <dd>Decodes arbitrary exi streams</dd> 		
+ *     <dt>exipd</dt> <dd>Decodes arbitrary exi streams</dd>
  *     <dt>exipe</dt> <dd>Encodes a sample exi stream</dd>
  *   </dl>
  *

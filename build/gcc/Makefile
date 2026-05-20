@@ -91,8 +91,9 @@ VPATH += $(PROJECT_ROOT)/src/streamIO/src
 VPATH += $(PROJECT_ROOT)/src/stringTables/src
 VPATH += $(PROJECT_ROOT)/examples/simpleDecoding
 VPATH += $(PROJECT_ROOT)/examples/simpleEncoding
-VPATH += $(PROJECT_ROOT)/utils/schemaHandling
-VPATH += $(PROJECT_ROOT)/utils/schemaHandling/output
+VPATH += $(PROJECT_ROOT)/utils
+VPATH += $(PROJECT_ROOT)/utils/schemaGen
+VPATH += $(PROJECT_ROOT)/utils/schemaGen/output
 VPATH += $(PROJECT_ROOT)/tests
 VPATH += $(TARGET)
 
@@ -119,8 +120,9 @@ STRING_TABLES_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/stringTables/src/*.c
 TESTS_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/tests/*.c)) 
 
 # Source files for the utils
-EXIPG_UTIL_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaHandling/*.c))
-EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaHandling/output/*.c))
+EXIPG_UTIL_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/utils/*.c))
+EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/*.c))
+EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/output/*.c))
 
 # Source files for the examples
 EXIPE_EXAMPLE_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/examples/simpleEncoding/*.c))
@@ -157,7 +159,8 @@ INCDIRS += -I$(TARGET)
 INCDIRS += -I$(PROJECT_ROOT)/examples/simpleEncoding
 INCDIRS += -I$(PROJECT_ROOT)/examples/simpleDecoding
 INCDIRS += -I$(PROJECT_ROOT)/tests
-INCDIRS += -I$(PROJECT_ROOT)/utils/schemaHandling/include
+INCDIRS += -I$(PROJECT_ROOT)/utils
+INCDIRS += -I$(PROJECT_ROOT)/utils/schemaGen/include
 
 LDFLAGS += -L$(LIB_BIN_DIR) $(ADDITIONAL_LDFLAGS)
 
@@ -222,14 +225,14 @@ $(BIN_DIR)/%.o: %.c
 		$(COMPILE) -c $< -o $@
 
 # Build the tests
-$(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o
-		$(COMPILE) $(LDFLAGS) $< -lcheck -lexip $(EXTRA_LINK_FLAGS) -o $@
+$(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o $(BIN_DIR)/schemaLoader.o
+		$(COMPILE) $(LDFLAGS) $^ -lcheck -lexip $(EXTRA_LINK_FLAGS) -o $@
 		
-# Build for the examples		
-$(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS)
+# Build for the examples
+$(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS) $(BIN_DIR)/schemaLoader.o
 		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@
-		
-$(EXAMPLES_BIN_DIR)/exipd: $(EXIPD_OBJECTS)
+
+$(EXAMPLES_BIN_DIR)/exipd: $(EXIPD_OBJECTS) $(BIN_DIR)/schemaLoader.o
 		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@	
 		
 # Build for the utils
@@ -273,4 +276,4 @@ test_sets_copy_examples:
 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipd-test-schema.exi $(EXAMPLES_BIN_DIR)/exipd-test-schema.exi
 		
 test_sets_copy_utils:		
-		cp $(PROJECT_ROOT)/utils/schemaHandling/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi	
+		cp $(PROJECT_ROOT)/utils/schemaGen/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi	

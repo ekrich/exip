@@ -29,7 +29,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_emptyType", "check_em
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_xsi_type", "check_xsi_type.vcxproj", "{6221BAFC-306C-4F20-BEFB-2BB8246BB7DB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_strict_grammer", "check_strict_grammer.vcxproj", "{554254E4-0D0D-4FE6-B55E-EF249112073B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "check_strict_grammar", "check_strict_grammer.vcxproj", "{554254E4-0D0D-4FE6-B55E-EF249112073B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exipb", "exipb.vcxproj", "{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -151,6 +153,14 @@ Global
 		{554254E4-0D0D-4FE6-B55E-EF249112073B}.Release|Win32.Build.0 = Release|Win32
 		{554254E4-0D0D-4FE6-B55E-EF249112073B}.Release|x64.ActiveCfg = Release|Win32
 		{554254E4-0D0D-4FE6-B55E-EF249112073B}.Release|x64.Build.0 = Release|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Debug|Win32.Build.0 = Debug|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Debug|x64.ActiveCfg = Debug|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Debug|x64.Build.0 = Debug|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Release|Win32.ActiveCfg = Release|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Release|Win32.Build.0 = Release|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Release|x64.ActiveCfg = Release|Win32
+		{3262EDBC-8E8D-4328-BDD4-C1B1C9727224}.Release|x64.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

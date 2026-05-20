@@ -11,12 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\utils\schemaHandling\createGrammars.c" />
-    <ClCompile Include="..\..\utils\schemaHandling\exipg.c" />
-    <ClCompile Include="..\..\utils\schemaHandling\output\dynOutputUtils.c" />
-    <ClCompile Include="..\..\utils\schemaHandling\output\exipOutputUtils.c" />
-    <ClCompile Include="..\..\utils\schemaHandling\output\staticOutputUtils.c" />
-    <ClCompile Include="..\..\utils\schemaHandling\output\textOutputUtils.c" />
+    <ClCompile Include="..\..\utils\schemaLoader.c" />
+    <ClCompile Include="..\..\utils\schemaGen\createGrammars.c" />
+    <ClCompile Include="..\..\utils\schemaGen\exipg.c" />
+    <ClCompile Include="..\..\utils\schemaGen\output\dynOutputUtils.c" />
+    <ClCompile Include="..\..\utils\schemaGen\output\exipOutputUtils.c" />
+    <ClCompile Include="..\..\utils\schemaGen\output\staticOutputUtils.c" />
+    <ClCompile Include="..\..\utils\schemaGen\output\textOutputUtils.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="exip.vcxproj">
@@ -69,15 +70,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\;..\..\include;..\..\src\common\include;..\..\src\contentIO\include;..\..\src\grammar\include;..\..\src\streamIO\include;..\..\src\stringTables\include;..\..\src\grammarGen\include;..\..\utils\schemaHandling\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;..\..\include;..\..\src\common\include;..\..\src\contentIO\include;..\..\src\grammar\include;..\..\src\streamIO\include;..\..\src\stringTables\include;..\..\src\grammarGen\include;..\..\utils;..\..\utils\schemaGen\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies />
-      <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -88,8 +87,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\;..\..\include;..\..\src\common\include;..\..\src\contentIO\include;..\..\src\grammar\include;..\..\src\streamIO\include;..\..\src\stringTables\include;..\..\src\grammarGen\include;..\..\utils\schemaHandling\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;..\..\include;..\..\src\common\include;..\..\src\contentIO\include;..\..\src\grammar\include;..\..\src\streamIO\include;..\..\src\stringTables\include;..\..\src\grammarGen\include;..\..\utils;..\..\utils\schemaGen\include</AdditionalIncludeDirectories>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>

@@ -1,5 +1,200 @@
 # Code Generation from Schema - Vision Document
 
+## Code Generation Pipeline (Simple Steps)
+
+1. **Load schemas** - Load EXI-encoded XSD files into `BinaryBuffer[]` using `loadSchemaFiles()`
+2. **Parse and optimize TreeTable AST** - Call `generateOptimizedTreeTable(buffers, ..., &treeT, &treeTCount, &subsTbl, NULL, NULL)` - NULL for schema and loadSchemaHandler means no string table population, just build and link AST
+3. **Walk TreeTable** - Extract type definitions, element names, attribute names, namespaces from linked AST
+4. **Generate C constants** - Emit static const String declarations for all namespaces and element/attribute names (like exipe example)
+5. **Generate C code** - Emit structs, `encode()`/`decode()` functions using reusable type-conversion helpers
+
+**Key:** `generateOptimizedTreeTable()` does all TreeTable generation, include/import resolution, and type hierarchy linking in one call. Generated code uses schema-informed encoding with compile-time constants. Uses helper functions for auto schema-informed/schema-less switching - helpers are reusable for hand-written code too!
+
+## Reusable Type Conversion Helpers
+
+Generated code uses helper functions that automatically switch between schema-informed (typed) and schema-less (string) modes. **These helpers are also useful for hand-written encode/decode code:**
+
+```c
+// Auto-switching encode helpers (check stream->schema != NULL internally)
+errorCode encodeInt(EXIStream* stream, int value);
+errorCode encodeBool(EXIStream* stream, bool value);
+errorCode encodeFloat(EXIStream* stream, float value);
+errorCode encodeString(EXIStream* stream, const char* str); // No schema check - strings are always strings
+
+// Example implementations:
+errorCode encodeInt(EXIStream* stream, int value) {
+    if(stream->schema != NULL) {
+        // Schema mode - use typed encoding
+        return serialize.intData(stream, value);
+    } else {
+        // Schema-less mode - convert to string
+        char buf[32];
+        String strVal;
+        snprintf(buf, sizeof(buf), "%d", value);
+        asciiToString(buf, &strVal, &stream->memList, false);
+        return serialize.stringData(stream, strVal);
+    }
+}
+
+errorCode encodeBool(EXIStream* stream, bool value) {
+    if(stream->schema != NULL) {
+        return serialize.booleanData(stream, value);
+    } else {
+        String strVal;
+        asciiToString(value ? "true" : "false", &strVal, &stream->memList, false);
+        return serialize.stringData(stream, strVal);
+    }
+}
+
+errorCode encodeString(EXIStream* stream, const char* str) {
+    // Strings are always encoded as strings (no schema-informed vs schema-less difference)
+    String strVal;
+    asciiToString(str, &strVal, &stream->memList, false);
+    return serialize.stringData(stream, strVal);
+}
+```
+
+**Benefits:**
+- Generated code is cleaner: `TRY(encodeInt(stream, person->age));` instead of if/else blocks
+- Hand-written code can use same helpers for consistent schema-informed/schema-less support
+- Single place to maintain conversion logic
+
+## String Handling Strategy
+
+Generated code uses **clean C strings** (no EXIP types exposed to client code):
+
+### String Type Selection
+- **`char[N+1]`** when schema defines `maxLength=N`
+  - Efficient: no malloc/free overhead
+  - Predictable: fixed struct layout
+  - Safe: compiler enforces bounds
+  - Preferred for performance
+
+- **`char*`** when schema has no `maxLength` constraint
+  - Dynamic allocation required
+  - Flexible for truly variable-length data
+  - Requires malloc/free in encode/decode
+
+### Code Generator Warnings
+
+The generator **always produces valid C code** but emits warnings to guide schema design:
+
+```
+WARNING: Type 'Address' field 'street' has no maxLength constraint (using char*)
+  Consider adding: <xs:maxLength value="256"/>
+WARNING: Type 'Person' embeds 'Address' which contains dynamically allocated strings
+  Consider using char[] for predictable memory layout
+```
+
+Warnings are informative, not errors - all patterns are valid. Users can:
+- Add `maxLength` constraints for better performance (recommended)
+- Accept `char*` for truly unbounded data
+- Review trade-offs and make informed decisions
+
+## Nested Type Strategy
+
+### Embedded vs Pointer for Complex Types
+
+**Embed by default (strongly preferred):**
+```c
+struct Person {
+    Address address;  // Embedded - single allocation, cache-friendly
+};
+```
+
+**Benefits:**
+- Single malloc for entire struct
+- Contiguous memory (cache-efficient)
+- Simpler lifecycle (one free)
+- No null checks needed
+- Predictable `sizeof()`
+
+**Use pointer only when schema requires:**
+```c
+struct Person {
+    Address* altAddress;  // Pointer - only for optional/array elements
+};
+```
+
+**Pointer required for:**
+- `minOccurs="0"` (optional element)
+- `maxOccurs="unbounded"` (array of elements)
+- Circular schema references (rare)
+
+**Key insight:** Embedded structs with `char*` fields inside are still preferred over pointers. The `char*` fields are internal allocations - embedding the struct itself still wins.
+
+## DateTime Handling Strategy
+
+For `xs:dateTime`, `xs:date`, `xs:time`, `xs:gYearMonth`, and related temporal types, bindings generate a **local DateTime struct** (modeled after EXIP's `EXIPDateTime` but with no EXIP dependency):
+
+```c
+// Generated in user's binding header (e.g., person.h)
+// User code has ZERO EXIP dependencies
+typedef struct {
+    struct tm dateTime;      // Standard C time struct from <time.h>
+    uint32_t fSecs;          // Fractional seconds (microseconds/nanoseconds)
+    int16_t TimeZone;        // TZHours * 64 + TZMinutes (range: -14:00 to +14:00)
+    uint8_t presenceMask;    // Flags: TZONE_PRESENCE (0x01), FRACT_PRESENCE (0x02)
+} DateTime;  // Local type, not EXIP's EXIPDateTime
+
+struct Person {
+    int id;
+    char name[256];
+    DateTime birthDate;      // User uses DateTime, not EXIPDateTime
+};
+```
+
+**Why this structure:**
+- **Standard C base**: Uses `struct tm` (year, month, day, hour, min, sec) - portable, familiar, works with `<time.h>` functions
+- **XML Schema extensions**: Adds fractional seconds and timezone (not in standard C `struct tm`)
+- **Optional fields**: `presenceMask` indicates which optional fields are present
+  - `0` = neither timezone nor fractional seconds
+  - `1` (0x01) = timezone only
+  - `2` (0x02) = fractional seconds only
+  - `3` (0x03) = both present
+- **Compact timezone encoding**: `TZHours * 64 + TZMinutes` fits in 2 bytes, covers XML Schema range
+- **Codec control**: Mask tells encoder/decoder whether to read/write optional fields from EXI stream
+
+**No EXIP leakage to user code:**
+The generated binding header (`person.h`) contains only the local `DateTime` struct definition. User code never includes EXIP headers or uses EXIP types.
+
+**Internal conversion in generated encode/decode:**
+```c
+// Inside generated person.c (includes EXIP headers)
+errorCode encode(EXIStream* stream, const Person* person) {
+    // Convert local DateTime -> EXIP EXIPDateTime
+    EXIPDateTime exip_dt;
+    exip_dt.dateTime = person->birthDate.dateTime;
+    exip_dt.fSecs = person->birthDate.fSecs;
+    exip_dt.TimeZone = person->birthDate.TimeZone;
+    exip_dt.presenceMask = person->birthDate.presenceMask;
+
+    // Call EXIP (internally)
+    TRY(serialize.dateTimeData(stream, exip_dt));
+}
+
+errorCode decode(Parser* parser, Person* person) {
+    // EXIP callback receives EXIPDateTime
+    EXIPDateTime exip_dt = /* from parser callback */;
+
+    // Convert EXIP EXIPDateTime -> local DateTime
+    person->birthDate.dateTime = exip_dt.dateTime;
+    person->birthDate.fSecs = exip_dt.fSecs;
+    person->birthDate.TimeZone = exip_dt.TimeZone;
+    person->birthDate.presenceMask = exip_dt.presenceMask;
+}
+```
+
+**Benefits:**
+- User code has **zero EXIP dependencies** - only needs generated .h file
+- User doesn't `#include` any EXIP headers
+- Binding generator's .c file includes EXIP headers for encode/decode implementation
+- Type is identical to `EXIPDateTime`, just locally defined
+- Clean separation: user structs vs internal conversion layer
+
+**Higher precision needs:**
+If clients need platform-specific high-precision types (`struct timespec` on Unix, `FILETIME` on Windows, `std::chrono` in C++), provide optional conversion helpers but keep binding structs portable with the local `DateTime` type.
+
 ## Overview
 
 Automatically generate C structures and marshal/unmarshal code from XML Schema (XSD) files, supporting both schema-informed and schemaless EXI processing.
@@ -61,49 +256,63 @@ Automatically generate C structures and marshal/unmarshal code from XML Schema (
 typedef struct Address Address;
 typedef struct Person Person;
 
-// Generated structures
+// Generated structures - clean C types, no EXIP leakage
+// String strategy:
+//   - char[N+1] when schema defines maxLength=N (efficient, no malloc)
+//   - char* when no maxLength constraint (unbounded, malloc'd)
+//
+// Code generator warnings emitted for:
+//   - WARNING: Type 'Address' contains unbounded string 'street', consider adding maxLength
+//   - WARNING: Type 'Address' contains unbounded string 'city', consider adding maxLength
+//   - WARNING: Type 'Person' embeds 'Address' which contains unbounded strings
+
 struct Address {
-    char street[256];
-    char city[256];
+    char* street;      // No maxLength in schema -> char* (malloc'd, warning)
+    char* city;        // No maxLength -> char* (warning)
     int zipCode;
 };
 
 struct Person {
     int id;
-    char name[256];
+    char* name;        // No maxLength -> char* (warning)
     int age;
     bool active;
-    Address address;
+    Address address;   // Embedded - allowed but warned
 
-    // Dynamic array for unbounded elements
-    struct {
-        char** items;
-        size_t count;
-        size_t capacity;
-    } tags;
+    // Dynamic array for unbounded maxOccurs
+    char** tags;
+    unsigned int tagsCount;
 
-    // Attributes
-    char version[64];
+    // Optional attribute
+    char* version;     // Warning
 };
 
-// Marshal functions (C struct -> EXI)
-errorCode marshal_Address(EXIStream* stream, const Address* obj);
-errorCode marshal_Person(EXIStream* stream, const Person* obj);
+// Example with constrained strings (preferred for efficiency, no warnings):
+// <xs:simpleType name="CountryCode">
+//   <xs:restriction base="xs:string">
+//     <xs:maxLength value="2"/>
+//   </xs:restriction>
+// </xs:simpleType>
+// Generates: char countryCode[3];  // maxLength+1 for null terminator
 
-// Unmarshal functions (EXI -> C struct)
-errorCode unmarshal_Address(Parser* parser, Address* obj);
-errorCode unmarshal_Person(Parser* parser, Person* obj);
+// Encode functions (C struct -> EXI)
+errorCode encode(EXIStream* stream, const Address* address);
+errorCode encode(EXIStream* stream, const Person* person);
+
+// Decode functions (EXI -> C struct)
+errorCode decode(Parser* parser, Address* address);
+errorCode decode(Parser* parser, Person* person);
 
 // Helper functions
-void init_Person(Person* person);
-void free_Person(Person* person);
-void init_Address(Address* addr);
+void init(Person* person);    // Calls init() for nested address
+void destroy(Person* person); // Free allocated resources
+void init(Address* address);
 
-// Full document marshal/unmarshal
-errorCode marshal_person_document(const char* filename, const Person* person,
+// Full document encode/decode
+errorCode encode_person_document(const char* filename, const Person* person,
                                   EXIPSchema* schema);  // NULL for schemaless
-errorCode unmarshal_person_document(const char* filename, Person* person,
-                                    EXIPSchema* schema);  // NULL for schemaless
+errorCode decode_person_document(const char* filename, Person* person,
+                                  EXIPSchema* schema);  // NULL for schemaless
 
 #endif /* PERSON_H */
 ```
@@ -137,19 +346,19 @@ static const String ATTR_VERSION = {"version", 7};
 // Initialization functions
 //==============================================================================
 
-void init_Person(Person* person) {
+void init(Person* person) {
     memset(person, 0, sizeof(Person));
     person->tags.items = NULL;
     person->tags.count = 0;
     person->tags.capacity = 0;
-    init_Address(&person->address);
+    init(&person->address);  // Complex types auto-call child init()
 }
 
-void init_Address(Address* addr) {
-    memset(addr, 0, sizeof(Address));
+void init(Address* address) {
+    memset(address, 0, sizeof(Address));
 }
 
-void free_Person(Person* person) {
+void destroy(Person* person) {
     // Free dynamic array
     for(size_t i = 0; i < person->tags.count; i++) {
         free(person->tags.items[i]);
@@ -161,10 +370,10 @@ void free_Person(Person* person) {
 }
 
 //==============================================================================
-// Marshal functions (C struct -> EXI)
+// Encode functions (C struct -> EXI)
 //==============================================================================
 
-errorCode marshal_Address(EXIStream* stream, const Address* obj) {
+errorCode encode(EXIStream* stream, const Address* address) {
     errorCode err;
     QName qname;
     String strVal;
@@ -179,30 +388,21 @@ errorCode marshal_Address(EXIStream* stream, const Address* obj) {
     // <street>
     qname.localName = &ELEM_STREET;
     TRY(serialize.startElement(stream, qname, &valueType));
-    asciiToString(obj->street, &strVal, &stream->memList, false);
+    asciiToString(address->street, &strVal, &stream->memList, false);
     TRY(serialize.stringData(stream, strVal));
     TRY(serialize.endElement(stream));
 
     // <city>
     qname.localName = &ELEM_CITY;
     TRY(serialize.startElement(stream, qname, &valueType));
-    asciiToString(obj->city, &strVal, &stream->memList, false);
+    asciiToString(address->city, &strVal, &stream->memList, false);
     TRY(serialize.stringData(stream, strVal));
     TRY(serialize.endElement(stream));
 
     // <zipCode>
     qname.localName = &ELEM_ZIPCODE;
     TRY(serialize.startElement(stream, qname, &valueType));
-    if(stream->schema != NULL) {
-        // Schema mode - use typed data
-        TRY(serialize.intData(stream, obj->zipCode));
-    } else {
-        // Schemaless mode - convert to string
-        char buf[32];
-        snprintf(buf, sizeof(buf), "%d", obj->zipCode);
-        asciiToString(buf, &strVal, &stream->memList, false);
-        TRY(serialize.stringData(stream, strVal));
-    }
+    TRY(encodeInt(stream, address->zipCode));  // Auto-switches schema/schemaless
     TRY(serialize.endElement(stream));
 
     // </address>
@@ -211,7 +411,7 @@ errorCode marshal_Address(EXIStream* stream, const Address* obj) {
     return EXIP_OK;
 }
 
-errorCode marshal_Person(EXIStream* stream, const Person* obj) {
+errorCode encode(EXIStream* stream, const Person* person) {
     errorCode err;
     QName qname;
     String strVal;
@@ -227,62 +427,42 @@ errorCode marshal_Person(EXIStream* stream, const Person* obj) {
     qname.uri = &NS_EMPTY;
     qname.localName = &ATTR_VERSION;
     TRY(serialize.attribute(stream, qname, true, &valueType));
-    asciiToString(obj->version, &strVal, &stream->memList, false);
+    asciiToString(person->version, &strVal, &stream->memList, false);
     TRY(serialize.stringData(stream, strVal));
 
     // <id>
     qname.uri = &NS_PERSON;
     qname.localName = &ELEM_ID;
     TRY(serialize.startElement(stream, qname, &valueType));
-    if(stream->schema != NULL) {
-        TRY(serialize.intData(stream, obj->id));
-    } else {
-        char buf[32];
-        snprintf(buf, sizeof(buf), "%d", obj->id);
-        asciiToString(buf, &strVal, &stream->memList, false);
-        TRY(serialize.stringData(stream, strVal));
-    }
+    TRY(encodeInt(stream, person->id));
     TRY(serialize.endElement(stream));
 
     // <name>
     qname.localName = &ELEM_NAME;
     TRY(serialize.startElement(stream, qname, &valueType));
-    asciiToString(obj->name, &strVal, &stream->memList, false);
-    TRY(serialize.stringData(stream, strVal));
+    TRY(encodeString(stream, person->name));
     TRY(serialize.endElement(stream));
 
     // <age>
     qname.localName = &ELEM_AGE;
     TRY(serialize.startElement(stream, qname, &valueType));
-    if(stream->schema != NULL) {
-        TRY(serialize.intData(stream, obj->age));
-    } else {
-        char buf[32];
-        snprintf(buf, sizeof(buf), "%d", obj->age);
-        asciiToString(buf, &strVal, &stream->memList, false);
-        TRY(serialize.stringData(stream, strVal));
-    }
+    TRY(encodeInt(stream, person->age));
     TRY(serialize.endElement(stream));
 
     // <active>
     qname.localName = &ELEM_ACTIVE;
     TRY(serialize.startElement(stream, qname, &valueType));
-    if(stream->schema != NULL) {
-        TRY(serialize.booleanData(stream, obj->active));
-    } else {
-        asciiToString(obj->active ? "true" : "false", &strVal, &stream->memList, false);
-        TRY(serialize.stringData(stream, strVal));
-    }
+    TRY(encodeBool(stream, person->active));
     TRY(serialize.endElement(stream));
 
-    // <address> (nested)
-    TRY(marshal_Address(stream, &obj->address));
+    // <address> (nested - auto-call child encode)
+    TRY(encode(stream, &person->address));
 
     // <tags> (unbounded - array)
-    for(size_t i = 0; i < obj->tags.count; i++) {
+    for(size_t i = 0; i < person->tags.count; i++) {
         qname.localName = &ELEM_TAGS;
         TRY(serialize.startElement(stream, qname, &valueType));
-        asciiToString(obj->tags.items[i], &strVal, &stream->memList, false);
+        asciiToString(person->tags.items[i], &strVal, &stream->memList, false);
         TRY(serialize.stringData(stream, strVal));
         TRY(serialize.endElement(stream));
     }
@@ -294,23 +474,23 @@ errorCode marshal_Person(EXIStream* stream, const Person* obj) {
 }
 
 //==============================================================================
-// Unmarshal functions (EXI -> C struct)
+// Decode functions (EXI -> C struct)
 //==============================================================================
 
-// Unmarshal context for Address
+// Decode context for Address
 typedef struct {
     Address* target;
     const char* currentElement;
-} UnmarshalContext_Address;
+} DecodeContext_Address;
 
-static errorCode unmarshal_Address_startElement(QName qname, void* app_data) {
-    UnmarshalContext_Address* ctx = (UnmarshalContext_Address*)app_data;
+static errorCode decode_Address_startElement(QName qname, void* app_data) {
+    DecodeContext_Address* ctx = (DecodeContext_Address*)app_data;
     ctx->currentElement = qname.localName->str;
     return EXIP_OK;
 }
 
-static errorCode unmarshal_Address_stringData(const String str_val, void* app_data) {
-    UnmarshalContext_Address* ctx = (UnmarshalContext_Address*)app_data;
+static errorCode decode_Address_stringData(const String str_val, void* app_data) {
+    DecodeContext_Address* ctx = (DecodeContext_Address*)app_data;
 
     if(ctx->currentElement == NULL) return EXIP_OK;
 
@@ -328,8 +508,8 @@ static errorCode unmarshal_Address_stringData(const String str_val, void* app_da
     return EXIP_OK;
 }
 
-static errorCode unmarshal_Address_intData(Integer int_val, void* app_data) {
-    UnmarshalContext_Address* ctx = (UnmarshalContext_Address*)app_data;
+static errorCode decode_Address_intData(Integer int_val, void* app_data) {
+    DecodeContext_Address* ctx = (DecodeContext_Address*)app_data;
 
     if(ctx->currentElement && strcmp(ctx->currentElement, "zipCode") == 0) {
         ctx->target->zipCode = (int)int_val;
@@ -338,19 +518,19 @@ static errorCode unmarshal_Address_intData(Integer int_val, void* app_data) {
     return EXIP_OK;
 }
 
-errorCode unmarshal_Address(Parser* parser, Address* obj) {
-    UnmarshalContext_Address ctx;
+errorCode decode(Parser* parser, Address* address) {
+    DecodeContext_Address ctx;
     errorCode err;
 
-    ctx.target = obj;
+    ctx.target = address;
     ctx.currentElement = NULL;
 
     // Set up temporary handlers for this sub-element
     ContentHandler savedHandler = parser->handler;
 
-    parser->handler.startElement = unmarshal_Address_startElement;
-    parser->handler.stringData = unmarshal_Address_stringData;
-    parser->handler.intData = unmarshal_Address_intData;
+    parser->handler.startElement = decode_Address_startElement;
+    parser->handler.stringData = decode_Address_stringData;
+    parser->handler.intData = decode_Address_intData;
     parser->app_data = &ctx;
 
     // Parse until we hit </address>
@@ -367,13 +547,14 @@ errorCode unmarshal_Address(Parser* parser, Address* obj) {
     return err;
 }
 
-// Similar implementation for unmarshal_Person...
+// Similar implementation for decode(Parser*, Person*)...
+// Complex types auto-call child decode() for nested structures
 
 //==============================================================================
 // High-level document functions
 //==============================================================================
 
-errorCode marshal_person_document(const char* filename, const Person* person,
+errorCode encode_person_document(const char* filename, const Person* person,
                                   EXIPSchema* schema) {
     errorCode err;
     EXIStream stream;
@@ -406,14 +587,14 @@ errorCode marshal_person_document(const char* filename, const Person* person,
         return err;
     }
 
-    // Marshal document
+    // Encode document
     err = serialize.exiHeader(&stream);
     if(err != EXIP_OK) goto cleanup;
 
     err = serialize.startDocument(&stream);
     if(err != EXIP_OK) goto cleanup;
 
-    err = marshal_Person(&stream, person);
+    err = encode(&stream, person);
     if(err != EXIP_OK) goto cleanup;
 
     err = serialize.endDocument(&stream);
@@ -424,8 +605,8 @@ cleanup:
     return err;
 }
 
-errorCode unmarshal_person_document(const char* filename, Person* person,
-                                    EXIPSchema* schema) {
+errorCode decode_person_document(const char* filename, Person* person,
+                                  EXIPSchema* schema) {
     errorCode err;
     Parser parser;
     BinaryBuffer buffer;
@@ -462,8 +643,8 @@ errorCode unmarshal_person_document(const char* filename, Person* person,
         return err;
     }
 
-    // Unmarshal document
-    err = unmarshal_Person(&parser, person);
+    // Decode document
+    err = decode(&parser, person);
 
     parse.destroyParser(&parser);
     return err;
@@ -481,7 +662,7 @@ int main() {
     errorCode err;
 
     // Initialize
-    init_Person(&person);
+    init(&person);
 
     // Fill in data
     person.id = 12345;
@@ -501,21 +682,21 @@ int main() {
     person.tags.items[0] = strdup("employee");
     person.tags.items[1] = strdup("manager");
 
-    // Marshal to EXI (schema mode)
+    // Encode to EXI (schema mode)
     EXIPSchema schema;
     loadSchema("person.xsd.exi", &schema);
-    err = marshal_person_document("person.exi", &person, &schema);
+    err = encode_person_document("person.exi", &person, &schema);
     if(err != EXIP_OK) {
-        fprintf(stderr, "Marshal error: %d\n", err);
+        fprintf(stderr, "Encode error: %d\n", err);
         return 1;
     }
 
-    // Unmarshal from EXI
+    // Decode from EXI
     Person person2;
-    init_Person(&person2);
-    err = unmarshal_person_document("person.exi", &person2, &schema);
+    init(&person2);
+    err = decode_person_document("person.exi", &person2, &schema);
     if(err != EXIP_OK) {
-        fprintf(stderr, "Unmarshal error: %d\n", err);
+        fprintf(stderr, "Decode error: %d\n", err);
         return 1;
     }
 
@@ -530,8 +711,8 @@ int main() {
            person2.address.zipCode);
 
     // Cleanup
-    free_Person(&person);
-    free_Person(&person2);
+    destroy(&person);
+    destroy(&person2);
     destroySchema(&schema);
 
     return 0;
@@ -544,9 +725,11 @@ int main() {
 - **Reuse EXIP's existing TreeTable parser** from `src/grammarGen/`
 - Input: EXI-encoded XSD files (same format as grammar generator)
 - Use existing functions:
-  - `generateTreeTable()` - Parses EXI-encoded schema
+  - `loadSchemaFiles()` - Load EXI-encoded schemas into BinaryBuffer array
+  - `generateTreeTable(buffer, ..., &treeTable, NULL)` - Parse to AST (NULL schema = no string table population)
   - `resolveTypeHierarchy()` - Links types and references
-  - Extract type definitions, elements, attributes from `TreeTable`
+  - Walk TreeTable AST to extract type definitions, elements, attributes
+- **Key difference from exipg:** exipg calls `convertTreeTablesToEXIPSchema()` to build runtime grammars; exipb stops after TreeTable and generates C code instead
 - **No XML parser needed** - EXIP already has this!
 
 ### Phase 2: C Structure Generator
@@ -558,23 +741,56 @@ int main() {
   - Choices → unions
   - Unbounded elements → dynamic arrays
   - Attributes → struct fields
+- **Also generate:** Static const String declarations for all namespaces, element names, attribute names (see exipe pattern)
 
-### Phase 3: Marshal Code Generator
-- Generate `marshal_TypeName()` functions
-- Automatically handle schema vs schemaless mode
-- Use typed data calls when schema available
-- Convert to strings for schemaless mode
+### Phase 3: Encode Code Generator (Encoding: struct → EXI)
+- Generate `encode(EXIStream*, const Type* type)` - function overloading by parameter type, lowercase param name
+- Pattern: Build QNames from static const Strings, call EXIP serialization API
+- **Complex types auto-call child `encode()`** for nested structures
+- **Use helper functions:** `encodeInt()`, `encodeBool()`, `encodeFloat()`, `encodeString()` that auto-switch between schema-informed/schema-less modes
+- **Helpers are reusable:** Generate helpers in utils for use in both generated AND hand-written code
+- **Naming:** Use lowercase type name for parameter (e.g., `Person* person`, `Address* address`)
+- **Reference:** See `examples/simpleEncoding/encodeTestEXI.c` for the pattern
 
-### Phase 4: Unmarshal Code Generator
-- Generate `unmarshal_TypeName()` functions
-- Generate content handlers for each type
-- Handle both typed and string data automatically
-- Manage parser state for nested structures
+### Phase 4: Decode Code Generator (Decoding: EXI → struct)
+- Generate `decode(Parser*, Type* type)` - function overloading by parameter type
+- **Complex types auto-call child `decode()`** for nested structures
+- **Schema-informed mode:** Parser calls typed handlers (`intData`, `booleanData`)
+- **Schema-less mode:** Parser calls `stringData` handler, parse strings to typed values
+- Set up handler callbacks per type, track current element context
+- **Naming:** Use lowercase type name for parameter
+- **Reference:** Parser handlers in `examples/simpleDecoding/decodeTestEXI.c`
+- **Key difference:** Decode is more complex - string tables get populated dynamically by parser during decode, but encode needs compile-time constants
 
 ### Phase 5: Build Integration
 - CMake/Makefile integration
-- `exipgen` command-line tool
+- `exipb` command-line tool (bindings generator)
 - Watch XSD files and regenerate on changes
+
+## Architecture: exipg vs exipb
+
+**exipg (Grammar Generator):**
+```
+XSD → BinaryBuffer → generateTreeTable() → TreeTable AST → convertTreeTablesToEXIPSchema() → EXIPSchema (runtime grammars)
+                                    ↓ populates string tables
+                                 EXIPSchema
+```
+- Purpose: Generate runtime grammars for encoding/decoding
+- Output: Binary grammar file used at runtime
+- String tables: Built during TreeTable parsing AND during grammar conversion
+
+**exipb (Binding Generator):**
+```
+XSD → BinaryBuffer → generateTreeTable(..., NULL) → TreeTable AST → Walk AST → Generate C code
+                                                          ↓
+                                                   Extract types/names
+                                                          ↓
+                                      Static const Strings + structs + encode/decode functions
+```
+- Purpose: Generate compile-time C code for type-safe encoding/decoding
+- Output: .h and .c files with structs and functions
+- String tables: NOT needed - namespaces/names become static const Strings in generated code
+- **Key:** Pass NULL for schema parameter to `generateTreeTable()` - we only need the AST, not string table population
 
 ## Command-Line Tool Design
 

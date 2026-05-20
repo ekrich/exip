@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Run examples: use -help to see options
-# Run from exip directory: examples/run-examples
+# Run from exip directory: scripts/run-examples
 #
 
 # Use -euxo for debug
@@ -21,7 +21,7 @@ else
     ./exipd -exi -schema=exipd-test-xsd.exi exipd-test.exi
     ./exipd -xml -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
     ./exipd -exi -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
-    echo "exipd (encode)"
+    echo "exipe (encode)"
     ./exipe -schema=exipe-test-xsd.exi,exipe-test-types-xsd.exi,exipe-test-nested-xsd.exi
     echo "Done."
 fi

@@ -23,6 +23,7 @@
 #include "EXIParser.h"
 #include "stringManipulate.h"
 #include "grammarGenerator.h"
+#include "schemaLoader.h"
 
 #define MAX_PATH_LEN 200
 #define OUTPUT_BUFFER_SIZE 2000
@@ -853,7 +854,6 @@ errorCode encodeWithDynamicTypes(char* buf, int buf_size, int *strmSize)
 /* END: SchemaLess tests */
 
 #define OUTPUT_BUFFER_SIZE_LARGE_DOC 20000
-#define MAX_XSD_FILES_COUNT 10 // up to 10 XSD files
 
 /* BEGIN: Schema-mode tests */
 START_TEST (test_large_doc_str_pattern)
@@ -2637,55 +2637,31 @@ static size_t readFileInputStream(void* buf, size_t readSize, void* stream)
 static void parseSchema(char** xsdList, int count, EXIPSchema* schema)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
-	FILE *schemaFile;
-	BinaryBuffer buffer[MAX_XSD_FILES_COUNT]; // up to 10 XSD files
+	BinaryBuffer buffer[MAX_XSD_FILES_COUNT];
 	size_t pathlen = strlen(dataDir);
 	char exipath[MAX_PATH_LEN + sizeof(xsdList[0]) - 1];
 	int i;
 
+	// Load schema files into buffers
 	for (i = 0; i < count; i++)
 	{
 		memcpy(exipath, dataDir, pathlen);
 		exipath[pathlen] = '/';
 		memcpy(&exipath[pathlen+1], xsdList[i], strlen(xsdList[i])+1);
-		schemaFile = fopen(exipath, "rb" );
-		if(!schemaFile)
+
+		tmp_err_code = loadSchemaFile(exipath, &buffer[i]);
+		if (tmp_err_code != EXIP_OK)
 		{
-			fail("Unable to open file %s", exipath);
+			freeBinaryBuffers(buffer, i);
+			fail("Unable to load file %s", exipath);
 			return;
-		}
-		else
-		{
-			//Get file length
-			fseek(schemaFile, 0, SEEK_END);
-			buffer[i].bufLen = ftell(schemaFile) + 1;
-			fseek(schemaFile, 0, SEEK_SET);
-
-			//Allocate memory
-			buffer[i].buf = (char *) malloc(buffer[i].bufLen);
-			if (!buffer[i].buf)
-			{
-				fclose(schemaFile);
-				fail("Memory allocation error!");
-			}
-
-			//Read file contents into buffer
-			fread(buffer[i].buf, buffer[i].bufLen, 1, schemaFile);
-			fclose(schemaFile);
-
-			buffer[i].bufContent = buffer[i].bufLen;
-			buffer[i].ioStrm.readWriteToStream = NULL;
-			buffer[i].ioStrm.stream = NULL;
 		}
 	}
 
 	// Generate the EXI grammars based on the schema information
 	tmp_err_code = generateSchemaInformedGrammars(buffer, count, SCHEMA_FORMAT_XSD_EXI, NULL, schema, NULL);
 
-	for(i = 0; i < count; i++)
-	{
-		free(buffer[i].buf);
-	}
+	freeBinaryBuffers(buffer, count);
 
 	if(tmp_err_code != EXIP_OK)
 	{

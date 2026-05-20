@@ -1358,6 +1358,35 @@ typedef struct EXIStream EXIStream;
 void makeDefaultOpts(EXIOptions* opts);
 
 /**
+ * @brief Initialize a BinaryBuffer with data
+ *
+ * Common usage patterns:
+ * - File mode: bufLen == bufContent (entire file in memory), NULL callback/stream
+ * - Stream read: bufLen = 256, bufContent = 128 (partial data), grows as you read
+ * - Stream write: bufLen = 256, bufContent = 0 (empty), grows as you encode, callback flushes
+ *
+ * @param[in, out] buf BinaryBuffer to initialize
+ * @param[in] data Pointer to buffer data
+ * @param[in] bufLen Buffer capacity (allocated size)
+ * @param[in] bufContent Size of valid data currently in buffer
+ * @param[in] readWriteToStream Optional I/O callback for streaming (NULL for files)
+ * @param[in] stream Optional stream handle (NULL for files)
+ */
+void initBinaryBuffer(BinaryBuffer* buf, char* data, const Index bufLen,
+                      const Index bufContent,
+                      size_t (*readWriteToStream)(void* buf, size_t size, void* stream),
+                      void* stream);
+
+/**
+ * @brief Free memory allocated for a BinaryBuffer
+ *
+ * Frees the buffer data and zeros out the structure. Safe to call multiple times.
+ *
+ * @param[in, out] buf BinaryBuffer to free
+ */
+void freeBinaryBuffer(BinaryBuffer* buf);
+
+/**
  * @brief Check if the EXI options are set correctly
  *
  * @param[in] opts EXI options structure
