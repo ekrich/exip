@@ -370,7 +370,7 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 
 /**
  * @brief Links derived types to base types, elements to types and references to global elements
- * 
+ *
  * In case of:
  * -# type="..." attribute - finds the corresponding type definition and links it to the
  *    child pointer of that entry
@@ -389,6 +389,40 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
  * @return Error handling code
  */
 errorCode resolveTypeHierarchy(EXIPSchema* schema, TreeTable* treeT, unsigned int count, SubstituteTable* subsTbl);
+
+/**
+ * @brief Given a set of XML schema files, generates optimized and linked TreeTable structures
+ * suitable for code generation or grammar conversion.
+ *
+ * Performs the following steps:
+ * -# Parse each schema buffer to TreeTable using generateTreeTable()
+ * -# Resolve include/import dependencies with resolveIncludeImportReferences()
+ * -# Sort string tables (if schema is non-NULL)
+ * -# Link type hierarchy with resolveTypeHierarchy()
+ *
+ * @param[in] buffers an array of input buffers holding the representation of the schema.
+ * 			  Each buffer refers to one schema file.
+ * @param[in] bufCount the number of buffers in the array
+ * @param[in] schemaFormat EXI, XSD, DTD or any other schema representation supported
+ * @param[in] opt options used for EXI schemaFormat - otherwise NULL. If options are set then they will be used
+ * for processing the EXI XSD stream although no options are specified in the EXI header. If there are
+ * options defined in the EXI header of the XSD stream then this parameter must be NULL.
+ * @param[out] treeT pointer to an array of linked TreeTable structures (allocated by this function)
+ * @param[out] treeTCount the number of TreeTable structures in the array (may differ from bufCount due to includes/imports)
+ * @param[out] subsTbl substitution group table mapping heads to their substitutes (must be initialized before calling)
+ * @param[in, out] schema EXIPSchema for string table population during parse (can be NULL for code generation use case)
+ * @param[in] loadSchemaHandler Call-back handler for loading &lt;include&gt;-ed or &lt;import&gt;-ed schema files; Can be left NULL
+ * if no &lt;include&gt; or &lt;import&gt; statements are used in the XML schema.
+ * @return Error handling code
+ *
+ * @note In the case of &lt;include&gt; - both the host- and included-schema must have identical target namespace.
+ * That is, the current implementation does not support the case of using &lt;include&gt; from XML Schema
+ * that has non empty target namespace and the referenced/included XML schema have an empty target
+ * namespace, although this is allowed by the XML Schema spec.
+ */
+errorCode generateOptimizedTreeTable(const BinaryBuffer* buffers, const unsigned int bufCount, const SchemaFormat schemaFormat, const EXIOptions* opt,
+		TreeTable** treeT, unsigned int* treeTCount, SubstituteTable* subsTbl, EXIPSchema* schema,
+		errorCode (*loadSchemaHandler) (String* namespace, String* schemaLocation, BinaryBuffer** buffers, unsigned int* bufCount, SchemaFormat* schemaFormat, EXIOptions** opt));
 
 /**
  * @brief Given types resolved TreeTable objects that are created from a XML schema files,
