@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Run examples: use -help to see options
-# Run from exip directory: examples/run-examples
+# Run from exip directory: scripts/run-examples
 #
 
 # Use -euxo for debug

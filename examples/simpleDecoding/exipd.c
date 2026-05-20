@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 			argIndex += 1;
 		}
 
-		if(strstr(argv[argIndex], "-ops") != NULL)
+		if(strncmp(argv[argIndex], "-ops", 4) == 0)
 		{
 			char *mask = argv[argIndex] + 4;
 			outOfBandOpts = true;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 			argIndex += 1;
 		}
 
-		if(strstr(argv[argIndex], "-schema") != NULL)
+		if(strncmp(argv[argIndex], "-schema", 7) == 0)
 		{
 			char *xsdList = argv[argIndex] + 7;
 

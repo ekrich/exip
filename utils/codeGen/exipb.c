@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 
     // Hardcoded test with example schema
     const char* schemaFiles[] = {
-        "examples/simpleDecoding/exipd-test-schema-xsd.exi"
+        "examples/simpleDecoding/exipd-test-xsd.exi"
     };
     const unsigned int fileCount = 1;
 
