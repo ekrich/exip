@@ -35,9 +35,8 @@ jobs:
         if: startsWith(matrix.os, 'windows') == false
         run: |
             cd build/gcc
-            echo "Running build ..."
+            echo "Running build..."
             make TARGET=pc clean all check examples utils doc
-            echo "Running examples ..."
             cd ../..
             scripts/run-examples
 
@@ -45,11 +44,9 @@ jobs:
         if: (startsWith(matrix.os, 'windows-2022'))
         run: |
             vcpkg integrate install
-            echo "Running build ..."
+            echo "Running build..."
             msbuild.exe build\vs2022\exip.sln -property:Configuration=Debug
-            echo "Running tests ..."
             scripts\run-unit-tests.bat
-            echo "Running examples ..."
             scripts\run-examples.bat
 
       - name: Prepare Pages Content
