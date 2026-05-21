@@ -7,9 +7,9 @@
 # Use -euxo for debug
 set -euo pipefail
 
-
-EXAMPLES_DIR="./bin/examples"
-UTILS_DIR="./bin/utils"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+EXAMPLES_DIR="${PROJECT_ROOT}/bin/examples"
+UTILS_DIR="${PROJECT_ROOT}/bin/utils"
 
 if [ -z "$(ls -A "$EXAMPLES_DIR" 2>/dev/null)" ] || [ -z "$(ls -A "$UTILS_DIR" 2>/dev/null)" ]; then
     echo "Error: Build directories are empty. Please run build first." >&2
