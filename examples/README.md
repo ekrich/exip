@@ -1,6 +1,6 @@
 # EXIP Examples
 
-This directory contains example programs demonstrating EXI encoding and decoding.
+This directory contains example programs demonstrating EXI encoding and decoding. See the scripts to run individual example programs.
 
 ## Running Examples
 
@@ -11,14 +11,34 @@ scripts/run-examples.bat
 
 ## Example Files
 
-### Schema Files
+### Decoding Examples (simpleDecoding/)
+
+**Schema Files:**
 - `exipd-test.xsd` - Source XML Schema document **xml** (1182 bytes)
 - `exipd-test-xsd.exi` - Schema encoded in **schema-less exi** (354 bytes)
 - `exipd-test-schema-xsd.exi` - Schema encoded in **schema-informed exi** using XML Schema grammar (217 bytes, **39% smaller**)
 
-### Data Files
-- `exipd-test.exi` - Test data encoded with schema
+**Data Files:**
+- `exipd-test.exi` - Test data encoded without schema
 - `exipd-test-schema.exi` - Test data encoded with schema
+
+### Encoding Examples (simpleEncoding/)
+
+**Schema Files:**
+- `exipe-test.xsd` - Main test schema
+- `exipe-test-types.xsd` - Type definitions (imported by exipe-test.xsd)
+- `exipe-test-nested.xsd` - Nested schema (imported by exipe-test.xsd)
+- `exipe-test-xsd.exi`, `exipe-test-types-xsd.exi`, `exipe-test-nested-xsd.exi` - EXI-encoded schemas
+
+**Important:** The `exipe` example encodes a **fixed, hardcoded XML document** defined in its C source code (`encodeTestEXI.c`). **It cannot encode arbitrary XML input.** The hardcoded document conforms to the `exipe-test.xsd` schema described above.
+
+**Output Files:** (not in git)
+
+Provide an output filename as the last argument to `exipe` to save the encoded output:
+- `exipe-test.exi` (schema-less mode)
+- `exipe-test-schema.exi` (schema-informed mode)
+
+These files can be used for sizing comparisons or decoded with `exipd`.
 
 ## Schema-Informed vs Schema-Less Encoding
 

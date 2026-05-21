@@ -28,31 +28,56 @@ echo.
 echo exipd (decode)
 echo.
 
-echo [1] Decoding with schema (XML output)
+echo [1] exipd schema example (XML output)
 %EXE_DIR%\exipd.exe -xml -schema=%EXAMPLE_DIR%\exipd-test-xsd.exi %EXAMPLE_DIR%\exipd-test.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo.
-echo [2] Decoding with schema (EXI output)
+echo [2] exipd schema example (EXI output)
 %EXE_DIR%\exipd.exe -exi -schema=%EXAMPLE_DIR%\exipd-test-xsd.exi %EXAMPLE_DIR%\exipd-test.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo.
-echo [3] Decoding with XML Schema grammar (XML output)
+echo [3] exipd schema example (XML output)
 %EXE_DIR%\exipd.exe -xml -schema=%EXAMPLE_DIR%\exipd-test-schema-xsd.exi %EXAMPLE_DIR%\exipd-test-schema.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo.
-echo [4] Decoding with XML Schema grammar (EXI output)
+echo [4] exipd schema example (EXI output)
 %EXE_DIR%\exipd.exe -exi -schema=%EXAMPLE_DIR%\exipd-test-schema-xsd.exi %EXAMPLE_DIR%\exipd-test-schema.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [5] exipd schemaless example
+%EXE_DIR%\exipd.exe -xml %EXAMPLE_DIR%\exipd-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [6] exipd with exipe-test (schema)
+%EXE_DIR%\exipd.exe -xml -schema=examples\simpleEncoding\exipe-test-xsd.exi,examples\simpleEncoding\exipe-test-nested-xsd.exi,examples\simpleEncoding\exipe-test-types-xsd.exi examples\simpleEncoding\exipe-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [7] exipd with exipe-test (schemaless)
+%EXE_DIR%\exipd.exe -xml examples\simpleEncoding\exipe-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [8] exipd XML Schema document
+%EXE_DIR%\exipd.exe -xml -schema=src\grammarGen\xmlSchema\XMLSchema-xsd.exi,src\grammarGen\xmlSchema\xml-xsd.exi src\grammarGen\xmlSchema\XMLSchema-schema-xsd.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
 echo.
 echo exipe (encode)
 echo.
 
-echo [5] Encoding with multiple schemas
+echo [9] exipe schema example
 %EXE_DIR%\exipe.exe -schema=examples\simpleEncoding\exipe-test-xsd.exi,examples\simpleEncoding\exipe-test-types-xsd.exi,examples\simpleEncoding\exipe-test-nested-xsd.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [10] exipe schemaless example
+%EXE_DIR%\exipe.exe
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo.
+echo exipg (grammar generation)
+echo.
+
+echo [11] exipg text output for EXIOptions schema
+%EXE_DIR%\exipg.exe -text -ops=0001000 -schema=utils\schemaGen\EXIOptions-xsd.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
 :: Report error or success

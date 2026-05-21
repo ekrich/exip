@@ -65,7 +65,7 @@ All new source files should include the standard EXIP header:
 
 ### Naming Conventions
 
-- **Tools**: Prefix with `exip` (e.g., `exipcodegen`, `exipd`, `exipe`)
+- **Tools**: Prefix with `exip` (e.g., `exipg`, `exipd`, `exipe`)
 - **Functions**: camelCase (e.g., `initParser`, `parseNext`)
 - **Types**: PascalCase (e.g., `EXIStream`, `Parser`)
 - **Struct members**: snake_case (e.g., `app_data`, `has_options`, `version_number`)
@@ -86,6 +86,7 @@ src/
 examples/         - Sample code
 docs/user/        - Public user documentation (TeX format)
 info/             - Internal project documentation (Markdown)
+scripts/          - various script to run locally or via CI
 ```
 
 ### Error Handling
@@ -234,6 +235,8 @@ When adding features, update:
 - Add XML parsing capabilities
 - Support DTD or RELAX NG
 - Create schema-only or schemaless-only features
+- Expect `exipe` to encode arbitrary XML (it's a fixed test fixture)
+- Manually edit generated files (staticEXIOptions.c, staticXmlSchema.c)
 - Use unbounded allocations
 - Assume null-terminated strings
 - Hardcode buffer sizes in public APIs
@@ -252,10 +255,18 @@ When adding features, update:
 
 - [ARCHITECTURE.md](info/ARCHITECTURE.md) - System architecture and design
 - [info/](info/) - Additional design documents and patterns
+- [examples/README.md](examples/README.md) - Example file organization and usage
+- [src/contentIO/README.md](src/contentIO/README.md) - Regenerating staticEXIOptions.c
+- [src/grammarGen/README.md](src/grammarGen/README.md) - Regenerating staticXmlSchema.c
+
+### Scripts
+- [scripts/run-examples](scripts/run-examples) - Run functional examples
+- [scripts/run-valgrind-tests](scripts/run-valgrind-tests) - Memory leak testing
+- [scripts/run-valgrind-examples](scripts/run-valgrind-examples) - Profile examples
 
 ### Examples
-- [examples/simpleDecoding/exipd.c](examples/simpleDecoding/exipd.c) - Decoder example
-- [examples/simpleEncoding/exipe.c](examples/simpleEncoding/exipe.c) - Encoder example
+- [examples/simpleDecoding/exipd.c](examples/simpleDecoding/exipd.c) - Decoder (arbitrary input)
+- [examples/simpleEncoding/exipe.c](examples/simpleEncoding/exipe.c) - Encoder (fixed test document)
 
 ## External Tools
 

@@ -8,20 +8,64 @@
 set -euo pipefail
 
 
-DIR="./bin/examples"
+EXAMPLES_DIR="./bin/examples"
+UTILS_DIR="./bin/utils"
 
-if [ -z "$(ls -A "$DIR")" ]; then
-    echo "Directory '$DIR' is empty. Please run build first." >&2
+if [ -z "$(ls -A "$EXAMPLES_DIR" 2>/dev/null)" ] || [ -z "$(ls -A "$UTILS_DIR" 2>/dev/null)" ]; then
+    echo "Error: Build directories are empty. Please run build first." >&2
     exit 1
-else
-    echo "Running examples..."
-    cd ${DIR}
+fi
+
+echo "Running examples..."
+cd ${EXAMPLES_DIR}
+
     echo "exipd (decode)"
+    echo
+
+    echo "[1] exipd schema example (XML output)"
     ./exipd -xml -schema=exipd-test-xsd.exi exipd-test.exi
+
+    echo "[2] exipd schema example (EXI output)"
     ./exipd -exi -schema=exipd-test-xsd.exi exipd-test.exi
+
+    echo "[3] exipd schema example (XML output)"
     ./exipd -xml -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
+
+    echo "[4] exipd schema example (EXI output)"
     ./exipd -exi -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
+
+    echo "[5] exipd schemaless example"
+    ./exipd -xml exipd-test.exi
+
+    echo "[6] exipd with exipe-test (schema)"
+    ./exipd -xml -schema=exipe-test-xsd.exi,exipe-test-nested-xsd.exi,exipe-test-types-xsd.exi exipe-test.exi
+
+    echo "[7] exipd with exipe-test (schemaless)"
+    ./exipd -xml exipe-test.exi
+
+    echo "[8] exipd XML Schema document"
+    cd ../../src/grammarGen/xmlSchema
+    ../../../bin/examples/exipd -xml -schema=XMLSchema-xsd.exi,xml-xsd.exi XMLSchema-schema-xsd.exi
+    cd -
+
+    echo
     echo "exipe (encode)"
+    echo
+
+    echo "[9] exipe schema example"
     ./exipe -schema=exipe-test-xsd.exi,exipe-test-types-xsd.exi,exipe-test-nested-xsd.exi
+
+    echo "[10] exipe schemaless example"
+    ./exipe  # generates exipe-test.exi
+
+    echo
+    echo "exipg (grammar generation)"
+    echo
+
+    echo "[11] exipg text output for EXIOptions schema"
+    cd ${UTILS_DIR}
+    ./exipg -text -ops=0001000 -schema=EXIOptions-xsd.exi
+
+    echo
     echo "Done."
 fi
