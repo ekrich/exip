@@ -32,13 +32,13 @@ scripts/run-examples.bat
 
 **Important:** The `exipe` example encodes a **fixed, hardcoded XML document** defined in its C source code (`encodeTestEXI.c`). **It cannot encode arbitrary XML input.** The hardcoded document conforms to the `exipe-test.xsd` schema described above.
 
-**Output Files:** (not in git)
+**Data Files:**
 
-Provide an output filename as the last argument to `exipe` to save the encoded output:
-- `exipe-test.exi` (schema-less mode)
-- `exipe-test-schema.exi` (schema-informed mode)
+The `exipe` tool generates test data files saved to `../simpleDecoding/` for round-trip testing:
+- `exipe-test.exi` - Test data encoded in **schema-less mode**
+- `exipe-test-schema.exi` - Test data encoded in **schema-informed mode**
 
-These files can be used for sizing comparisons or decoded with `exipd`.
+These files are used by `exipd` for decoding tests and sizing comparisons.
 
 ## Schema-Informed vs Schema-Less Encoding
 

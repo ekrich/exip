@@ -190,7 +190,7 @@ check: all $(TESTS_BIN_DIR) $(CHECK_BINS)
              done
 
 # TARGET: Builds the example applications        
-examples: all $(EXAMPLES_BIN_DIR) $(EXAMPLE_BINS) test_sets_copy_examples
+examples: all $(EXAMPLES_BIN_DIR) $(EXAMPLE_BINS) test_sets_copy_examples test_sets_copy_src
 
 # TARGET: Builds the utilities      
 utils: all $(UTILS_BIN_DIR) $(UTILS_BINS) test_sets_copy_utils
@@ -274,6 +274,13 @@ test_sets_copy_examples:
 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipd-test-schema-xsd.exi $(EXAMPLES_BIN_DIR)/exipd-test-schema-xsd.exi
 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipd-test.exi $(EXAMPLES_BIN_DIR)/exipd-test.exi
 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipd-test-schema.exi $(EXAMPLES_BIN_DIR)/exipd-test-schema.exi
-		
+		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipe-test.exi $(EXAMPLES_BIN_DIR)/exipe-test.exi
+		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipe-test-schema.exi $(EXAMPLES_BIN_DIR)/exipe-test-schema.exi
+
+test_sets_copy_src:
+		cp $(PROJECT_ROOT)/src/grammarGen/xmlSchema/XMLSchema-xsd.exi $(EXAMPLES_BIN_DIR)/XMLSchema-xsd.exi
+		cp $(PROJECT_ROOT)/src/grammarGen/xmlSchema/xml-xsd.exi $(EXAMPLES_BIN_DIR)/xml-xsd.exi
+		cp $(PROJECT_ROOT)/src/grammarGen/xmlSchema/XMLSchema-schema-xsd.exi $(EXAMPLES_BIN_DIR)/XMLSchema-schema-xsd.exi
+
 test_sets_copy_utils:		
 		cp $(PROJECT_ROOT)/utils/schemaGen/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi	
