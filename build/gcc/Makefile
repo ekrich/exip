@@ -266,7 +266,7 @@ copy_headers: $(BIN_DIR)
 		cp $(PROJECT_ROOT)/include/*.h $(BIN_DIR)/headers
 		cp $(TARGET)/*.h $(BIN_DIR)/headers
 
-test_sets_copy_examples:
+test_sets_copy_examples: $(EXAMPLES_BIN_DIR)
 		cp $(PROJECT_ROOT)/examples/simpleEncoding/exipe-test-xsd.exi $(EXAMPLES_BIN_DIR)/exipe-test-xsd.exi
 		cp $(PROJECT_ROOT)/examples/simpleEncoding/exipe-test-types-xsd.exi $(EXAMPLES_BIN_DIR)/exipe-test-types-xsd.exi
 		cp $(PROJECT_ROOT)/examples/simpleEncoding/exipe-test-nested-xsd.exi $(EXAMPLES_BIN_DIR)/exipe-test-nested-xsd.exi
@@ -277,10 +277,10 @@ test_sets_copy_examples:
 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipe-test.exi $(EXAMPLES_BIN_DIR)/exipe-test.exi
 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipe-test-schema.exi $(EXAMPLES_BIN_DIR)/exipe-test-schema.exi
 
-test_sets_copy_src:
+test_sets_copy_src: $(EXAMPLES_BIN_DIR)
 		cp $(PROJECT_ROOT)/src/grammarGen/xmlSchema/XMLSchema-xsd.exi $(EXAMPLES_BIN_DIR)/XMLSchema-xsd.exi
 		cp $(PROJECT_ROOT)/src/grammarGen/xmlSchema/xml-xsd.exi $(EXAMPLES_BIN_DIR)/xml-xsd.exi
 		cp $(PROJECT_ROOT)/src/grammarGen/xmlSchema/XMLSchema-schema-xsd.exi $(EXAMPLES_BIN_DIR)/XMLSchema-schema-xsd.exi
 
-test_sets_copy_utils:		
-		cp $(PROJECT_ROOT)/utils/schemaGen/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi	
+test_sets_copy_utils: $(UTILS_BIN_DIR)
+		cp $(PROJECT_ROOT)/utils/schemaGen/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi
