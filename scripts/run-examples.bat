@@ -14,7 +14,8 @@ if /i "%~1"=="release" set "CONFIG=Release"
 
 :: Windows uses backslash
 set "EXE_DIR=build\vs2022\%CONFIG%"
-set "EXAMPLE_DIR=examples\simpleDecoding"
+set "DECODING_DIR=examples\simpleDecoding"
+set "ENCODING_DIR=examples\simpleEncoding"
 
 echo Running examples...
 
@@ -25,34 +26,59 @@ if not exist "%EXE_DIR%\exipd.exe" (
 )
 
 echo.
-echo exipd (decode)
-echo.
-
-echo [1] Decoding with schema (XML output)
-%EXE_DIR%\exipd.exe -xml -schema=%EXAMPLE_DIR%\exipd-test-xsd.exi %EXAMPLE_DIR%\exipd-test.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo.
-echo [2] Decoding with schema (EXI output)
-%EXE_DIR%\exipd.exe -exi -schema=%EXAMPLE_DIR%\exipd-test-xsd.exi %EXAMPLE_DIR%\exipd-test.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo.
-echo [3] Decoding with XML Schema grammar (XML output)
-%EXE_DIR%\exipd.exe -xml -schema=%EXAMPLE_DIR%\exipd-test-schema-xsd.exi %EXAMPLE_DIR%\exipd-test-schema.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo.
-echo [4] Decoding with XML Schema grammar (EXI output)
-%EXE_DIR%\exipd.exe -exi -schema=%EXAMPLE_DIR%\exipd-test-schema-xsd.exi %EXAMPLE_DIR%\exipd-test-schema.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo.
 echo exipe (encode)
 echo.
 
-echo [5] Encoding with multiple schemas
-%EXE_DIR%\exipe.exe -schema=examples\simpleEncoding\exipe-test-xsd.exi,examples\simpleEncoding\exipe-test-types-xsd.exi,examples\simpleEncoding\exipe-test-nested-xsd.exi
+echo [1] exipe schema-informed example
+%EXE_DIR%\exipe.exe -schema=%ENCODING_DIR%\exipe-test-xsd.exi,%ENCODING_DIR%\exipe-test-types-xsd.exi,%ENCODING_DIR%\exipe-test-nested-xsd.exi %DECODING_DIR%\exipe-test-schema.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [2] exipe schemaless example
+%EXE_DIR%\exipe.exe %DECODING_DIR%\exipe-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo.
+echo exipd (decode)
+echo.
+
+echo [3] exipd schema example (XML output)
+%EXE_DIR%\exipd.exe -xml -schema=%DECODING_DIR%\exipd-test-xsd.exi %DECODING_DIR%\exipd-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [4] exipd schema example (EXI output)
+%EXE_DIR%\exipd.exe -exi -schema=%DECODING_DIR%\exipd-test-xsd.exi %DECODING_DIR%\exipd-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [5] exipd schema example (XML output)
+%EXE_DIR%\exipd.exe -xml -schema=%DECODING_DIR%\exipd-test-schema-xsd.exi %DECODING_DIR%\exipd-test-schema.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [6] exipd schema example (EXI output)
+%EXE_DIR%\exipd.exe -exi -schema=%DECODING_DIR%\exipd-test-schema-xsd.exi %DECODING_DIR%\exipd-test-schema.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [7] exipd schemaless example
+%EXE_DIR%\exipd.exe -xml %DECODING_DIR%\exipd-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [8] exipd with exipe-test (schema-informed roundtrip)
+%EXE_DIR%\exipd.exe -xml -schema=%ENCODING_DIR%\exipe-test-xsd.exi,%ENCODING_DIR%\exipe-test-nested-xsd.exi,%ENCODING_DIR%\exipe-test-types-xsd.exi %DECODING_DIR%\exipe-test-schema.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [9] exipd with exipe-test (schemaless roundtrip)
+%EXE_DIR%\exipd.exe -xml %DECODING_DIR%\exipe-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [10] exipd XML Schema document
+%EXE_DIR%\exipd.exe -xml -schema=src\grammarGen\xmlSchema\XMLSchema-xsd.exi,src\grammarGen\xmlSchema\xml-xsd.exi src\grammarGen\xmlSchema\XMLSchema-schema-xsd.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo.
+echo exipg (grammar generation)
+echo.
+
+echo [11] exipg text output for EXIOptions schema
+%EXE_DIR%\exipg.exe -text -ops=0001000 -schema=utils\schemaGen\EXIOptions-xsd.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
 :: Report error or success

@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Run valgrind memory tests on exipd with malformed input files
+# Run from exip directory: scripts/run-valgrind-tests
+#
+
+set -euo pipefail
+
+EXIPD=./bin/examples/exipd
+TEST_DIR=./tests/test-set
+
+if ! [ -f "$EXIPD" ]; then
+    echo "ERROR: You need to compile the exipd executable before executing this test." >&2
+    exit 1
+fi
+
+echo "Running valgrind memory tests on exipd..."
+echo
+
+valgrind --leak-check=yes "$EXIPD" "$TEST_DIR/SchemaLess-WrongBody.exi" 2> error.log 1> /dev/null
+valgrind --leak-check=yes "$EXIPD" "$TEST_DIR/SchemaLess-TotallyWrong.exi" 2>> error.log 1> /dev/null
+valgrind --leak-check=yes "$EXIPD" -schema "$TEST_DIR/Schema.exi" "$TEST_DIR/Schema-WrongBody.exi" 2>> error.log 1> /dev/null
+valgrind --leak-check=yes "$EXIPD" -schema "$TEST_DIR/Schema.exi" "$TEST_DIR/Schema-TotallyWrong.exi" 2>> error.log 1> /dev/null
+
+echo "Valgrind results:"
+grep "ERROR SUMMARY" < error.log
+
+rm error.log
+echo "Done."

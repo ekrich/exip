@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Run valgrind memory tests on examples
+# Run from exip directory: scripts/run-valgrind-examples
+#
+
+set -euo pipefail
+
+DIR="./bin/examples"
+
+if [ -z "$(ls -A "$DIR")" ]; then
+    echo "Directory '$DIR' is empty. Please run build first." >&2
+    exit 1
+fi
+
+echo "Running valgrind memory tests on examples..."
+cd ${DIR}
+
+echo
+echo "exipd (decode)"
+echo
+
+echo "[1] exipd schema example"
+valgrind --leak-check=yes ./exipd -xml -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
+
+echo "[2] exipd schemaless example"
+valgrind --leak-check=yes ./exipd -xml exipd-test.exi
+
+echo "[3] exipd with exipe-test (schema)"
+valgrind --leak-check=yes ./exipd -xml -schema=exipe-test-xsd.exi,exipe-test-nested-xsd.exi,exipe-test-types-xsd.exi exipe-test.exi
+
+echo
+echo "exipe (encode)"
+echo
+
+echo "[4] exipe schema example"
+valgrind --leak-check=yes ./exipe -schema=exipe-test-xsd.exi,exipe-test-types-xsd.exi,exipe-test-nested-xsd.exi
+
+echo
+echo "Done."
