@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <!-- Enable vcpkg manifest mode only if VCPKG_ROOT is set -->
+    <!-- This allows building non-test projects without vcpkg setup -->
+    <VcpkgEnabled Condition="'$(VCPKG_ROOT)' != ''">true</VcpkgEnabled>
+    <VcpkgManifestEnabled Condition="'$(VCPKG_ROOT)' != ''">true</VcpkgManifestEnabled>
+  </PropertyGroup>
+</Project>
