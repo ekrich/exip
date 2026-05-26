@@ -13,5 +13,8 @@
     <ClCompile Include="..\..\examples\simpleEncoding\exipe.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\utils\schemaLoader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
