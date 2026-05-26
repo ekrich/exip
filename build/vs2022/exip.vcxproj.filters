@@ -212,6 +212,7 @@
     <ClCompile Include="..\..\src\contentIO\src\initSchemaInstance.c">
       <Filter>Source Files\contentIO</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\grammarGen\xmlSchema\staticXmlSchema.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="README.txt" />

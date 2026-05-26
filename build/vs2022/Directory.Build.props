@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- This allows building non-test projects without vcpkg setup (VCPKG_ROOT is set) -->
+  <PropertyGroup Condition="'$(VCPKG_ROOT)' != ''">
+    <!-- Dynamically map the VS UI Dropdown selection to the correct vcpkg triplet -->
+    <VcpkgTargetTriplet Condition="'$(Platform)' == 'x64'">x64-windows</VcpkgTargetTriplet>
+    <VcpkgTargetTriplet Condition="'$(Platform)' == 'Win32' or '$(Platform)' == 'x86'">x86-windows</VcpkgTargetTriplet>
+    <!-- Enable vcpkg manifest mode -->
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgManifestEnabled>true</VcpkgManifestEnabled>
+  </PropertyGroup>
+</Project>
