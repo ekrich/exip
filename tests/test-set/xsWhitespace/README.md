@@ -88,6 +88,20 @@ java -jar exificient-gui-jar-with-dependencies.jar
 - Preserve prefixes (Preserve.prefixes) required for correct QName handling in schema processing
 - Including cookie and options in header avoids need for out-of-band configuration
 
+### whitespace-instance.xml
+
+XML instance document with various whitespace patterns for testing normalization behavior.
+
+**To generate EXI test files using EXIficient GUI:**
+
+Use the same settings as for encoding the schema above, **except do NOT check Preserve Prefixes** (instance documents don't need it).
+
+**Encoding steps:**
+1. **Schema-informed:** Select `whitespace-test.xsd` as Schema Location, encode, rename output to add `-schema` to get `whitespace-instance-schema.xml.exi`
+2. **Schemaless:** Leave Schema Location empty, encode to produce `whitespace-instance.xml.exi`
+
+**Note:** The GUI always outputs to `<input-name>.exi` and doesn't allow customizing the output filename, so encode schema-informed first, rename it, then encode schemaless.
+
 ## Expected Test Behavior
 
 ### Before Fix
