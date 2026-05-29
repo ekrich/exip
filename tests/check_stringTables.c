@@ -204,7 +204,7 @@ START_TEST (test_normalizeWhitespace)
 	fail_unless(stringEqualToAscii(str, "hello world"), "COLLAPSE incorrect");
 
 	// Test COLLAPSE with complex whitespace
-	asciiToString("  trim\t \tthis\n\n  out  ", &str, &memList, true);
+	asciiToString("  trim\t \tthis\n\n  out  \r\n", &str, &memList, true);
 	err = normalizeWhitespace(&str, WHITESPACE_COLLAPSE);
 	fail_unless(err == EXIP_OK, "COLLAPSE complex failed");
 	fail_unless(stringEqualToAscii(str, "trim this out"), "COLLAPSE complex incorrect");

@@ -272,6 +272,71 @@ errorCode dateTimeToString(EXIPDateTime dt, String* outStr)
 
 #endif /* EXIP_IMPLICIT_DATA_TYPE_CONVERSION */
 
+errorCode normalizeWhitespace(String* str, WSType wsType)
+{
+	if(str == NULL || str->str == NULL)
+		return EXIP_NULL_POINTER_REF;
+
+	if(str->length == 0 || wsType == WHITESPACE_PRESERVE)
+		return EXIP_OK;  // Nothing to normalize
+
+	Index readPos, writePos;
+	CharType ch;
+	bool inWhitespace = false;
+
+	// Step 1: Replace tabs, newlines, CR with spaces (for REPLACE and COLLAPSE)
+	for(readPos = 0; readPos < str->length; readPos++)
+	{
+		ch = str->str[readPos];
+		if(ch == '\t' || ch == '\n' || ch == '\r')
+			str->str[readPos] = ' ';
+	}
+
+	if(wsType == WHITESPACE_REPLACE)
+		return EXIP_OK;  // REPLACE only does the substitution above
+
+	// Step 2: COLLAPSE - remove leading/trailing spaces and collapse sequences
+	readPos = 0;
+	writePos = 0;
+
+	// Skip leading whitespace
+	while(readPos < str->length && str->str[readPos] == ' ')
+		readPos++;
+
+	// Process middle content
+	while(readPos < str->length)
+	{
+		ch = str->str[readPos];
+
+		if(ch == ' ')
+		{
+			if(!inWhitespace)
+			{
+				// First space in a sequence - keep it
+				str->str[writePos++] = ' ';
+				inWhitespace = true;
+			}
+			// Skip subsequent spaces in sequence
+		}
+		else
+		{
+			// Non-whitespace character
+			str->str[writePos++] = ch;
+			inWhitespace = false;
+		}
+		readPos++;
+	}
+
+	// Remove trailing whitespace (if we ended with a space)
+	if(writePos > 0 && str->str[writePos - 1] == ' ')
+		writePos--;
+
+	// Update string length
+	str->length = writePos;
+
+	return EXIP_OK;
+}
+
 #if EXIP_DEBUG == ON
 
 void printString(const String* inStr)
