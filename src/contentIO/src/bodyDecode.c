@@ -1250,6 +1250,13 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 					freeable = true;
 			}
 
+			// Apply whitespace normalization if schema-informed and type has a whiteSpace facet
+			if(typeId != INDEX_MAX && strm->schema != NULL)
+			{
+				WSType wsType = strm->schema->simpleTypeTable.sType[typeId].whiteSpace;
+				TRY(normalizeWhitespace(&value, wsType));
+			}
+
 			if(handler->stringData != NULL)  // Invoke handler method
 			{
 				TRY(handler->stringData(value, app_data));

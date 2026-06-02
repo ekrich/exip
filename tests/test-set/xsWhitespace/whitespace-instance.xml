@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tns:test xmlns:tns="http://example.com/whitespace-test"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://example.com/whitespace-test whitespace-test.xsd">
+
+  <!-- Test PRESERVE: all whitespace kept as-is -->
+  <tns:preserved>  hello	world
+  </tns:preserved>
+
+  <!-- Test REPLACE: tabs/newlines become spaces -->
+  <tns:replaced>hello	world
+test</tns:replaced>
+
+  <!-- Test COLLAPSE: replace + collapse sequences + trim -->
+  <tns:collapsed>  hello   world  </tns:collapsed>
+
+  <!-- Test on normalized string with replace -->
+  <tns:normalizedReplace>line1
+line2	tab</tns:normalizedReplace>
+
+  <!-- Test on normalized string with collapse -->
+  <tns:normalizedCollapsed>  trim   spaces  </tns:normalizedCollapsed>
+
+  <!-- Test on token with collapse -->
+  <tns:tokenCollapsed>  leading   and   trailing  </tns:tokenCollapsed>
+
+  <!-- Default string (should preserve) -->
+  <tns:defaultString>  tabs	and
+newlines  </tns:defaultString>
+
+  <!-- Default normalized (should replace) -->
+  <tns:defaultNormalized>tab	here</tns:defaultNormalized>
+
+  <!-- Default token (should collapse) -->
+  <tns:defaultToken>  collapse   this  </tns:defaultToken>
+
+  <!-- Name type (collapse) -->
+  <tns:name>  ValidName  </tns:name>
+
+  <!-- NCName type (collapse) -->
+  <tns:ncname>  ValidNCName  </tns:ncname>
+
+  <!-- Integer type (collapse) -->
+  <tns:number>  42  </tns:number>
+
+  <!-- Boolean type (collapse) -->
+  <tns:flag>  true  </tns:flag>
+
+  <!-- Date type (collapse) -->
+  <tns:date>  2024-01-15  </tns:date>
+
+  <!-- List type (always collapse, spaces separate items) -->
+  <tns:tokens>  token1   token2   token3  </tns:tokens>
+
+</tns:test>

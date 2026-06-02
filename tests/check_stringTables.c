@@ -176,6 +176,43 @@ START_TEST (test_addValueEntry)
 }
 END_TEST
 
+/* Test normalizeWhitespace function from stringManipulate module */
+START_TEST (test_normalizeWhitespace)
+{
+	errorCode err = EXIP_UNEXPECTED_ERROR;
+	String str;
+	AllocList memList;
+
+	initAllocList(&memList);
+
+	// Test PRESERVE - no changes
+	asciiToString("  hello\tworld\n  ", &str, &memList, true);
+	err = normalizeWhitespace(&str, WHITESPACE_PRESERVE);
+	fail_unless(err == EXIP_OK, "PRESERVE failed");
+	fail_unless(stringEqualToAscii(str, "  hello\tworld\n  "), "PRESERVE changed string");
+
+	// Test REPLACE - tabs/newlines become spaces
+	asciiToString("hello\tworld\ntest", &str, &memList, true);
+	err = normalizeWhitespace(&str, WHITESPACE_REPLACE);
+	fail_unless(err == EXIP_OK, "REPLACE failed");
+	fail_unless(stringEqualToAscii(str, "hello world test"), "REPLACE incorrect");
+
+	// Test COLLAPSE - replace + trim + collapse sequences
+	asciiToString("  hello   world  ", &str, &memList, true);
+	err = normalizeWhitespace(&str, WHITESPACE_COLLAPSE);
+	fail_unless(err == EXIP_OK, "COLLAPSE failed");
+	fail_unless(stringEqualToAscii(str, "hello world"), "COLLAPSE incorrect");
+
+	// Test COLLAPSE with complex whitespace
+	asciiToString("  trim\t \tthis\n\n  out  \r\n", &str, &memList, true);
+	err = normalizeWhitespace(&str, WHITESPACE_COLLAPSE);
+	fail_unless(err == EXIP_OK, "COLLAPSE complex failed");
+	fail_unless(stringEqualToAscii(str, "trim this out"), "COLLAPSE complex incorrect");
+
+	freeAllocList(&memList);
+}
+END_TEST
+
 /* END: table tests */
 
 Suite * tables_suite (void)
@@ -189,6 +226,7 @@ Suite * tables_suite (void)
 	  tcase_add_test (tc_tables, test_addUriEntry);
 	  tcase_add_test (tc_tables, test_addLnEntry);
 	  tcase_add_test (tc_tables, test_addValueEntry);
+	  tcase_add_test (tc_tables, test_normalizeWhitespace);
 	  suite_add_tcase (s, tc_tables);
   }
 

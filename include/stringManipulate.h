@@ -162,6 +162,24 @@ errorCode stringToInteger(const String* src, int* number);
  */
 errorCode stringToInt64(const String* src, int64_t* number);
 
+/**
+ * @brief Normalize a string according to XML Schema whiteSpace facet rules
+ *
+ * Performs in-place normalization according to the specified WSType:
+ * - WHITESPACE_PRESERVE (0): No normalization (function returns immediately)
+ * - WHITESPACE_REPLACE  (1): Replace each tab, newline, CR with a space
+ * - WHITESPACE_COLLAPSE (2): Replace + collapse sequences + trim leading/trailing
+ *
+ * The string is modified in place and its length is updated if COLLAPSE is used.
+ *
+ * @param[in, out] str String to normalize (modified in place, length updated)
+ * @param[in] wsType Whitespace normalization type (WHITESPACE_PRESERVE, WHITESPACE_REPLACE, or WHITESPACE_COLLAPSE)
+ * @return EXIP_OK on success, EXIP_NULL_POINTER_REF if str is NULL
+ *
+ * @see https://www.w3.org/TR/xmlschema-2/#rf-whiteSpace
+ */
+errorCode normalizeWhitespace(String* str, WSType wsType);
+
 #if EXIP_IMPLICIT_DATA_TYPE_CONVERSION
 
 /**

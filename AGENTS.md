@@ -199,11 +199,30 @@ switch(parser.strm.header.opts.schemaIDMode) {
 
 ## Testing Guidelines
 
+**Test-Driven Development (TDD) is REQUIRED** for all new features and bug fixes:
+
+1. **RED**: Write the test first - it should fail
+2. **GREEN**: Implement the minimal code to make the test pass
+3. **REFACTOR**: Clean up the code while keeping tests green
+
+**Process:**
+- Before implementing ANY functionality or fix, write a failing test
+- Verify the test fails for the right reason
+- Implement the feature/fix
+- Verify the test now passes
+- Only then commit the changes
+
+**Test Requirements:**
 - Test both schema-informed AND schemaless modes
 - Test with and without strict mode
 - Test with byte-aligned and bit-packed encodings
 - Verify interoperability with other EXI processors
 - Include examples in `examples/` directory
+
+**Adding Tests:**
+- Add to existing `tests/check_*.c` files when possible (easier than creating new test files)
+- Unit tests for utility functions go in semantically appropriate files (e.g., string functions → `check_stringTables.c`)
+- Integration tests for encode/decode go in `check_exip.c` or `check_strict_grammar.c`
 
 ## Documentation Requirements
 
@@ -228,6 +247,8 @@ When adding features, update:
 - Support: gcc, clang, MSVC compilers
 - Target: C99 standard
 - Platform: Windows, Linux, macOS, embedded
+
+**Note for AI Assistants**: Do not run builds or compilation commands. The user will handle building the project themselves.
 
 ## Common Pitfalls to Avoid
 

@@ -36,6 +36,13 @@ errorCode encodeStringData(EXIStream* strm, String strng, QNameID qnameID, Index
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	bool flag_StringLiteralsPartition = false;
 
+	// Apply whitespace normalization if schema-informed and type has a whiteSpace facet
+	if(typeId != INDEX_MAX && strm->schema != NULL && strng.length > 0)
+	{
+		WSType wsType = strm->schema->simpleTypeTable.sType[typeId].whiteSpace;
+		TRY(normalizeWhitespace(&strng, wsType));
+	}
+
 	/* ENUMERATION CHECK */
 	if(typeId != INDEX_MAX && HAS_TYPE_FACET(strm->schema->simpleTypeTable.sType[typeId].content,TYPE_FACET_ENUMERATION))
 	{
