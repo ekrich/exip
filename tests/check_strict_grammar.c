@@ -1445,6 +1445,23 @@ static const struct WhitespaceExpectedValue WS_SCHEMALESS_EXPECTED[] = {
 };
 #define WS_SCHEMALESS_COUNT 14
 
+// Expected values for schema-informed mode (after normalization)
+static const struct WhitespaceExpectedValue WS_SCHEMA_EXPECTED[] = {
+	{"preserved", "  hello\tworld\n  "},           // PRESERVE: no change
+	{"replaced", "hello world test"},              // REPLACE: tabs/newlines → spaces
+	{"collapsed", "hello world"},                  // COLLAPSE: trim + collapse spaces
+	{"normalizedReplace", "line1 line2 tab"},      // REPLACE
+	{"normalizedCollapsed", "trim spaces"},        // COLLAPSE
+	{"tokenCollapsed", "leading and trailing"},    // COLLAPSE
+	{"defaultString", "  tabs\tand\nnewlines  "},  // PRESERVE (xs:string default)
+	{"defaultNormalized", "tab here"},             // REPLACE (xs:normalizedString default)
+	{"defaultToken", "collapse this"},             // COLLAPSE (xs:token default)
+	{"name", "ValidName"},                         // COLLAPSE (xs:Name inherits from xs:token)
+	{"ncname", "ValidNCName"},                     // COLLAPSE (xs:NCName inherits from xs:token)
+	// Note: number, flag, date are decoded as typed values in schema mode, not strings
+};
+#define WS_SCHEMA_COUNT 11
+
 // Helper to find expected value for an element
 static const char* findExpectedValue(const char* elementName, const struct WhitespaceExpectedValue* expectedValues, int count)
 {
@@ -1471,6 +1488,40 @@ static errorCode ws_stringData(const String value, void* app_data)
 
 	cloneStringManaged(&value, &appD->charData, &appD->allocList);
 	return EXIP_OK;
+}
+
+// Helper function to parse and validate whitespace values
+static void parseAndValidateWhitespace(Parser* testParser, struct appData* parsingData,
+                                       const struct WhitespaceExpectedValue* expectedValues, int count)
+{
+	errorCode tmp_err_code = EXIP_OK;
+
+	while(tmp_err_code == EXIP_OK)
+	{
+		tmp_err_code = parseNext(testParser);
+
+		// After stringData, charData will have the value - check if element is in our expected list
+		if(tmp_err_code == EXIP_OK && parsingData->charData.length > 0)
+		{
+			char elementName[64];
+			const char* expected;
+
+			snprintf(elementName, sizeof(elementName), "%.*s", (int)parsingData->localName.length, parsingData->localName.str);
+			expected = findExpectedValue(elementName, expectedValues, count);
+
+			if(expected != NULL)
+			{
+				// printf("Checking element %s: got '%.*s', expected '%s'\n",
+				//        elementName, (int)parsingData->charData.length, parsingData->charData.str, expected);
+				bool matches = stringEqualToAscii(parsingData->charData, expected);
+				fail_unless(matches, "Element %s: expected '%s', got '%.*s'",
+				           elementName, expected,
+				           (int)parsingData->charData.length, parsingData->charData.str);
+			}
+			parsingData->charData.length = 0;
+		}
+	}
+	fail_unless(tmp_err_code == EXIP_PARSING_COMPLETE, "parseNext failed: %d", tmp_err_code);
 }
 
 #define LKAB_BUFFER_SIZE 1000
@@ -1680,39 +1731,86 @@ START_TEST (test_whitespace_schemaless_decode)
 	fail_unless(tmp_err_code == EXIP_OK, "setSchema failed: %d", tmp_err_code);
 
 	// Parse all events and validate whitespace values
-	// Pattern: handlers populate parsingData fields (localName from startElement, uri from stringData)
-	// After parseNext() returns, we check if we got string data (uri.length > 0) and validate it
-	// against expected values. Only check elements in our expected list - others may have invalid data.
-	while(tmp_err_code == EXIP_OK)
-	{
-		tmp_err_code = parseNext(&testParser);
-
-		// After stringData, charData will have the value - check if element is in our expected list
-		if(tmp_err_code == EXIP_OK && parsingData.charData.length > 0)
-		{
-			char elementName[64];
-			const char* expected;
-
-			snprintf(elementName, sizeof(elementName), "%.*s", (int)parsingData.localName.length, parsingData.localName.str);
-			expected = findExpectedValue(elementName, WS_SCHEMALESS_EXPECTED, WS_SCHEMALESS_COUNT);
-
-			if(expected != NULL)
-			{
-				// printf("Checking element %s: got '%.*s', expected '%s'\n",
-				//        elementName, (int)parsingData.charData.length, parsingData.charData.str, expected);
-				bool matches = stringEqualToAscii(parsingData.charData, expected);
-				fail_unless(matches, "Element %s: expected '%s', got '%.*s'",
-				           elementName, expected,
-				           (int)parsingData.charData.length, parsingData.charData.str);
-			}
-			parsingData.charData.length = 0;
-		}
-	}
-	fail_unless(tmp_err_code == EXIP_PARSING_COMPLETE, "parseNext failed: %d", tmp_err_code);
+	parseAndValidateWhitespace(&testParser, &parsingData, WS_SCHEMALESS_EXPECTED, WS_SCHEMALESS_COUNT);
 
 	// Cleanup
 	destroyParser(&testParser);
 	freeAllocList(&parsingData.allocList);
+	fclose(infile);
+}
+END_TEST
+
+/* Test whitespace normalization with schema-informed parsing
+ * Verifies that whiteSpace facets are applied during decoding
+ */
+START_TEST (test_whitespace_schema_decode)
+{
+	EXIPSchema schema;
+	FILE *infile;
+	Parser testParser;
+	char buf[INPUT_BUFFER_SIZE];
+	const char *schemafname = "xsWhitespace/whitespace-test.xsd.exi";
+	const char *exifname = "xsWhitespace/whitespace-instance-schema.xml.exi";
+	char exipath[MAX_PATH_LEN + sizeof(exifname)];
+	struct appData parsingData;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	BinaryBuffer buffer;
+
+	// Load schema
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+	parseSchema(schemafname, &schema);
+
+	buffer.buf = buf;
+	buffer.bufContent = 0;
+	buffer.bufLen = INPUT_BUFFER_SIZE;
+
+	// Open EXI instance file
+	size_t pathlen = strlen(dataDir);
+	memcpy(exipath, dataDir, pathlen);
+	exipath[pathlen] = '/';
+	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
+
+	infile = fopen(exipath, "rb");
+	fail_if(!infile, "Unable to open file %s", exipath);
+
+	buffer.ioStrm.readWriteToStream = readFileInputStream;
+	buffer.ioStrm.stream = infile;
+
+	// Initialize parser with schema
+	tmp_err_code = initParser(&testParser, buffer, &parsingData);
+	fail_unless(tmp_err_code == EXIP_OK, "initParser failed: %d", tmp_err_code);
+
+	// Initialize parsing data
+	parsingData.eventCount = 0;
+	parsingData.expectAttributeData = 0;
+	parsingData.localName.length = 0;
+	parsingData.localName.str = NULL;
+	parsingData.charData.length = 0;
+	parsingData.charData.str = NULL;
+	tmp_err_code = initAllocList(&parsingData.allocList);
+	fail_unless(tmp_err_code == EXIP_OK, "initAllocList failed: %d", tmp_err_code);
+
+	// Set up handlers
+	testParser.handler.fatalError = sample_fatalError;
+	testParser.handler.error = sample_fatalError;
+	testParser.handler.startElement = ws_startElement;
+	testParser.handler.stringData = ws_stringData;
+
+	// Parse header
+	tmp_err_code = parseHeader(&testParser, false);
+	fail_unless(tmp_err_code == EXIP_OK, "parseHeader failed: %d", tmp_err_code);
+
+	// Set schema
+	tmp_err_code = setSchema(&testParser, &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "setSchema failed: %d", tmp_err_code);
+
+	// Parse and validate normalized values
+	parseAndValidateWhitespace(&testParser, &parsingData, WS_SCHEMA_EXPECTED, WS_SCHEMA_COUNT);
+
+	// Cleanup
+	destroyParser(&testParser);
+	freeAllocList(&parsingData.allocList);
+	destroySchema(&schema);
 	fclose(infile);
 }
 END_TEST
@@ -1733,6 +1831,7 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_annotation_handling);
 	  tcase_add_test (tc_builtin, test_malformed_annotation_handling);
 	  tcase_add_test (tc_builtin, test_whitespace_schemaless_decode);
+	  tcase_add_test (tc_builtin, test_whitespace_schema_decode);
 	  suite_add_tcase (s, tc_builtin);
 	}
 
