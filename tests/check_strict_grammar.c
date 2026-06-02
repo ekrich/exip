@@ -41,6 +41,7 @@ struct appData
 	String eventCode;
 	String uri;
 	String localName;
+	String charData;
 };
 typedef struct appData appData;
 
@@ -155,14 +156,14 @@ static errorCode sample_attribute(QName qname, void* app_data)
 {
 	appData* appD = (appData*) app_data;
 	asciiToString("AT", &appD->eventCode, &appD->allocList, true);
-	
+
 	/*
 	printString(qname.uri);
 	printf(" ");
 	printString(qname.localName);
 	printf("=\"");
 	*/
-	
+
 	appD->expectAttributeData = 1;
 
 	return EXIP_OK;
@@ -296,11 +297,11 @@ START_TEST (test_acceptance_for_A_01)
 	memcpy(exipath, dataDir, pathlen);
 	exipath[pathlen] = '/';
 	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
-	
+
 	infile = fopen(exipath, "rb" );
 	if(!infile)
 		fail("Unable to open file %s", exipath);
-	
+
 	buffer.ioStrm.readWriteToStream = readFileInputStream;
 	buffer.ioStrm.stream = infile;
 
@@ -326,7 +327,7 @@ START_TEST (test_acceptance_for_A_01)
 	testParser.handler.decimalData   = sample_decimalData;
 	testParser.handler.intData       = sample_intData;
 	testParser.handler.floatData     = sample_floatData;
-	
+
 	// IV: Parse the header of the stream
 	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
@@ -414,9 +415,9 @@ START_TEST (test_acceptance_for_A_01)
 		tmp_err_code = parseNext(&testParser);
 
 		parsingData.eventCount++;
-				
+
 	}
-	
+
 	fail_unless(stringEqualToAscii(parsingData.eventCode, "ED"));
 
 	fail_unless(parsingData.eventCount == 18,
@@ -458,11 +459,11 @@ START_TEST (test_acceptance_for_A_01_exip1)
 	memcpy(exipath, dataDir, pathlen);
 	exipath[pathlen] = '/';
 	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
-	
+
 	infile = fopen(exipath, "rb" );
 	if(!infile)
 		fail("Unable to open file %s", exipath);
-	
+
 	buffer.ioStrm.readWriteToStream = readFileInputStream;
 	buffer.ioStrm.stream = infile;
 
@@ -487,7 +488,7 @@ START_TEST (test_acceptance_for_A_01_exip1)
 	testParser.handler.decimalData   = sample_decimalData;
 	testParser.handler.intData       = sample_intData;
 	testParser.handler.floatData     = sample_floatData;
-	
+
 	// IV: Parse the header of the stream
 	tmp_err_code = parseHeader(&testParser, false);
 	fail_unless (tmp_err_code == EXIP_OK, "parsing the header returns an error code %d", tmp_err_code);
@@ -525,7 +526,7 @@ START_TEST (test_acceptance_for_A_01_exip1)
 		tmp_err_code = parseNext(&testParser);
 		parsingData.eventCount++;
 	}
-	
+
 	fail_unless(stringEqualToAscii(parsingData.eventCode, "ED"));
 
 	fail_unless(parsingData.eventCount == 4,
@@ -539,10 +540,10 @@ START_TEST (test_acceptance_for_A_01_exip1)
 }
 END_TEST
 
-/* 
- * Verifies error when more elements than schema maxOccurs permits. Attempts 
+/*
+ * Verifies error when more elements than schema maxOccurs permits. Attempts
  * to encode:
- * 
+ *
  * <A xmlns='urn:foo'>
  *   <AB/><AC/><AC/><AC/>
  * </A>
@@ -558,13 +559,13 @@ START_TEST (test_acceptance_for_A_01b)
 	const char *schemafname = "testStates/acceptance-xsd.exi";
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	EXITypeClass valueType;
-	
+
 	const String NS_STR = {"urn:foo", 7};
 	const String ELEM_A = {"A", 1};
 	const String ELEM_AB = {"AB", 2};
 	const String ELEM_AC = {"AC", 2};
 	const String CH = {"", 0};
-	
+
 	BinaryBuffer buffer;
 	buffer.buf = buf;
 	buffer.bufLen = OUTPUT_BUFFER_SIZE;
@@ -614,15 +615,15 @@ START_TEST (test_acceptance_for_A_01b)
 	tmp_err_code += serialize.stringData(&testStrm, CH);
 	tmp_err_code += serialize.endElement(&testStrm);
 	fail_unless (tmp_err_code == EXIP_OK, "serialization returns an error code %d", tmp_err_code);
-	
+
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
 	tmp_err_code += serialize.stringData(&testStrm, CH);
 	tmp_err_code += serialize.endElement(&testStrm);
 	fail_unless (tmp_err_code == EXIP_OK, "serialization returns an error code %d", tmp_err_code);
-	
+
 	/* Expect failure when start third AC element */
 	tmp_err_code += serialize.startElement(&testStrm, qname, &valueType);
-	fail_unless (tmp_err_code == EXIP_INCONSISTENT_PROC_STATE, 
+	fail_unless (tmp_err_code == EXIP_INCONSISTENT_PROC_STATE,
 	    "Expected EXIP_INCONSISTENT_PROC_STATE, but returns an error code %d", tmp_err_code);
 
 	// VI: Free the memory allocated by the EXI stream object
@@ -766,6 +767,20 @@ static errorCode lkab_stringData_desc(const String value, void* app_data);
 static errorCode lkab_booleanData_io(bool bool_val, void* app_data);
 static errorCode lkab_booleanData_desc(bool bool_val, void* app_data);
 static errorCode lkab_dateTimeData(EXIPDateTime dt_val, void* app_data);
+
+/* Whitespace test helpers */
+struct WhitespaceTestContext {
+	const String* currentElement;
+};
+
+struct WhitespaceExpectedValue {
+	const char* elementName;
+	const char* expectedValue;
+};
+
+static errorCode ws_startElement(QName qname, void* app_data);
+static errorCode ws_stringData(const String value, void* app_data);
+
 
 /**
  * @brief Reads the time-stamp and value data from a EXI message
@@ -1409,6 +1424,55 @@ static errorCode lkab_dateTimeData(EXIPDateTime dt_val, void* app_data)
 	return EXIP_OK;
 }
 
+/* Whitespace test implementations */
+
+// Expected values for schemaless mode
+static const struct WhitespaceExpectedValue WS_SCHEMALESS_EXPECTED[] = {
+	{"preserved", "  hello\tworld\n  "},
+	{"replaced", "hello\tworld\ntest"},
+	{"collapsed", "  hello   world  "},
+	{"normalizedReplace", "line1\nline2\ttab"},
+	{"normalizedCollapsed", "  trim   spaces  "},
+	{"tokenCollapsed", "  leading   and   trailing  "},
+	{"defaultString", "  tabs\tand\nnewlines  "},
+	{"defaultNormalized", "tab\there"},
+	{"defaultToken", "  collapse   this  "},
+	{"name", "  ValidName  "},
+	{"ncname", "  ValidNCName  "},
+	{"number", "  42  "},
+	{"flag", "  true  "},
+	{"date", "  2024-01-15  "},
+};
+#define WS_SCHEMALESS_COUNT 14
+
+// Helper to find expected value for an element
+static const char* findExpectedValue(const char* elementName, const struct WhitespaceExpectedValue* expectedValues, int count)
+{
+	int i;
+	for(i = 0; i < count; i++)
+	{
+		if(strcmp(elementName, expectedValues[i].elementName) == 0)
+			return expectedValues[i].expectedValue;
+	}
+	return NULL;
+}
+
+static errorCode ws_startElement(QName qname, void* app_data)
+{
+	struct appData* appD = (struct appData*) app_data;
+	appD->localName = *qname.localName;  // Store element name
+	// printf("  startElement: %.*s\n", (int)qname.localName->length, qname.localName->str);
+	return EXIP_OK;
+}
+
+static errorCode ws_stringData(const String value, void* app_data)
+{
+	struct appData* appD = (struct appData*) app_data;
+
+	cloneStringManaged(&value, &appD->charData, &appD->allocList);
+	return EXIP_OK;
+}
+
 #define LKAB_BUFFER_SIZE 1000
 
 START_TEST (test_lkab_demo_suit)
@@ -1556,6 +1620,103 @@ START_TEST (test_malformed_annotation_handling)
 }
 END_TEST
 
+/* Test whitespace preservation in schemaless decoding
+ * Verifies EXIP correctly decodes schemaless EXI files with all whitespace preserved
+ * This is an interoperability test - EXIficient encodes, EXIP decodes
+ */
+START_TEST (test_whitespace_schemaless_decode)
+{
+	FILE *infile;
+	Parser testParser;
+	char buf[INPUT_BUFFER_SIZE];
+	const char *exifname = "xsWhitespace/whitespace-instance.xml.exi";
+	char exipath[MAX_PATH_LEN + sizeof(exifname - 1)];
+	struct appData parsingData;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	BinaryBuffer buffer;
+
+	buffer.buf = buf;
+	buffer.bufContent = 0;
+	buffer.bufLen = INPUT_BUFFER_SIZE;
+
+	// Open schemaless EXI file
+	size_t pathlen = strlen(dataDir);
+	memcpy(exipath, dataDir, pathlen);
+	exipath[pathlen] = '/';
+	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
+
+	infile = fopen(exipath, "rb");
+	fail_if(!infile, "Unable to open file %s", exipath);
+
+	buffer.ioStrm.readWriteToStream = readFileInputStream;
+	buffer.ioStrm.stream = infile;
+
+	// Initialize parser (schemaless - no schema)
+	tmp_err_code = initParser(&testParser, buffer, &parsingData);
+	fail_unless(tmp_err_code == EXIP_OK, "initParser failed: %d", tmp_err_code);
+
+	// Initialize parsing data like other tests
+	parsingData.eventCount = 0;
+	parsingData.expectAttributeData = 0;
+	parsingData.localName.length = 0;
+	parsingData.localName.str = NULL;
+	parsingData.charData.length = 0;
+	parsingData.charData.str = NULL;
+	if (EXIP_OK != initAllocList(&parsingData.allocList))
+		fail("Memory allocation error!");
+
+	// Set up handlers for validation
+	testParser.handler.fatalError = sample_fatalError;
+	testParser.handler.error = sample_fatalError;
+	testParser.handler.startElement = ws_startElement;
+	testParser.handler.stringData = ws_stringData;
+
+	// Parse header and body
+	tmp_err_code = parseHeader(&testParser, false);
+	fail_unless(tmp_err_code == EXIP_OK, "parseHeader failed: %d", tmp_err_code);
+
+	// Set schema (NULL for schemaless)
+	tmp_err_code = setSchema(&testParser, NULL);
+	fail_unless(tmp_err_code == EXIP_OK, "setSchema failed: %d", tmp_err_code);
+
+	// Parse all events and validate whitespace values
+	// Pattern: handlers populate parsingData fields (localName from startElement, uri from stringData)
+	// After parseNext() returns, we check if we got string data (uri.length > 0) and validate it
+	// against expected values. Only check elements in our expected list - others may have invalid data.
+	while(tmp_err_code == EXIP_OK)
+	{
+		tmp_err_code = parseNext(&testParser);
+
+		// After stringData, charData will have the value - check if element is in our expected list
+		if(tmp_err_code == EXIP_OK && parsingData.charData.length > 0)
+		{
+			char elementName[64];
+			const char* expected;
+
+			snprintf(elementName, sizeof(elementName), "%.*s", (int)parsingData.localName.length, parsingData.localName.str);
+			expected = findExpectedValue(elementName, WS_SCHEMALESS_EXPECTED, WS_SCHEMALESS_COUNT);
+
+			if(expected != NULL)
+			{
+				// printf("Checking element %s: got '%.*s', expected '%s'\n",
+				//        elementName, (int)parsingData.charData.length, parsingData.charData.str, expected);
+				bool matches = stringEqualToAscii(parsingData.charData, expected);
+				fail_unless(matches, "Element %s: expected '%s', got '%.*s'",
+				           elementName, expected,
+				           (int)parsingData.charData.length, parsingData.charData.str);
+			}
+			parsingData.charData.length = 0;
+		}
+	}
+	fail_unless(tmp_err_code == EXIP_PARSING_COMPLETE, "parseNext failed: %d", tmp_err_code);
+
+	// Cleanup
+	destroyParser(&testParser);
+	freeAllocList(&parsingData.allocList);
+	fclose(infile);
+}
+END_TEST
+
 /* Test suite */
 
 Suite* exip_suite(void)
@@ -1571,6 +1732,7 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_whitespace_facets);
 	  tcase_add_test (tc_builtin, test_annotation_handling);
 	  tcase_add_test (tc_builtin, test_malformed_annotation_handling);
+	  tcase_add_test (tc_builtin, test_whitespace_schemaless_decode);
 	  suite_add_tcase (s, tc_builtin);
 	}
 
@@ -1590,7 +1752,7 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 	dataDir = argv[1];
-	
+
 	int number_failed;
 	Suite *s = exip_suite();
 	SRunner *sr = srunner_create (s);
@@ -1603,4 +1765,3 @@ int main (int argc, char *argv[])
 	srunner_free (sr);
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
