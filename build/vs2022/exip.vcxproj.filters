@@ -43,6 +43,9 @@
     <Filter Include="Header Files\grammarGen">
       <UniqueIdentifier>{77e8349e-a5d9-4385-8197-39f81e8c236e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\grammarGen\xmlSchema">
+      <UniqueIdentifier>{dcb68fda-614e-4baa-961e-27bf289de9d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\contentHandler.h">
@@ -129,6 +132,9 @@
     <ClInclude Include="..\..\src\contentIO\include\initSchemaInstance.h">
       <Filter>Header Files\contentIO</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\bindapi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\src\contentHandler.c">
@@ -212,7 +218,12 @@
     <ClCompile Include="..\..\src\contentIO\src\initSchemaInstance.c">
       <Filter>Source Files\contentIO</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\grammarGen\xmlSchema\staticXmlSchema.c" />
+    <ClCompile Include="..\..\src\common\src\bindapi.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\grammarGen\xmlSchema\staticXmlSchema.c">
+      <Filter>Source Files\grammarGen\xmlSchema</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.txt" />

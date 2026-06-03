@@ -8,88 +8,147 @@
 4. **Generate C constants** - Emit static const String declarations for all namespaces and element/attribute names (like exipe example)
 5. **Generate C code** - Emit structs, `encode()`/`decode()` functions using reusable type-conversion helpers
 
-**Key:** `generateOptimizedTreeTable()` does all TreeTable generation, include/import resolution, and type hierarchy linking in one call. Generated code uses schema-informed encoding with compile-time constants. Uses helper functions for auto schema-informed/schema-less switching - helpers are reusable for hand-written code too!
+**Key:** `generateOptimizedTreeTable()` does all TreeTable generation, include/import resolution, and type hierarchy linking in one call. Generated code uses EXIP's existing `serialize.*Data()` API with simple type conversions where needed.
 
-## Reusable Type Conversion Helpers
+## Type Conversion Strategy
 
-Generated code uses helper functions that automatically switch between schema-informed (typed) and schema-less (string) modes. **These helpers are also useful for hand-written encode/decode code:**
+Generated code uses **normal C types** in structs but needs to convert to EXIP types when calling the serialization API:
 
 ```c
-// Auto-switching encode helpers (check stream->schema != NULL internally)
-errorCode encodeInt(EXIStream* stream, int value);
-errorCode encodeBool(EXIStream* stream, bool value);
-errorCode encodeFloat(EXIStream* stream, float value);
-errorCode encodeString(EXIStream* stream, const char* str); // No schema check - strings are always strings
+// User struct - pure C types
+struct Person {
+    int age;           // Normal C int
+    float height;      // Normal C float  
+    bool enabled;      // Standard bool
+    char name[101];    // Fixed C string
+};
 
-// Example implementations:
-errorCode encodeInt(EXIStream* stream, int value) {
-    if(stream->schema != NULL) {
-        // Schema mode - use typed encoding
-        return serialize.intData(stream, value);
-    } else {
-        // Schema-less mode - convert to string
-        char buf[32];
-        String strVal;
-        snprintf(buf, sizeof(buf), "%d", value);
-        asciiToString(buf, &strVal, &stream->memList, false);
-        return serialize.stringData(stream, strVal);
-    }
-}
-
-errorCode encodeBool(EXIStream* stream, bool value) {
-    if(stream->schema != NULL) {
-        return serialize.booleanData(stream, value);
-    } else {
-        String strVal;
-        asciiToString(value ? "true" : "false", &strVal, &stream->memList, false);
-        return serialize.stringData(stream, strVal);
-    }
-}
-
-errorCode encodeString(EXIStream* stream, const char* str) {
-    // Strings are always encoded as strings (no schema-informed vs schema-less difference)
-    String strVal;
-    asciiToString(str, &strVal, &stream->memList, false);
-    return serialize.stringData(stream, strVal);
+// Generated encode function
+errorCode encode_Person(EXIStream* strm, Person* p) {
+    // Simple cast for integers
+    TRY(serialize.intData(strm, (Integer)p->age));
+    
+    // Boolean - no conversion needed
+    TRY(serialize.booleanData(strm, p->enabled));
+    
+    // Float requires mantissa/exponent calculation - use helper
+    Float f = floatToExipFloat(p->height);
+    TRY(serialize.floatData(strm, f));
+    
+    // String conversion using existing EXIP function
+    String s;
+    TRY(asciiToString(p->name, &s, &strm->memList, false));
+    TRY(serialize.stringData(strm, s));
+    
+    return EXIP_OK;
 }
 ```
 
-**Benefits:**
-- Generated code is cleaner: `TRY(encodeInt(stream, person->age));` instead of if/else blocks
-- Hand-written code can use same helpers for consistent schema-informed/schema-less support
-- Single place to maintain conversion logic
+### Schema vs Schemaless Mode Support
+
+exipb supports two generation modes via command-line flag:
+
+**Schema-only mode (default, production/embedded):**
+```bash
+exipb --mode=schema-only schema.xsd
+```
+Generated code uses `serialize.intData()`, `serialize.booleanData()`, etc.
+User must compile with schema and run in schema mode.
+Smallest code size.
+
+**Dual-mode (development/debugging):**
+```bash
+exipb --mode=dual schema.xsd
+```
+Generated code works in both schema and schemaless modes.
+User compiles EXIP with `EXIP_IMPLICIT_DATA_TYPE_CONVERSION ON`.
+`serialize.intData()` automatically converts to string in schemaless mode.
+Slightly larger code, maximum flexibility.
+
+**No new API needed** - uses existing `EXIP_IMPLICIT_DATA_TYPE_CONVERSION` flag mechanism.
+
+### Required Type Conversion Helpers
+
+Only these helpers are needed (not in EXIP yet, to be added):
+
+```c
+// Float: normal C float → EXIP Float struct (mantissa/exponent)
+Float floatToExipFloat(float value);
+
+// Double: normal C double → EXIP Float struct
+Float doubleToExipFloat(double value);
+```
+
+Everything else is a simple cast or uses existing EXIP functions (`asciiToString`, etc.).
 
 ## String Handling Strategy
 
 Generated code uses **clean C strings** (no EXIP types exposed to client code):
 
 ### String Type Selection
+
+**Always use fixed-size arrays** - never `char*`:
+
 - **`char[N+1]`** when schema defines `maxLength=N`
-  - Efficient: no malloc/free overhead
-  - Predictable: fixed struct layout
-  - Safe: compiler enforces bounds
-  - Preferred for performance
+  ```c
+  <xs:element name="name" type="xs:string">
+    <xs:maxLength value="100"/>
+  </xs:element>
+  
+  // Generated:
+  struct Person {
+      char name[101];  // maxLength + 1 for null terminator
+  };
+  ```
 
-- **`char*`** when schema has no `maxLength` constraint
-  - Dynamic allocation required
-  - Flexible for truly variable-length data
-  - Requires malloc/free in encode/decode
+- **`char[DEFAULT_MAX+1]`** when schema has NO `maxLength` constraint
+  ```c
+  <xs:element name="description" type="xs:string"/>
+  
+  // Generated (with --max-string=64):
+  struct Person {
+      char description[65];  // Configurable default + 1
+  };
+  ```
 
-### Code Generator Warnings
+**Benefits of fixed arrays:**
+- No malloc/free overhead
+- No memory leaks possible
+- Predictable memory layout
+- Safe: compiler enforces bounds
+- Stack-friendly for embedded
+- Embedded-first design
 
-The generator **always produces valid C code** but emits warnings to guide schema design:
+### exipb Command Line Options
 
+```bash
+exipb --max-string=64 schema.xsd    # Default max for unbounded strings (default)
+exipb --max-string=128 schema.xsd   # Larger default
+exipb --warn-unbounded schema.xsd   # Warn about unbounded strings
 ```
-WARNING: Type 'Address' field 'street' has no maxLength constraint (using char*)
+
+Example warning output:
+```
+WARNING: Element 'Person.description' has no maxLength, using default 64
   Consider adding: <xs:maxLength value="256"/>
-WARNING: Type 'Person' embeds 'Address' which contains dynamically allocated strings
-  Consider using char[] for predictable memory layout
+WARNING: Element 'Address.notes' has no maxLength, using default 64
+  Consider adding: <xs:maxLength value="512"/>
 ```
 
-Warnings are informative, not errors - all patterns are valid. Users can:
-- Add `maxLength` constraints for better performance (recommended)
-- Accept `char*` for truly unbounded data
-- Review trade-offs and make informed decisions
+**Design principle:** Warnings guide schema design but code always works. Users can:
+- Add `maxLength` constraints for explicit control (recommended)
+- Accept default for rapid prototyping
+- Configure default for their domain
+
+### Validation
+
+EXIP library already validates:
+- ✅ Integer min/max (minInclusive/maxInclusive)
+- ✅ String length (via fixed array size at compile time)
+- ❌ minExclusive/maxExclusive (TODO in EXIP)
+- ❌ Pattern facets (logged but not enforced)
+
+exipb **relies on EXIP's existing validation** - no duplicate checks in generated code.
 
 ## Nested Type Strategy
 
