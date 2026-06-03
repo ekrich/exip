@@ -20,20 +20,55 @@
 #include <float.h>
 #include <string.h>
 
-void charArrayToString(const char* str, String* exip_str)
+// Forward declarations
+static errorCode serializeIntValueAsString(EXIStream* strm, int32_t num);
+static errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num);
+
+/**
+ * @brief Convert a C string (char array) to EXIP String representation (private helper)
+ *
+ * Converts a null-terminated C string to EXIP's String structure.
+ * The resulting String points to the input buffer, no copy is made.
+ * This is a private helper used internally by the bindapi.
+ *
+ * @param[in] str null-terminated C string
+ * @param[out] exip_str pointer to EXIP String structure to populate
+ */
+static void charArrayToString(const char* str, String* exip_str)
 {
 	exip_str->str = (CharType*)str;
 	exip_str->length = (Index)strlen(str);
 }
 
-void charArrayToStringFast(char *str_start, char *buf, size_t buf_len, String *exip_str)
+/**
+ * @brief High-performance adapter that maps custom math pointers using zero-overhead subtraction (private helper)
+ *
+ * Creates an EXIP String from a pointer within a buffer without calling strlen().
+ * Uses pointer arithmetic to calculate length. This is a private helper used
+ * internally by the bindapi for efficient string conversions.
+ *
+ * @param[in]  str_start Pointer to the active starting digit inside the buffer
+ * @param[in]  buf Pointer to the baseline beginning of the allocation buffer
+ * @param[in]  buf_len Physical allocation limit of the buffer
+ * @param[out] exip_str Pointer to the target EXIP String structure to populate
+ */
+static void charArrayToStringFast(char *str_start, char *buf, size_t buf_len, String *exip_str)
 {
     exip_str->str = (CharType*)str_start;
     char *buf_end = buf + buf_len - 1;
     exip_str->length = (Index)(buf_end - str_start);
 }
 
-Integer intToInteger(int value)
+/**
+ * @brief Convert a native C int to EXIP Integer representation (private helper)
+ *
+ * Converts a native C int to EXIP's 64-bit Integer type.
+ * This is a private inline helper used internally by the bindapi.
+ *
+ * @param[in] value native C int value
+ * @return EXIP Integer value
+ */
+static inline Integer intToInteger(int value)
 {
 	return (Integer)value;
 }
@@ -140,11 +175,17 @@ errorCode serializeStringValue(EXIStream* strm, const char* str)
 
 errorCode serializeIntValue(EXIStream* strm, int value)
 {
-	Integer exip_int = intToInteger(value);
-	return serialize.intData(strm, exip_int);
+	if (strm->schema != NULL) {
+		// Schema mode - typed encoding
+		Integer exip_int = intToInteger(value);
+		return serialize.intData(strm, exip_int);
+	} else {
+		// Schemaless mode - string encoding
+		return serializeIntValueAsString(strm, value);
+	}
 }
 
-errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num)
+static errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num)
 {
     char buf[UINT32_STR_MAX_LEN];
     String exip_str;
@@ -156,7 +197,7 @@ errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num)
 	return err;
 }
 
-errorCode serializeIntValueAsString(EXIStream* strm, int32_t num)
+static errorCode serializeIntValueAsString(EXIStream* strm, int32_t num)
 {
     char buf[INT32_STR_MAX_LEN];
     String exip_str;

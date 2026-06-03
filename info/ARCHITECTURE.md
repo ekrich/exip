@@ -19,6 +19,26 @@ EXI (Efficient XML Interchange) is a binary XML format that:
 1. **Schema-less Mode**: Processes EXI without schema knowledge (more flexible)
 2. **Schema-informed Mode**: Uses XML Schema to optimize encoding/decoding (more efficient)
 3. **Strict Mode**: Schema-informed with strict validation
+4. **EXI Profile Mode**: Restricted subset for severely constrained embedded devices (schema-only)
+
+#### EXI Profile
+
+EXI Profile is a W3C specification (http://www.w3.org/TR/exi-profile/) defining a restricted subset of EXI for embedded systems with severe constraints (16-bit microcontrollers, limited RAM/flash).
+
+**Profile Restrictions**:
+- Schema-informed mode only (no schemaless)
+- No built-in element grammars (`maximumNumberOfBuiltInElementGrammars = 0`)
+- No built-in productions (`maximumNumberOfBuiltInProductions = 0`)
+- No local value partitions (`localValuePartitions = 0`)
+- Minimal string tables and grammar complexity
+
+**EXIP Configuration**:
+- `EXI_PROFILE_DEFAULT ON` - Enables Profile mode, disables schemaless support
+- `EXI_PROFILE_DEFAULT OFF` - Full EXI support (default for both PC and embedded builds)
+
+**Historical Note**: EXIP was designed in the 16-bit microcontroller era when EXI Profile constraints were necessary. Modern 32-bit embedded platforms (ARM Cortex-M) can typically support full EXI mode, though Profile mode remains available for the most constrained devices.
+
+**Impact on bindapi**: When `EXI_PROFILE_DEFAULT ON`, bindapi's schemaless conversion paths are excluded at compile time, reducing code size to Profile-compliant minimum.
 
 #### Detecting Schema Mode
 
@@ -224,6 +244,68 @@ These utilities are **not part of the runtime library** - they're development to
 ## Module Descriptions
 
 ### 1. Public API Layer
+
+EXIP provides two public API layers for different use cases:
+
+#### bindapi ([bindapi.h](include/bindapi.h)) - External Application API
+**Purpose**: High-level API for applications and code generation tools using native C types
+
+**Target Audience**:
+- Binding generators (exipb)
+- Application developers who want to work with standard C types
+- Users who need automatic schema/schemaless mode handling
+
+**Key Features**:
+- Works with native C types: `int`, `float`, `double`, `char*`
+- Hides EXIP internal types (`Integer`, `Float` struct, `String` struct)
+- Automatically detects schema vs schemaless mode and routes appropriately
+- No manual type conversion required
+
+**API Functions**:
+- `serializeIntValue()`: Serialize int (auto-detects schema/schemaless)
+- `serializeFloatValue()`: Serialize float (auto-detects schema/schemaless)
+- `serializeDoubleValue()`: Serialize double (auto-detects schema/schemaless)
+- `serializeStringValue()`: Serialize C string (auto-detects schema/schemaless)
+- `serializeBoolValue()`: Serialize boolean (auto-detects schema/schemaless)
+- `floatToExipFloat()`: Convert C float to EXIP Float (schema mode only)
+- `doubleToExipFloat()`: Convert C double to EXIP Float (schema mode only)
+- `int32_to_str()`, `uint32_to_str()`: Convert integers to strings (schemaless mode)
+
+**When to use**: Default choice for applications and generated bindings. Simplifies code and handles mode switching automatically.
+
+#### EXISerializer ([EXISerializer.h](include/EXISerializer.h)) - Internal Low-Level API
+**Purpose**: Low-level serialization API using EXIP internal types
+
+**Target Audience**:
+- Advanced users needing fine-grained control
+- Performance-critical code
+- Internal EXIP implementation
+
+**Key Features**:
+- Works with EXIP types: `Integer` (int64_t), `Float` struct, `String` struct
+- Direct control over encoding decisions
+- No automatic mode switching - caller must handle branching
+
+**API Functions** (via `serialize` vtable):
+- `serialize.intData()`: Encode Integer type
+- `serialize.floatData()`: Encode Float struct (mantissa/exponent)
+- `serialize.stringData()`: Encode String struct (pointer + length)
+- `serialize.booleanData()`: Encode boolean
+- `serialize.startElement()`, `serialize.endElement()`: Document structure
+- `serialize.attribute()`: Encode attributes
+
+**When to use**: Only when you need direct control and are willing to handle EXIP's internal type system and manual schema/schemaless branching.
+
+**API Relationship**:
+```
+Application Code (native C types: int, float, char*)
+         ↓
+    bindapi.h (external API - auto mode switching)
+         ↓
+  EXISerializer.h (internal API - EXIP types)
+         ↓
+    Binary EXI Stream
+```
 
 #### EXIParser ([EXIParser.h](include/EXIParser.h))
 **Purpose**: Parse EXI streams into application events

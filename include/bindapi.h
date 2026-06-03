@@ -7,9 +7,19 @@
 
 /**
  * @file bindapi.h
- * @brief Binding API for code generation tools
- * Utilities for converting native C types to EXIP types for use by
- * binding generators (exipb) and other code generation tools
+ * @brief External application-facing API for EXI serialization with native C types
+ *
+ * The bindapi provides a high-level interface for applications and code generation
+ * tools (exipb) to serialize EXI streams using native C types (int, float, double, char*)
+ * without directly handling EXIP's internal types (Integer, Float struct, String struct).
+ *
+ * Key features:
+ * - Works with standard C types instead of EXIP types
+ * - Automatically handles schema-informed and schemaless mode switching
+ * - Designed for binding generators and application code
+ * - Hides EXIP implementation details
+ *
+ * For low-level control, use EXISerializer.h which works directly with EXIP types.
  *
  * @date Jun 2, 2026
  * @author EXIP Contributors
@@ -26,36 +36,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @brief Convert a C string (char array) to EXIP String representation
- *
- * Converts a null-terminated C string to EXIP's String structure.
- * The resulting String points to the input buffer, no copy is made.
- *
- * @param[in] str null-terminated C string
- * @param[out] exip_str pointer to EXIP String structure to populate
- */
-void charArrayToString(const char* str, String* exip_str);
-
-/**
- * @brief High-performance adapter that maps custom math pointers using zero-overhead subtraction.
- * @param[in]  str_start Pointer to the active starting digit inside the buffer.
- * @param[in]  buf Pointer to the baseline beginning of the allocation buffer.
- * @param[in]  buf_len Physical allocation limit of the buffer.
- * @param[out] exip_str Pointer to the target EXIP String structure to populate.
- */
-void charArrayToStringFast(char *str_start, char *buf, size_t buf_len, String *exip_str);
-
-/**
- * @brief Convert a native C int to EXIP Integer representation
- *
- * Converts a native C int to EXIP's 64-bit Integer type.
- *
- * @param[in] value native C int value
- * @return EXIP Integer value
- */
-Integer intToInteger(int value);
 
 /**
  * @brief Convert a native C float to EXIP Float representation
