@@ -142,8 +142,6 @@ char* int32_to_str(int32_t num, char *buf, size_t len);
  */
 char* uint32_to_str(uint32_t num, char *buf, size_t len);
 
-errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num);
-
 #ifdef __cplusplus
 }
 #endif
