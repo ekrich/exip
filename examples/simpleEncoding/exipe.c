@@ -16,6 +16,7 @@
  */
 
 #include "encodeTestEXI.h"
+#include "exipe_data.h"
 #include "grammarGenerator.h"
 #include "schemaLoader.h"
 
@@ -66,7 +67,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	tmp_err_code = encode(schemaPtr, outfile, writeFileOutputStream);
+	// Create test data using constructors
+	EnumType greeting = HEJ;  // Options: HELLO, HI, HEY, HEJ
+	TypesTest types = create_types_test(&greeting);
+	MultipleXSDsTest testData = create_test_data(types);
+
+	tmp_err_code = encode(&testData, schemaPtr, outfile, writeFileOutputStream);
+
+	// Cleanup
+	destroy_multiple_xsds_test(&testData);
 
 	if(schemaPtr != NULL)
 		destroySchema(schemaPtr);

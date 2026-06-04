@@ -22,13 +22,10 @@ void destroy_multiple_xsds_test(MultipleXSDsTest* data)
 {
     if (data == NULL) return;
 
-    // Free binary data if allocated
-    if (data->hasExtendedTypeTest && data->extendedTypeTest.binaryTest != NULL)
-    {
-        free(data->extendedTypeTest.binaryTest);
-        data->extendedTypeTest.binaryTest = NULL;
-        data->extendedTypeTest.binaryTestLen = 0;
-    }
+    // Note: Only free binary data if it was dynamically allocated (malloc'd)
+    // The test data uses static/compound literals, so nothing to free
+    // This function is provided for consistency with the API pattern
+    (void)data;  // Unused
 }
 
 /* Full parameterized version would be:

@@ -55,7 +55,7 @@ static String ENUM_DATA_4 = {"hej", 3};
 
 #define TRY_CATCH_ENCODE(func) TRY_CATCH(func, serialize.closeEXIStream(&testStrm))
 
-errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(void* buf, size_t size, void* stream))
+errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(void* buf, size_t size, void* stream))
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	EXIStream testStrm;
