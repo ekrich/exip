@@ -1,5 +1,224 @@
 # Code Generation from Schema - Vision Document
 
+## Why XSD + EXI is Better Than Protobuf
+
+XSD's type system is **vastly richer** than Protobuf's `.proto`, enabling better code generation, stronger guarantees, and functional composition patterns that eliminate code duplication.
+
+### Type System Comparison
+
+**XSD provides:**
+- `xs:choice` → Tagged unions → Pattern matching
+- `xs:extension` / `xs:restriction` → Type hierarchies
+- Abstract types → Polymorphism
+- Substitution groups → Type families
+- Facets (`minInclusive`, `maxLength`, `pattern`) → Compile-time constraints
+- `default` and `fixed` values → Schema-enforced defaults
+
+**Protobuf provides:**
+- Flat messages with only composition support
+- `oneof` (weak choice, no discriminator type)
+- Fake inheritance via duplicated fields across message types
+- No abstract types or type hierarchies
+- No compile-time validation of constraints
+- No default value support (deprecated in proto3)
+
+**Key limitation:** Protobuf has **zero real OOP support**. You can only compose messages. To simulate inheritance, you must manually duplicate common fields across every message type that needs them. This creates maintenance burden and error-prone repetition.
+
+### XSD Choice → Pattern Matching Without Duplication
+
+**Schema:**
+```xml
+<xs:complexType name="Content">
+  <xs:choice>
+    <xs:element name="text" type="xs:string"/>
+    <xs:element name="image" type="ImageType"/>
+    <xs:element name="video" type="VideoType"/>
+  </xs:choice>
+</xs:complexType>
+```
+
+**Generated C:**
+```c
+typedef enum {
+    CONTENT_NONE,
+    CONTENT_TEXT,
+    CONTENT_IMAGE,
+    CONTENT_VIDEO
+} ContentType;
+
+typedef struct {
+    ContentType type;
+    union {
+        char text[256];
+        ImageType image;
+        VideoType video;
+    } data;
+} Content;
+```
+
+**Processing - One Pattern Match, Zero Duplication:**
+```c
+switch(message.content.type) {
+    case CONTENT_TEXT:
+        process_text(message.content.data.text);
+        break;
+    case CONTENT_IMAGE:
+        process_image(&message.content.data.image);
+        break;
+    case CONTENT_VIDEO:
+        process_video(&message.content.data.video);
+        break;
+}
+```
+
+The discriminator (`type`) is explicit and type-safe. With Protobuf `oneof`, you check which field is set at runtime with no compile-time guarantees.
+
+### XSD Extension → Shared Base Processing
+
+**Schema:**
+```xml
+<xs:complexType name="Event" abstract="true">
+  <xs:sequence>
+    <xs:element name="timestamp" type="xs:dateTime"/>
+    <xs:element name="severity" type="xs:int"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="LoginEvent">
+  <xs:complexContent>
+    <xs:extension base="Event">
+      <xs:sequence>
+        <xs:element name="username" type="xs:string"/>
+        <xs:element name="ipAddress" type="xs:string"/>
+      </xs:sequence>
+    </xs:extension>
+  </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="ErrorEvent">
+  <xs:complexContent>
+    <xs:extension base="Event">
+      <xs:sequence>
+        <xs:element name="errorCode" type="xs:int"/>
+        <xs:element name="message" type="xs:string"/>
+      </xs:sequence>
+    </xs:extension>
+  </xs:complexContent>
+</xs:complexType>
+```
+
+**Generated C:**
+```c
+typedef enum { EVENT_LOGIN, EVENT_LOGOUT, EVENT_ERROR } EventType;
+
+typedef struct {
+    EventType type;
+    // Base fields (from abstract Event type)
+    DateTime timestamp;
+    int severity;
+    // Extended fields (discriminated union)
+    union {
+        struct {
+            char username[64];
+            char ipAddress[16];
+        } login;
+        struct {
+            int errorCode;
+            char message[256];
+        } error;
+    } data;
+} Event;
+```
+
+**Processing Base + Specific - No Code Duplication:**
+```c
+void log_event(Event* event) {
+    // Process base fields ONCE for all event types
+    log_timestamp(event->timestamp);
+    log_severity(event->severity);
+    
+    // Pattern match on specific type
+    switch(event->type) {
+        case EVENT_LOGIN:
+            log_login(event->data.login.username, event->data.login.ipAddress);
+            break;
+        case EVENT_ERROR:
+            log_error(event->data.error.errorCode, event->data.error.message);
+            break;
+    }
+}
+```
+
+With Protobuf, you'd either duplicate the base field processing in each handler, or use awkward wrapper messages. XSD's inheritance maps naturally to C's struct layout.
+
+### Functional Composition
+
+The constructor pattern enables **functional composition** - build complex structures from simple parts:
+
+```c
+// Bottom-up composition
+DateTime timestamp = create_timestamp(2026, 6, 3, 14, 30, 0);
+LoginEvent login = create_login_event(timestamp, 1, "user@example.com", "192.168.1.1");
+Event event = create_event(EVENT_LOGIN, login);
+
+// Or all at once
+Event event = create_event(
+    EVENT_LOGIN,
+    create_login_event(
+        create_timestamp(2026, 6, 3, 14, 30, 0),
+        1,
+        "user@example.com",
+        "192.168.1.1"
+    )
+);
+```
+
+**Benefits:**
+- Pure functions - no hidden state
+- Testable - construct test data easily
+- Reusable - call constructors with different parameters
+- Transparent - all data visible in struct
+- Type-safe - compiler catches everything
+
+Compare to JAXB (Java):
+```java
+ObjectFactory factory = new ObjectFactory();
+JAXBElement<Event> element = factory.createEvent();
+Event event = element.getValue();
+event.setTimestamp(/* XMLGregorianCalendar confusion */);
+// ... endless setter calls, opaque structure, can't see the message shape
+```
+
+### Wire Format: EXI vs Protobuf
+
+**EXI advantages:**
+- Schema-informed compression (often **smaller** than Protobuf)
+- XSD validation built-in (Protobuf has no validation)
+- Supports XML text AND binary (one schema, two formats)
+- Handles complex XSD features (inheritance, choice, facets)
+- W3C standard, not Google-only
+
+**Protobuf advantages:**
+- Simpler (but less powerful)
+- More language support (though this can change with exipb)
+- Better known (but EXI is proven in IoT/automotive/aerospace)
+
+### The Vision
+
+Combine:
+1. **XSD's rich type system** - for proper domain modeling
+2. **EXI's binary efficiency** - for compact wire format
+3. **Functional C API** - for composable, type-safe code
+4. **Pattern matching** - for duplication-free processing
+
+Result: A **Protobuf killer** for domains that need:
+- Rich schemas (finance, healthcare, legal, aerospace)
+- Type hierarchies and polymorphism
+- Validation and constraints
+- Both binary efficiency AND human-readable XML fallback
+
+The composable constructor pattern + XSD's type system creates something fundamentally better than Protobuf's flat message approach.
+
 ## Code Generation Pipeline (Simple Steps)
 
 1. **Load schemas** - Load EXI-encoded XSD files into `BinaryBuffer[]` using `loadSchemaFiles()`
@@ -44,15 +263,152 @@ errorCode encode_Person(EXIStream* strm, Person* p) {
 }
 ```
 
+### Constructor Pattern for Data Initialization
+
+Generated code provides **constructor-style functions** that return fully initialized structs:
+
+```c
+// Each struct type gets a create_<typename>() constructor
+// Optional parameters use pointers (NULL = not present)
+static inline TypesTest create_types_test(EnumType* greeting);
+static inline Person create_person(int age, const char* name);
+
+// Sub-objects are constructed separately, then passed to parent constructors
+EnumType greeting = HEJ;
+TypesTest types = create_types_test(&greeting);      // With optional enum
+TypesTest types2 = create_types_test(NULL);          // Without optional enum
+
+MultipleXSDsTest data = create_test_data(types);     // Compose!
+
+// Cleanup only needed if dynamic allocations exist
+destroy_multiple_xsds_test(&data);
+```
+
+**Benefits:**
+- Single-statement initialization with parameters
+- No separate `init()` function needed - constructors handle everything
+- Lengths and optional flags calculated automatically
+- NULL pointer = "optional element not present"
+- Composable - build sub-objects first, pass them up
+- Reusable - call constructor again with different parameters
+
+**Default and Fixed Values:**
+
+XSD schemas can specify `default` and `fixed` attribute values:
+
+```xml
+<!-- Default value (used if element/attribute absent) -->
+<xs:element name="priority" type="xs:int" default="5"/>
+
+<!-- Fixed value (must always be this value if present) -->
+<xs:attribute name="version" type="xs:string" fixed="1.0"/>
+```
+
+Generated constructors handle these automatically:
+
+```c
+static inline Task create_task(int* priority) {
+    return (Task){
+        .priority = priority ? *priority : 5,  // Use default=5 if NULL
+        .hasPriority = (priority != NULL)
+    };
+}
+
+// For fixed values, generate as const:
+static const char ATTR_VERSION[] = "1.0";  // Fixed, not a parameter
+```
+
+**Key points:**
+- `default` → used when optional parameter is NULL
+- `fixed` → not a parameter, generated as compile-time constant
+- Without `default`, NULL means "not present" with dummy value in struct
+- Specify defaults in schema for better generated code and documentation
+
+**Binary Data (base64Binary, hexBinary):**
+
+Binary data requires both pointer and length tracking:
+
+```c
+typedef struct {
+    uint8_t* binaryData;      // Pointer to binary data
+    size_t binaryDataLen;     // Length in bytes
+    bool hasBinaryData;       // Optional flag
+} Message;
+
+// Constructor with optional binary data
+static inline Message create_message(uint8_t* data, size_t len) {
+    return (Message){
+        .binaryData = data,
+        .binaryDataLen = len,
+        .hasBinaryData = (data != NULL && len > 0)  // Auto-calculate
+    };
+}
+
+// Usage with static binary data
+static uint8_t sample[] = {0x02, 0x6d, 0x2f, 0xa5};
+Message msg = create_message(sample, sizeof(sample));
+
+// Usage without binary (optional not present)
+Message msg2 = create_message(NULL, 0);
+```
+
+EXI binary encoding is NOT self-describing - `serialize.binaryData(strm, data, length)` requires explicit length. The length must be tracked in the struct alongside the pointer.
+
 ### Schema vs Schemaless Mode Support
 
-exipb supports two generation modes via command-line flag:
+exipb generates code using the **bindapi** which provides automatic mode switching and dual-layer validation.
+
+#### Dual-Layer Architecture
+
+**Layer 1: bindapi (Application/Routing Layer)**
+- Location: `include/bindapi.h`, `src/common/src/bindapi.c`
+- Responsibility: Checks `strm->schema` upfront and routes to appropriate encoding
+- Schema mode: Native C types → EXIP types → `serialize.intData()` etc.
+- Schemaless mode: Native C types → string conversion → `serialize.stringData()`
+
+**Layer 2: EXISerializer (Grammar/Validation Layer)**
+- Location: `src/contentIO/src/bodyEncode.c`, `EXISerializer.c`
+- Responsibility: Validates type matches grammar state (`exiType`)
+- Catches mismatches: called `intData()` but grammar expects string
+- Strict mode: Returns `EXIP_INVALID_EXI_INPUT` on mismatch (catches bugs)
+
+**Example flow:**
+```c
+// Generated binding code
+serializeIntValue(strm, person->age);
+
+// bindapi layer checks schema:
+if (strm->schema != NULL) {
+    serialize.intData(strm, (Integer)age);  // → bodyEncode.c
+} else {
+    // Convert to string, call serialize.stringData()
+}
+
+// bodyEncode.c validates:
+exiType = GET_EXI_TYPE(...);  // From grammar state
+if (exiType == VALUE_TYPE_STRING) {
+    // Mismatch! We're encoding int but grammar expects string
+    #if EXIP_IMPLICIT_DATA_TYPE_CONVERSION
+        // Try to recover (lenient)
+    #else
+        return EXIP_INVALID_EXI_INPUT;  // Fail fast in strict mode
+    #endif
+}
+```
+
+**Benefits of dual-layer approach:**
+1. **Early routing** - bindapi decides schema vs schemaless before grammar state
+2. **Late validation** - EXISerializer catches type/grammar mismatches
+3. **Strict mode safety** - Detects encoding bugs (grammar state inconsistency)
+4. **Clean separation** - Application logic (bindapi) vs encoding logic (serializer)
+
+#### Generation Modes
 
 **Schema-only mode (default, production/embedded):**
 ```bash
 exipb --mode=schema-only schema.xsd
 ```
-Generated code uses `serialize.intData()`, `serialize.booleanData()`, etc.
+Generated code uses bindapi functions: `serializeIntValue()`, `serializeFloatValue()`, etc.
 User must compile with schema and run in schema mode.
 Smallest code size.
 
@@ -61,11 +417,15 @@ Smallest code size.
 exipb --mode=dual schema.xsd
 ```
 Generated code works in both schema and schemaless modes.
-User compiles EXIP with `EXIP_IMPLICIT_DATA_TYPE_CONVERSION ON`.
-`serialize.intData()` automatically converts to string in schemaless mode.
+bindapi automatically routes based on `strm->schema` presence.
 Slightly larger code, maximum flexibility.
 
-**No new API needed** - uses existing `EXIP_IMPLICIT_DATA_TYPE_CONVERSION` flag mechanism.
+**Note on EXIP_IMPLICIT_DATA_TYPE_CONVERSION:**
+- This flag enables Layer 2 (serializer-level) fallback conversion
+- **bindapi makes it unnecessary** for generated code - routing happens at Layer 1
+- Still useful for: `xs:any` wildcards, dynamic content, hand-written serializers
+- Currently unimplemented (returns `EXIP_NOT_IMPLEMENTED_YET`)
+- See [ARCHITECTURE.md](ARCHITECTURE.md) for details
 
 ### Required Type Conversion Helpers
 
@@ -142,13 +502,65 @@ WARNING: Element 'Address.notes' has no maxLength, using default 64
 
 ### Validation
 
-EXIP library already validates:
-- ✅ Integer min/max (minInclusive/maxInclusive)
-- ✅ String length (via fixed array size at compile time)
+**Current EXIP validation** (in schema-informed mode):
+- ✅ Integer min/max bounds (minInclusive/maxInclusive) - for range encoding optimization
+- ✅ String length (via fixed array size at compile time in generated code)
+- ✅ Grammar state validation - catches type mismatches in strict mode
 - ❌ minExclusive/maxExclusive (TODO in EXIP)
 - ❌ Pattern facets (logged but not enforced)
+- ❌ Enumeration values (used for encoding, not validated)
+- ❌ totalDigits/fractionDigits (not validated)
 
 exipb **relies on EXIP's existing validation** - no duplicate checks in generated code.
+
+#### Super Strict Mode (Future Feature)
+
+**Concept**: Optional runtime facet validation during encoding/decoding.
+
+**Configuration**:
+```c
+// Compile-time flag
+#define EXIP_SUPER_STRICT_VALIDATION ON
+
+// Or runtime option
+strm->header.opts.superStrictValidation = true;
+```
+
+**What it would validate**:
+- ✅ All integer bounds (minInclusive, maxInclusive, minExclusive, maxExclusive)
+- ✅ String patterns (regex validation via facet.pattern)
+- ✅ Enumeration constraints (value in allowed set)
+- ✅ Decimal precision (totalDigits, fractionDigits)
+- ✅ String length constraints (length, minLength, maxLength)
+- ✅ List item count constraints (for xs:list types)
+
+**Use cases**:
+- **Development**: Catch data errors early before they become encoded stream corruption
+- **Compliance**: Ensure outgoing EXI streams strictly follow schema contracts
+- **Security**: Prevent malformed/malicious data from being encoded
+- **Testing**: Validate test data generator output
+
+**Trade-offs**:
+- **Performance**: Validation overhead on every encode/decode call
+- **Code size**: Regex engine, bounds checking, enumeration lookups
+- **Memory**: Pattern compilation, enumeration sets
+
+**Implementation approach**:
+1. Add validation hooks in `bodyEncode.c` after type routing
+2. Check facets from `strm->schema->simpleTypeTable`
+3. Return descriptive errors: `EXIP_FACET_VIOLATION` with facet name
+4. `#if EXIP_SUPER_STRICT_VALIDATION` guards for compile-time exclusion
+5. Runtime opt-in via `EXIOptions` for runtime control
+
+**Example error**:
+```c
+// Encoding person->age = 150, but schema says maxInclusive=120
+errorCode = serializeIntValue(strm, person->age);
+// Returns: EXIP_FACET_VIOLATION
+// Error detail: "Value 150 exceeds maxInclusive=120 for element 'age'"
+```
+
+**Note**: Current strict mode validates grammar state (Layer 2), super strict would add facet validation (data constraints).
 
 ## Nested Type Strategy
 
@@ -220,7 +632,7 @@ The generated binding header (`person.h`) contains only the local `DateTime` str
 **Internal conversion in generated encode/decode:**
 ```c
 // Inside generated person.c (includes EXIP headers)
-errorCode encode(EXIStream* stream, const Person* person) {
+errorCode encode_person(EXIStream* stream, const Person* person) {
     // Convert local DateTime -> EXIP EXIPDateTime
     EXIPDateTime exip_dt;
     exip_dt.dateTime = person->birthDate.dateTime;
@@ -232,7 +644,7 @@ errorCode encode(EXIStream* stream, const Person* person) {
     TRY(serialize.dateTimeData(stream, exip_dt));
 }
 
-errorCode decode(Parser* parser, Person* person) {
+errorCode decode_person(Parser* parser, Person* person) {
     // EXIP callback receives EXIPDateTime
     EXIPDateTime exip_dt = /* from parser callback */;
 
@@ -354,27 +766,42 @@ struct Person {
 // </xs:simpleType>
 // Generates: char countryCode[3];  // maxLength+1 for null terminator
 
-// Encode functions (C struct -> EXI)
-errorCode encode(EXIStream* stream, const Address* address);
-errorCode encode(EXIStream* stream, const Person* person);
+//==============================================================================
+// OOP-style vtable API (following EXIP's parse.*, serialize.* pattern)
+//==============================================================================
 
-// Decode functions (EXI -> C struct)
-errorCode decode(Parser* parser, Address* address);
-errorCode decode(Parser* parser, Person* person);
+struct PersonOps {
+    void (*init)(Person* p);
+    void (*destroy)(Person* p);
+    errorCode (*encode_person)(EXIStream* strm, const Person* p);
+    errorCode (*decode_person)(Parser* parser, Person* p);
+    errorCode (*encodeDocument)(const char* filename, const Person* p, EXIPSchema* schema);
+    errorCode (*decodeDocument)(const char* filename, Person* p, EXIPSchema* schema);
+};
 
-// Helper functions
-void init(Person* person);    // Calls init() for nested address
-void destroy(Person* person); // Free allocated resources
-void init(Address* address);
+struct AddressOps {
+    void (*init)(Address* a);
+    void (*destroy)(Address* a);
+    errorCode (*encode_address)(EXIStream* strm, const Address* a);
+    errorCode (*decode_address)(Parser* parser, Address* a);
+};
 
-// Full document encode/decode
-errorCode encode_person_document(const char* filename, const Person* person,
-                                  EXIPSchema* schema);  // NULL for schemaless
-errorCode decode_person_document(const char* filename, Person* person,
-                                  EXIPSchema* schema);  // NULL for schemaless
+// Global vtables (const, stored in ROM)
+extern const struct PersonOps person;
+extern const struct AddressOps address;
 
 #endif /* PERSON_H */
 ```
+
+**Usage example:**
+```c
+Person p;
+person.init(&p);
+person.encode_person(strm, &p);
+person.destroy(&p);
+```
+
+This follows EXIP's existing OOP vtable pattern (`parse.*`, `serialize.*`, `option.*`).
 
 ### Generated Output: C Implementation
 
@@ -402,22 +829,22 @@ static const String ELEM_TAGS = {"tags", 4};
 static const String ATTR_VERSION = {"version", 7};
 
 //==============================================================================
-// Initialization functions
+// Initialization functions (internal)
 //==============================================================================
 
-void init(Person* person) {
+static void init_person_impl(Person* person) {
     memset(person, 0, sizeof(Person));
     person->tags.items = NULL;
     person->tags.count = 0;
     person->tags.capacity = 0;
-    init(&person->address);  // Complex types auto-call child init()
+    address.init(&person->address);  // Use vtable for nested types
 }
 
-void init(Address* address) {
-    memset(address, 0, sizeof(Address));
+static void init_address_impl(Address* addr) {
+    memset(addr, 0, sizeof(Address));
 }
 
-void destroy(Person* person) {
+static void destroy_person_impl(Person* person) {
     // Free dynamic array
     for(size_t i = 0; i < person->tags.count; i++) {
         free(person->tags.items[i]);
@@ -432,7 +859,7 @@ void destroy(Person* person) {
 // Encode functions (C struct -> EXI)
 //==============================================================================
 
-errorCode encode(EXIStream* stream, const Address* address) {
+errorCode encode_address(EXIStream* stream, const Address* address) {
     errorCode err;
     QName qname;
     String strVal;
@@ -470,7 +897,7 @@ errorCode encode(EXIStream* stream, const Address* address) {
     return EXIP_OK;
 }
 
-errorCode encode(EXIStream* stream, const Person* person) {
+errorCode encode_person(EXIStream* stream, const Person* person) {
     errorCode err;
     QName qname;
     String strVal;
@@ -515,7 +942,7 @@ errorCode encode(EXIStream* stream, const Person* person) {
     TRY(serialize.endElement(stream));
 
     // <address> (nested - auto-call child encode)
-    TRY(encode(stream, &person->address));
+    TRY(encode_address(stream, &person->address));
 
     // <tags> (unbounded - array)
     for(size_t i = 0; i < person->tags.count; i++) {
@@ -577,7 +1004,7 @@ static errorCode decode_Address_intData(Integer int_val, void* app_data) {
     return EXIP_OK;
 }
 
-errorCode decode(Parser* parser, Address* address) {
+errorCode decode_address(Parser* parser, Address* address) {
     DecodeContext_Address ctx;
     errorCode err;
 
@@ -606,8 +1033,8 @@ errorCode decode(Parser* parser, Address* address) {
     return err;
 }
 
-// Similar implementation for decode(Parser*, Person*)...
-// Complex types auto-call child decode() for nested structures
+// Similar implementation for decode_person(Parser*, Person*)...
+// Complex types auto-call child decode_<type>() for nested structures
 
 //==============================================================================
 // High-level document functions
@@ -653,7 +1080,7 @@ errorCode encode_person_document(const char* filename, const Person* person,
     err = serialize.startDocument(&stream);
     if(err != EXIP_OK) goto cleanup;
 
-    err = encode(&stream, person);
+    err = person.encode_person(&stream, person_data);
     if(err != EXIP_OK) goto cleanup;
 
     err = serialize.endDocument(&stream);
@@ -664,7 +1091,7 @@ cleanup:
     return err;
 }
 
-errorCode decode_person_document(const char* filename, Person* person,
+static errorCode decode_person_document_impl(const char* filename, Person* person_data,
                                   EXIPSchema* schema) {
     errorCode err;
     Parser parser;
@@ -703,11 +1130,31 @@ errorCode decode_person_document(const char* filename, Person* person,
     }
 
     // Decode document
-    err = decode(&parser, person);
+    err = person.decode_person(&parser, person_data);
 
     parse.destroyParser(&parser);
     return err;
 }
+
+//==============================================================================
+// Vtable definitions (const, stored in ROM)
+//==============================================================================
+
+const struct PersonOps person = {
+    .init = init_person_impl,
+    .destroy = destroy_person_impl,
+    .encode_person = encode_person_impl,
+    .decode_person = decode_person_impl,
+    .encodeDocument = encode_person_document_impl,
+    .decodeDocument = decode_person_document_impl
+};
+
+const struct AddressOps address = {
+    .init = init_address_impl,
+    .destroy = destroy_address_impl,
+    .encode_address = encode_address_impl,
+    .decode_address = decode_address_impl
+};
 ```
 
 ### Usage Example
@@ -717,52 +1164,58 @@ errorCode decode_person_document(const char* filename, Person* person,
 #include <stdio.h>
 
 int main() {
-    Person person;
+    Person p;
     errorCode err;
 
-    // Initialize
-    init(&person);
+    // Initialize (OOP vtable style)
+    person.init(&p);
 
     // Fill in data
-    person.id = 12345;
-    strcpy(person.name, "John Doe");
-    person.age = 30;
-    person.active = true;
-    strcpy(person.version, "1.0");
+    p.id = 12345;
+    strcpy(p.name, "John Doe");
+    p.age = 30;
+    p.active = true;
+    strcpy(p.version, "1.0");
 
-    strcpy(person.address.street, "123 Main St");
-    strcpy(person.address.city, "Springfield");
-    person.address.zipCode = 12345;
+    strcpy(p.address.street, "123 Main St");
+    strcpy(p.address.city, "Springfield");
+    p.address.zipCode = 12345;
 
     // Add tags (dynamic array)
-    person.tags.count = 2;
-    person.tags.capacity = 2;
-    person.tags.items = malloc(2 * sizeof(char*));
-    person.tags.items[0] = strdup("employee");
-    person.tags.items[1] = strdup("manager");
+    p.tags.count = 2;
+    p.tags.capacity = 2;
+    p.tags.items = malloc(2 * sizeof(char*));
+    p.tags.items[0] = strdup("employee");
+    p.tags.items[1] = strdup("manager");
 
-    // Encode to EXI (schema mode)
+    // Encode to EXI using vtable (schema mode)
     EXIPSchema schema;
     loadSchema("person.xsd.exi", &schema);
-    err = encode_person_document("person.exi", &person, &schema);
+    err = person.encodeDocument("person.exi", &p, &schema);
     if(err != EXIP_OK) {
         fprintf(stderr, "Encode error: %d\n", err);
         return 1;
     }
 
-    // Decode from EXI
-    Person person2;
-    init(&person2);
-    err = decode_person_document("person.exi", &person2, &schema);
+    // Decode from EXI using vtable
+    Person p2;
+    person.init(&p2);
+    err = person.decodeDocument("person.exi", &p2, &schema);
     if(err != EXIP_OK) {
         fprintf(stderr, "Decode error: %d\n", err);
         return 1;
     }
 
     // Verify
-    printf("ID: %d\n", person2.id);
-    printf("Name: %s\n", person2.name);
-    printf("Age: %d\n", person2.age);
+    printf("ID: %d\n", p2.id);
+    printf("Name: %s\n", p2.name);
+    printf("Age: %d\n", p2.age);
+
+    // Cleanup (vtable style)
+    person.destroy(&p);
+    person.destroy(&p2);
+    return 0;
+}
     printf("Active: %s\n", person2.active ? "true" : "false");
     printf("Address: %s, %s %d\n",
            person2.address.street,
@@ -803,17 +1256,17 @@ int main() {
 - **Also generate:** Static const String declarations for all namespaces, element names, attribute names (see exipe pattern)
 
 ### Phase 3: Encode Code Generator (Encoding: struct → EXI)
-- Generate `encode(EXIStream*, const Type* type)` - function overloading by parameter type, lowercase param name
+- Generate `encode_<typename>(EXIStream*, const Type* type)` - function name includes type, lowercase param name
 - Pattern: Build QNames from static const Strings, call EXIP serialization API
-- **Complex types auto-call child `encode()`** for nested structures
+- **Complex types auto-call child `encode_<typename>()`** for nested structures
 - **Use helper functions:** `encodeInt()`, `encodeBool()`, `encodeFloat()`, `encodeString()` that auto-switch between schema-informed/schema-less modes
 - **Helpers are reusable:** Generate helpers in utils for use in both generated AND hand-written code
 - **Naming:** Use lowercase type name for parameter (e.g., `Person* person`, `Address* address`)
 - **Reference:** See `examples/simpleEncoding/encodeTestEXI.c` for the pattern
 
 ### Phase 4: Decode Code Generator (Decoding: EXI → struct)
-- Generate `decode(Parser*, Type* type)` - function overloading by parameter type
-- **Complex types auto-call child `decode()`** for nested structures
+- Generate `decode_<typename>(Parser*, Type* type)` - function name includes type, lowercase param name
+- **Complex types auto-call child `decode_<typename>()`** for nested structures
 - **Schema-informed mode:** Parser calls typed handlers (`intData`, `booleanData`)
 - **Schema-less mode:** Parser calls `stringData` handler, parse strings to typed values
 - Set up handler callbacks per type, track current element context
@@ -853,14 +1306,14 @@ XSD → BinaryBuffer → generateTreeTable(..., NULL) → TreeTable AST → Walk
 
 ## Command-Line Tool Design
 
-Tool name: **`exipcodegen`** (EXI Processor Code Generator)
+Tool name: **`exipb`** (EXI Processor Binding Generator)
 
 ```bash
 # Generate code from EXI-encoded schema
-exipcodegen --input person.xsd.exi --output person.h person.c
+exipb --input person.xsd.exi --output person.h person.c
 
 # Options
-exipcodegen --input person.xsd.exi \
+exipb --input person.xsd.exi \
             --output-dir generated/ \
             --prefix myapp_ \
             --namespace myapp \
@@ -868,11 +1321,11 @@ exipcodegen --input person.xsd.exi \
             --array-initial-capacity 16
 
 # Generate from multiple EXI-encoded schemas
-exipcodegen --input schema1.xsd.exi schema2.xsd.exi \
+exipb --input schema1.xsd.exi schema2.xsd.exi \
             --output generated/
 
 # Alternative: Specify schema and let tool encode it
-exipcodegen --input-xml person.xsd \
+exipb --input-xml person.xsd \
             --xml-schema xml-schema.xsd.exi \
             --output person.h person.c
 ```

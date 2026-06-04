@@ -21,12 +21,17 @@
   <ItemGroup>
     <ClCompile Include="..\..\examples\simpleEncoding\encodeTestEXI.c" />
     <ClCompile Include="..\..\examples\simpleEncoding\exipe.c" />
+    <ClCompile Include="..\..\examples\simpleEncoding\exipe_data.c" />
     <ClCompile Include="..\..\utils\schemaLoader.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="exip.vcxproj">
       <Project>{d8e683d8-abeb-4ccc-92cf-a24ec1bf01f6}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\examples\simpleEncoding\encodeTestEXI.h" />
+    <ClInclude Include="..\..\examples\simpleEncoding\exipe_data.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0C4DADDA-6D4C-452F-B2C1-11F40ADC1EBD}</ProjectGuid>
