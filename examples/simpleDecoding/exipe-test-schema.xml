@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<p0:MultipleXSDsTest xmlns:p0="http://www.ltu.se/EISLAB/schema-test">
+    <p0:EXIPEncoder testByte="55" version="0.2">This is an example of serializing EXI streams using
+        EXIP low level API</p0:EXIPEncoder>
+    <p0:description>This is a test of processing XML schemes with multiple XSD files</p0:description>
+    <p1:testSetup xmlns:p1="http://www.ltu.se/EISLAB/nested-xsd"
+        goal="Verify that the implementation works!">Simple test element with single attribute</p1:testSetup>
+    <p0:type-test id="1001">
+        <p1:bool>true</p1:bool>
+    </p0:type-test>
+    <p0:extendedTypeTest>
+        <byteTest>11</byteTest>
+        <dateTimeTest>2012-07-31T13:33:55.000839</dateTimeTest>
+        <binaryTest>[binary: 10 bytes]</binaryTest>
+        <enumTest>hej</enumTest>
+    </p0:extendedTypeTest>
+</p0:MultipleXSDsTest>
