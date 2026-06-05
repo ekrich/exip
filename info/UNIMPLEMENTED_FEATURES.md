@@ -11,6 +11,14 @@ Features that return `EXIP_NOT_IMPLEMENTED_YET` or are incomplete.
 
 ## MEDIUM Priority - Useful Features
 
+**Binary data API signature** - [EXISerializer.h](../include/EXISerializer.h)
+- `serialize.binaryData()` takes `const char* octets` - should be `const uint8_t*`
+- Binary data is semantically unsigned bytes, not characters
+- Current signature causes pointer-sign warnings in generated binding code
+- Similar issue in Java: `byte` is signed but universally used for binary data
+- **Impact:** Generated code needs casts: `serialize.binaryData(strm, (const char*)data, len)`
+- **Fix:** Change signature to match semantics, update all call sites
+
 **Non-string enumerations** - [treeTableToGrammars.c:1946-1976](../src/grammarGen/src/treeTableToGrammars.c)
 - Typed enums: boolean, integer, decimal, float, dateTime
 - String enums work; missing typed enums require runtime conversions

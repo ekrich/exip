@@ -47,6 +47,7 @@ TypesTest create_types_test(EnumType* greeting)
                 .tm_sec = 55
             },
             .fSecs = 839,
+            .fSecsOffset = 5,        // 839 × 10^-5 = 0.00839 seconds (8.39 milliseconds)
             .TimeZone = 0,
             .presenceMask = FRACT_PRESENCE
         },

@@ -112,7 +112,8 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	{
 		// schema mode
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // testByte="
-		TRY_CATCH_ENCODE(serialize.intData(&testStrm, 55));
+		// TRY_CATCH_ENCODE(serialize.intData(&testStrm, 55));
+		TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->encoder.testByte));
 	}
 	else
 	{
@@ -125,10 +126,12 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	qname.localName = &ATTR_VERSION_STR;
 	TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // version="
 
-	TRY_CATCH_ENCODE(asciiToString("0.2", &chVal, &testStrm.memList, false));
+	// TRY_CATCH_ENCODE(asciiToString("0.2", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->encoder.version, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
-	TRY_CATCH_ENCODE(asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, false));
+	// TRY_CATCH_ENCODE(asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->encoder.content, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </EXIPEncoder>
@@ -137,7 +140,8 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	qname.localName = &ELEM_DESCR_STR;
 	TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // <description>
 
-	TRY_CATCH_ENCODE(asciiToString("This is a test of processing XML schemes with multiple XSD files", &chVal, &testStrm.memList, false));
+	// TRY_CATCH_ENCODE(asciiToString("This is a test of processing XML schemes with multiple XSD files", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->description, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </description>
@@ -150,10 +154,12 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	qname.localName = &ATTR_GOAL_STR;
 	TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // goal="
 
-	TRY_CATCH_ENCODE(asciiToString("Verify that the implementation works!", &chVal, &testStrm.memList, false));
+	// TRY_CATCH_ENCODE(asciiToString("Verify that the implementation works!", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->testSetup.goal, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
-	TRY_CATCH_ENCODE(asciiToString("Simple test element with single attribute", &chVal, &testStrm.memList, false));
+	// TRY_CATCH_ENCODE(asciiToString("Simple test element with single attribute", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->testSetup.content, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </testSetup>
@@ -168,7 +174,8 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_ID_STR;
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // id="
-		TRY_CATCH_ENCODE(serialize.intData(&testStrm, 1001));
+		// TRY_CATCH_ENCODE(serialize.intData(&testStrm, 1001));
+		TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->typeTest.id));
 	}
 	else
 	{
@@ -187,7 +194,8 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, true));
+		// TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, true));
+		TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, testData->typeTest.choice.boolValue));
 	}
 	else
 	{
@@ -211,7 +219,8 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		TRY_CATCH_ENCODE(serialize.intData(&testStrm, 11));
+		// TRY_CATCH_ENCODE(serialize.intData(&testStrm, 11));
+		TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->extendedTypeTest.byteTest));
 	}
 	else
 	{
@@ -231,16 +240,21 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 		// schema mode
 		EXIPDateTime dt;
 
-		dt.presenceMask = FRACT_PRESENCE;
+		// dt.presenceMask = FRACT_PRESENCE;
+		// dt.dateTime.tm_year = 112; // 2012
+		// dt.dateTime.tm_mon = 6;	// July
+		// dt.dateTime.tm_mday = 31;
+		// dt.dateTime.tm_hour = 13;
+		// dt.dateTime.tm_min = 33;
+		// dt.dateTime.tm_sec = 55;
+		// dt.fSecs.value = 839;
+		// dt.fSecs.offset = 5;
 
-		dt.dateTime.tm_year = 112; // 2012
-		dt.dateTime.tm_mon = 6;	// July
-		dt.dateTime.tm_mday = 31;
-		dt.dateTime.tm_hour = 13;
-		dt.dateTime.tm_min = 33;
-		dt.dateTime.tm_sec = 55;
-		dt.fSecs.value = 839;
-		dt.fSecs.offset = 5;
+		dt.dateTime = testData->extendedTypeTest.dateTimeTest.dateTime;
+		dt.presenceMask = testData->extendedTypeTest.dateTimeTest.presenceMask;
+		dt.TimeZone = testData->extendedTypeTest.dateTimeTest.TimeZone;
+		dt.fSecs.value = testData->extendedTypeTest.dateTimeTest.fSecs;
+		dt.fSecs.offset = testData->extendedTypeTest.dateTimeTest.fSecsOffset;
 
 		TRY_CATCH_ENCODE(serialize.dateTimeData(&testStrm, dt));
 	}
@@ -261,6 +275,9 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	{
 		// schema mode
 		TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, SOME_BINARY_DATA, 10));
+		// NOTE: Cast needed - EXIP API uses 'const char*' but binary data should be 'uint8_t*'
+		// See UNIMPLEMENTED_FEATURES.md - Binary data API signature
+		// TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, (const char*)testData->extendedTypeTest.binaryTest, testData->extendedTypeTest.binaryTestLen));
 	}
 	else
 	{
@@ -273,7 +290,12 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ELEM_ENUM_TYPES_STR;
 	TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // <enumTest>
-	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, ENUM_DATA_4));
+	// TRY_CATCH_ENCODE(serialize.stringData(&testStrm, ENUM_DATA_4));
+	String enumStr = {
+		.str = (CharType*)enum_type_strings[testData->extendedTypeTest.enumTest].str,
+		.length = enum_type_strings[testData->extendedTypeTest.enumTest].len
+	};
+	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, enumStr));
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </enumTest>
 
 

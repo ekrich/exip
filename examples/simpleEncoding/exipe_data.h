@@ -38,10 +38,19 @@ extern "C" {
  * @brief Local DateTime type (identical to EXIP's EXIPDateTime but no EXIP dependency)
  *
  * Used for xs:dateTime schema types. Based on standard C struct tm with XML Schema extensions.
+ *
+ * Fractional seconds precision is configurable via fSecsOffset:
+ * - fSecsOffset = 3: milliseconds   (fSecs=839 → 0.839 seconds = 839 ms)
+ * - fSecsOffset = 5: 10 microseconds (fSecs=839 → 0.00839 seconds = 8.39 ms)
+ * - fSecsOffset = 6: microseconds    (fSecs=839000 → 0.000839 seconds = 839 μs)
+ * - fSecsOffset = 9: nanoseconds     (fSecs=839000000 → 0.000839 seconds = 839000 ns)
+ *
+ * Maximum precision: 999,999,999 nanoseconds (uint32_t limit)
  */
 typedef struct {
     struct tm dateTime;      // Standard C time: year, month, day, hour, min, sec
-    uint32_t fSecs;          // Fractional seconds (microseconds/nanoseconds)
+    uint32_t fSecs;          // Fractional seconds value
+    int8_t fSecsOffset;      // Exponent for fSecs: value × 10^-offset (e.g., 3=ms, 6=μs, 9=ns)
     int16_t TimeZone;        // TZHours * 64 + TZMinutes (range: -14:00 to +14:00)
     uint8_t presenceMask;    // Flags: TZONE_PRESENCE (0x01), FRACT_PRESENCE (0x02)
 } DateTime;
