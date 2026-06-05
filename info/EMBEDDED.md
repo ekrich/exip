@@ -121,6 +121,67 @@ Most embedded systems use **bit-packed** - the space savings outweigh the CPU co
 | uint32_t | 4 bytes | 4,294,967,295 | Most embedded systems |
 | uint64_t | 8 bytes | ~18 quintillion | Full EXI spec compliance |
 
+## Memory Allocation Strategies
+
+Embedded and real-time systems often **avoid malloc** entirely. EXIP and the generated binding code support multiple allocation strategies.
+
+**Real-time allocation preference:**
+1. **Stack**: Small, short-lived buffers (function locals)
+2. **Static**: Larger or persistent buffers (file-scope arrays)
+3. **Never heap**: malloc is non-deterministic
+
+### Stack Allocation (Real-time Default)
+```c
+void process_message(void) {
+    uint8_t buffer[100];  // Fast, automatic cleanup
+    TypesTest types = create_types_test(buffer, sizeof(buffer), NULL);
+    // Memory freed automatically when function returns
+}
+```
+
+**Best for:** Small buffers, function-local data, hard real-time
+**Watch out for:** Stack size limits (typically 1-8KB on embedded)
+
+### Static Allocation (Real-time for Larger Data)
+```c
+static uint8_t rxBuffer[MAX_PACKET_SIZE];  // File scope, lives forever
+static uint8_t txBuffer[MAX_PACKET_SIZE];
+
+TypesTest types = create_types_test(rxBuffer, sizeof(rxBuffer), &greeting);
+```
+
+**Best for:** Buffers larger than stack allows, persistent data, safety-critical
+**Trade-off:** Memory reserved even when unused
+
+### Heap Allocation (Avoid for Real-time)
+```c
+uint8_t* buffer = malloc(size);  // Non-deterministic timing
+TypesTest types = create_types_test(buffer, size, NULL);
+free(buffer);  // Caller must free - destroy doesn't own it
+```
+
+**Best for:** Flexible sizing when timing doesn't matter
+**Avoid for:** Hard real-time (non-deterministic), safety-critical (fragmentation)
+
+### Memory Pool Allocation (Soft Real-time)
+```c
+uint8_t* buffer = pool_alloc(&message_pool, size);  // Bounded time
+TypesTest types = create_types_test(buffer, size, NULL);
+pool_free(&message_pool, buffer);
+```
+
+**Best for:** Soft real-time with dynamic sizing needs
+**Trade-off:** More implementation complexity
+
+### Caller-Owns Pattern
+
+The generated binding API follows the **caller-owns** pattern:
+- Constructors store pointers directly (no malloc, no copy)
+- Destroy functions do NOT free user pointers
+- Caller chooses allocation strategy and manages lifetime
+
+This supports all strategies above, including malloc-free systems.
+
 ## See Also
 
 - [procTypes.h](../include/procTypes.h) - Default type definitions

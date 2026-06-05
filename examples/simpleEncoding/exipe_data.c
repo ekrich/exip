@@ -18,22 +18,12 @@
 #include <string.h>
 #include <stdlib.h>
 
-void destroy_multiple_xsds_test(MultipleXSDsTest* data)
-{
-    if (data == NULL) return;
-
-    // Note: Only free binary data if it was dynamically allocated (malloc'd)
-    // The test data uses static/compound literals, so nothing to free
-    // This function is provided for consistency with the API pattern
-    (void)data;  // Unused
-}
-
 /* Full parameterized version would be:
  * TypesTest create_types_test(int8_t byteTest, DateTime dateTime,
  *                             uint8_t* binaryData, size_t binaryLen,
  *                             EnumType* greeting)
  */
-TypesTest create_types_test(EnumType* greeting)
+TypesTest create_types_test(uint8_t* binaryData, size_t binaryLen, EnumType* greeting)
 {
     return (TypesTest){
         .byteTest = 11,
@@ -51,9 +41,8 @@ TypesTest create_types_test(EnumType* greeting)
             .TimeZone = 0,
             .presenceMask = FRACT_PRESENCE
         },
-        .binaryTest = (uint8_t[]){0x02, 0x6d, 0x2f, 0xa5, 0x20, 0xf2, 0x61, 0x9c, 0xee, 0x0f},
-        .binaryTestLen = 10,
-        .hasBinaryTest = true,
+        .binaryTest = binaryData,
+        .binaryTestLen = (binaryData != NULL) ? binaryLen : 0,
         .enumTest = greeting ? *greeting : 0,
         .hasEnumTest = (greeting != NULL)
     };

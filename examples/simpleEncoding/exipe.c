@@ -68,14 +68,13 @@ int main(int argc, char *argv[])
 	}
 
 	// Create test data using constructors
-	EnumType greeting = HEJ;  // Options: HELLO, HI, HEY, HEJ
-	TypesTest types = create_types_test(&greeting);
+	uint8_t binaryData[] = {0x02, 0x6d, 0x2f, 0xa5, 0x20, 0xf2, 0x61, 0x9c, 0xee, 0x0f};
+	EnumType greeting = HEJ;
+	TypesTest types = create_types_test(binaryData, sizeof(binaryData), &greeting);
 	MultipleXSDsTest testData = create_test_data(types);
 
 	tmp_err_code = encode(&testData, schemaPtr, outfile, writeFileOutputStream);
 
-	// Cleanup
-	destroy_multiple_xsds_test(&testData);
 
 	if(schemaPtr != NULL)
 		destroySchema(schemaPtr);

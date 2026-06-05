@@ -820,6 +820,57 @@ EXI binary encoding is NOT self-describing - `serialize.binaryData(strm, data, l
 
 The binding generator should be **selective** about when to create `create_XXX()` functions. Not every struct needs one.
 
+#### Memory Ownership Pattern
+
+Generated bindings follow EXIP's ownership model: **caller owns pointer data**.
+
+**Design principle:**
+- Constructor functions accept pointers and store them directly
+- Constructors do NOT malloc/copy pointer data
+- Destroy functions do NOT free pointer data passed to constructors
+- Caller is responsible for managing lifetime of all pointer data
+
+**Rationale:**
+- Matches EXIP's API design (user owns buffers, EXIP owns internal DynArrays)
+- Supports embedded/real-time systems that avoid malloc entirely
+- Caller controls allocation strategy (stack, static, heap, memory pool)
+- No ownership flags needed - simple, clear contract
+
+**Example:**
+```c
+// Constructor stores pointer, does not copy
+TypesTest create_types_test(uint8_t* binaryData, size_t binaryLen, EnumType* greeting) {
+    return (TypesTest){
+        .binaryTest = binaryData,        // Store pointer directly
+        .binaryTestLen = binaryLen,
+        .enumTest = greeting ? *greeting : 0
+    };
+}
+
+// Destroy does not free user's pointer
+void destroy_types_test(TypesTest* data) {
+    // Only frees memory allocated by the struct itself (if any)
+    // Caller must free binaryData if they malloc'd it
+}
+
+// Usage - caller controls allocation
+uint8_t staticBuffer[] = {0x01, 0x02, 0x03};
+TypesTest t1 = create_types_test(staticBuffer, sizeof(staticBuffer), NULL);  // Static
+// No free needed - staticBuffer lives until end of scope
+
+uint8_t* heapBuffer = malloc(100);
+TypesTest t2 = create_types_test(heapBuffer, 100, NULL);  // Heap
+free(heapBuffer);  // Caller frees, not destroy_types_test()
+```
+
+This pattern supports:
+- **Static allocation**: `uint8_t buffer[100]; create_xxx(buffer, 100)`
+- **Stack allocation**: `uint8_t buffer[100]; /* local variable */`
+- **Heap allocation**: `uint8_t* buf = malloc(100); /* caller frees */`
+- **Memory pools**: Custom allocators for real-time systems
+
+Alternative design (struct owns data) would require malloc in constructors, breaking embedded/real-time use cases.
+
 **Generate `create_XXX()` when a struct has ANY of:**
 
 1. **Optional fields** - Needs to set `bool hasXXX` presence flags

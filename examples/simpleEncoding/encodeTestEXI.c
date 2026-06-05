@@ -274,10 +274,10 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, SOME_BINARY_DATA, 10));
+		// TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, SOME_BINARY_DATA, 10));
 		// NOTE: Cast needed - EXIP API uses 'const char*' but binary data should be 'uint8_t*'
 		// See UNIMPLEMENTED_FEATURES.md - Binary data API signature
-		// TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, (const char*)testData->extendedTypeTest.binaryTest, testData->extendedTypeTest.binaryTestLen));
+		TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, (const char*)testData->extendedTypeTest.binaryTest, testData->extendedTypeTest.binaryTestLen));
 	}
 	else
 	{

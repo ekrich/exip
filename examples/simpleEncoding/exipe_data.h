@@ -233,10 +233,12 @@ typedef struct {
  *                               uint8_t* binaryData, size_t binaryLen,
  *                               EnumType* greeting)
  *
+ * @param[in] binaryData Pointer to binary data, or NULL if not present
+ * @param[in] binaryLen Length of binary data
  * @param[in] greeting Pointer to enum value (HELLO, HI, HEY, or HEJ), or NULL if not present
  * @return Fully initialized TypesTest structure
  */
-TypesTest create_types_test(EnumType* greeting);
+TypesTest create_types_test(uint8_t* binaryData, size_t binaryLen, EnumType* greeting);
 
 /**
  * @brief Construct MultipleXSDsTest with pre-constructed TypesTest
