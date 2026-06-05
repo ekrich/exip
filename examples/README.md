@@ -21,6 +21,8 @@ scripts/run-examples.bat
 **Data Files:**
 - `exipd-test.exi` - Test data encoded without schema
 - `exipd-test-schema.exi` - Test data encoded with schema
+- `exipe-test.xml` - Decoded XML output (captured from run-examples.bat/sh)
+- `exipe-test-schema.xml` - Decoded XML output (captured from run-examples.bat/sh)
 
 ### Encoding Examples (simpleEncoding/)
 
