@@ -18,6 +18,7 @@
 #include "encodeTestEXI.h"
 #include "EXISerializer.h"
 #include "stringManipulate.h"
+#include "bindapi.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -114,8 +115,7 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	{
 		// schema-less mode
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // testByte="
-		TRY_CATCH_ENCODE(asciiToString("55", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindIntToString(&testStrm, testData->encoder.testByte));
 	}
 
 	qname.localName = &ATTR_VERSION_STR;
@@ -172,8 +172,7 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_ID_STR;
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // id="
-		TRY_CATCH_ENCODE(asciiToString("1001", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindIntToString(&testStrm, testData->typeTest.id));
 	}
 
 	qname.uri = &NS_NESTED_STR;
@@ -188,8 +187,7 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	else
 	{
 		// schema-less mode
-		TRY_CATCH_ENCODE(asciiToString("true", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindBoolToString(&testStrm, testData->typeTest.choice.boolValue));
 	}
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </bool>
@@ -212,8 +210,7 @@ errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfil
 	else
 	{
 		// schema-less mode
-		TRY_CATCH_ENCODE(asciiToString("11", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindIntToString(&testStrm, testData->extendedTypeTest.byteTest));
 	}
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </byteTest>

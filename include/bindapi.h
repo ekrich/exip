@@ -19,6 +19,9 @@
  * - Designed for binding generators and application code
  * - Hides EXIP implementation details
  *
+ * Optimization: Define SCHEMA_ONLY to eliminate schemaless mode code at compile time,
+ * removing runtime branches and string conversion overhead for embedded systems.
+ *
  * For low-level control, use EXISerializer.h which works directly with EXIP types.
  *
  * @date Jun 2, 2026
@@ -107,7 +110,7 @@ errorCode serializeStringValue(EXIStream* strm, const char* str);
  * @param[in] value native C int value to encode
  * @return Error handling code
  */
-errorCode serializeIntValue(EXIStream* strm, int value);
+errorCode bindInt(EXIStream* strm, int value);
 
 /**
  * @brief Serialize a native C bool value to EXI stream
@@ -119,6 +122,30 @@ errorCode serializeIntValue(EXIStream* strm, int value);
  * @return Error handling code
  */
 errorCode serializeBoolValue(EXIStream* strm, bool value);
+
+/**
+ * @brief Serialize a native C int value to EXI stream as string (schemaless mode)
+ *
+ * Converts a native C int to string representation and encodes it to the stream.
+ * Used internally for schemaless mode encoding.
+ *
+ * @param[in, out] strm EXI stream object
+ * @param[in] value native C int value to encode as string
+ * @return Error handling code
+ */
+errorCode bindIntToString(EXIStream* strm, int32_t value);
+
+/**
+ * @brief Serialize a native C bool value to EXI stream as string (schemaless mode)
+ *
+ * Converts a native C bool to string representation ("true" or "false") and
+ * encodes it to the stream. Used internally for schemaless mode encoding.
+ *
+ * @param[in, out] strm EXI stream object
+ * @param[in] value native C bool value to encode as string
+ * @return Error handling code
+ */
+errorCode bindBoolToString(EXIStream* strm, bool value);
 
 // Safe size: fits "-2147483648" (11 chars) + null terminator (1 char)
 #define INT32_STR_MAX_LEN 12

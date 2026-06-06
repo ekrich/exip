@@ -21,8 +21,8 @@
 #include <string.h>
 
 // Forward declarations
-static errorCode serializeIntValueAsString(EXIStream* strm, int32_t num);
-static errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num);
+static errorCode intToString(EXIStream* strm, int32_t num);
+static errorCode uintToString(EXIStream* strm, uint32_t num);
 
 /**
  * @brief Convert a C string (char array) to EXIP String representation (private helper)
@@ -173,15 +173,16 @@ errorCode serializeStringValue(EXIStream* strm, const char* str)
 	return serialize.stringData(strm, exip_str);
 }
 
-errorCode serializeIntValue(EXIStream* strm, int value)
+errorCode bindInt(EXIStream* strm, int value)
 {
 	if (strm->schema != NULL) {
 		// Schema mode - typed encoding
 		Integer exip_int = intToInteger(value);
 		return serialize.intData(strm, exip_int);
-	} else {
+	}
+	else {
 		// Schemaless mode - string encoding
-		return serializeIntValueAsString(strm, value);
+		return bindIntToString(strm, value);
 	}
 }
 
@@ -197,7 +198,7 @@ static errorCode serializeUIntValueAsString(EXIStream* strm, uint32_t num)
 	return err;
 }
 
-static errorCode serializeIntValueAsString(EXIStream* strm, int32_t num)
+errorCode bindIntToString(EXIStream* strm, int32_t num)
 {
     char buf[INT32_STR_MAX_LEN];
     String exip_str;
@@ -207,6 +208,19 @@ static errorCode serializeIntValueAsString(EXIStream* strm, int32_t num)
 
 	errorCode err = serialize.stringData(strm, exip_str);
     return err;
+}
+
+errorCode bindBoolToString(EXIStream* strm, bool value)
+{
+	String exip_str;
+	if (value) {
+		exip_str.str = (CharType*)"true";
+		exip_str.length = 4;
+	} else {
+		exip_str.str = (CharType*)"false";
+		exip_str.length = 5;
+	}
+	return serialize.stringData(strm, exip_str);
 }
 
 errorCode serializeBoolValue(EXIStream* strm, bool value)
