@@ -92,6 +92,7 @@ VPATH += $(PROJECT_ROOT)/src/stringTables/src
 VPATH += $(PROJECT_ROOT)/examples/simpleDecoding
 VPATH += $(PROJECT_ROOT)/examples/simpleEncoding
 VPATH += $(PROJECT_ROOT)/utils
+VPATH += $(PROJECT_ROOT)/utils/bindGen
 VPATH += $(PROJECT_ROOT)/utils/schemaGen
 VPATH += $(PROJECT_ROOT)/utils/schemaGen/output
 VPATH += $(PROJECT_ROOT)/tests

@@ -9,6 +9,18 @@ Features that return `EXIP_NOT_IMPLEMENTED_YET` or are incomplete.
 - Critical for schema evolution and extensibility patterns
 - See [WILDCARD_CRASH_ISSUE.md](../WILDCARD_CRASH_ISSUE.md)
 
+**Whitespace normalization not generated or applied** - [treeTableToGrammars.c](../src/grammarGen/src/treeTableToGrammars.c)
+- Grammar generation doesn't populate `SimpleType.whiteSpace` field correctly
+- Static grammars have missing 5th field: [staticXmlSchema.c:15363](../src/grammarGen/xmlSchema/staticXmlSchema.c), [staticEXIOptions.c:2729](../src/contentIO/src/staticEXIOptions.c)
+- Encode/decode paths check the field but it's always `WHITESPACE_PRESERVE` (0)
+- **Root cause:** Grammar generator doesn't extract whitespace facet from XSD
+- **Impact:** Schema-informed encoding/decoding doesn't apply xs:whiteSpace normalization rules
+- **Example:** xs:token should collapse whitespace, but EXIP preserves it
+- **Fix needed:**
+  1. Extract whitespace facet in grammar generation ([treeTableToGrammars.c:1785-1786](../src/grammarGen/src/treeTableToGrammars.c))
+  2. Regenerate static grammars with correct values
+  3. Verify normalization applied correctly in encode/decode ([bodyEncode.c:42](../src/contentIO/src/bodyEncode.c), [bodyDecode.c:1256](../src/contentIO/src/bodyDecode.c))
+
 ## MEDIUM Priority - Useful Features
 
 **Binary data API signature** - [EXISerializer.h](../include/EXISerializer.h)
