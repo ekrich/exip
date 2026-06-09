@@ -34,7 +34,7 @@ EXIP_VERSION = 0.5.5
 # The project root directory
 PROJECT_ROOT = ../..
 
-# The bin folder of the project 
+# The bin folder of the project
 BIN_DIR = $(PROJECT_ROOT)/bin
 
 # The development documentation folder of the project
@@ -92,6 +92,7 @@ VPATH += $(PROJECT_ROOT)/src/stringTables/src
 VPATH += $(PROJECT_ROOT)/examples/simpleDecoding
 VPATH += $(PROJECT_ROOT)/examples/simpleEncoding
 VPATH += $(PROJECT_ROOT)/utils
+VPATH += $(PROJECT_ROOT)/utils/bindGen
 VPATH += $(PROJECT_ROOT)/utils/schemaGen
 VPATH += $(PROJECT_ROOT)/utils/schemaGen/output
 VPATH += $(PROJECT_ROOT)/tests
@@ -103,7 +104,7 @@ COMMON_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/common/src/*.c))
 # Source files for the contentIO module
 CONTENT_IO_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/contentIO/src/*.c))
 
-# Source files for the grammar module		
+# Source files for the grammar module
 GRAMMAR_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/grammar/src/*.c))
 
 # Source files for the grammar generation module
@@ -111,18 +112,21 @@ GRAMMAR_GEN_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/grammarGen/src/*.c))
 
 # Source files for the schema grammar generation module
 GRAMMAR_GEN_SCHEMA_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/grammarGen/xmlSchema/*.c))
-		
+
 STREAM_IO_SRC =	$(notdir $(wildcard $(PROJECT_ROOT)/src/streamIO/src/*.c))
 
 # Source files for the string tables module
 STRING_TABLES_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/src/stringTables/src/*.c))
 
-TESTS_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/tests/*.c)) 
+TESTS_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/tests/*.c))
 
 # Source files for the utils
 EXIPG_UTIL_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/utils/*.c))
 EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/*.c))
 EXIPG_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/schemaGen/output/*.c))
+
+EXIPB_UTIL_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/utils/*.c))
+EXIPB_UTIL_SRC += $(notdir $(wildcard $(PROJECT_ROOT)/utils/bindGen/*.c))
 
 # Source files for the examples
 EXIPE_EXAMPLE_SRC = $(notdir $(wildcard $(PROJECT_ROOT)/examples/simpleEncoding/*.c))
@@ -142,10 +146,11 @@ endif
 EXIPE_OBJECTS=$(EXIPE_EXAMPLE_SRC:%.c=$(BIN_DIR)/%.o)
 EXIPD_OBJECTS=$(EXIPD_EXAMPLE_SRC:%.c=$(BIN_DIR)/%.o)
 EXIPG_OBJECTS=$(EXIPG_UTIL_SRC:%.c=$(BIN_DIR)/%.o)
+EXIPB_OBJECTS=$(EXIPB_UTIL_SRC:%.c=$(BIN_DIR)/%.o)
 LIB_OBJECTS=$(LIB_SOURCES:%.c=$(BIN_DIR)/%.o)
 
 SOURCES_ALL = $(COMMON_SRC) $(CONTENT_IO_SRC) $(GRAMMAR_SRC) $(STREAM_IO_SRC) $(STRING_TABLES_SRC)\
-	$(GRAMMAR_GEN_SRC) $(notdir $(wildcard $(TARGET)/*.c)) $(TESTS_SRC) $(EXIPG_UTIL_SRC) $(EXIPE_EXAMPLE_SRC) $(EXIPD_EXAMPLE_SRC)
+	$(GRAMMAR_GEN_SRC) $(notdir $(wildcard $(TARGET)/*.c)) $(TESTS_SRC) $(EXIPG_UTIL_SRC) $(EXIPB_UTIL_SRC) $(EXIPE_EXAMPLE_SRC) $(EXIPD_EXAMPLE_SRC)
 
 # Compiler include flags
 INCDIRS += -I$(PROJECT_ROOT)/src/common/include
@@ -171,7 +176,7 @@ CHECK_BINS := $(foreach acheck, $(CHECK_TARGETS), $(TESTS_BIN_DIR)/test_$(acheck
 
 EXAMPLE_BINS := $(EXAMPLES_BIN_DIR)/exipd $(EXAMPLES_BIN_DIR)/exipe
 
-UTILS_BINS := $(UTILS_BIN_DIR)/exipg
+UTILS_BINS := $(UTILS_BIN_DIR)/exipg $(UTILS_BIN_DIR)/exipb
 
 # Used by included Makefiles to compile; hides implementation.
 COMPILE = $(CC) $(CFLAGS) $(INCDIRS)
@@ -189,34 +194,34 @@ check: all $(TESTS_BIN_DIR) $(CHECK_BINS)
                    $$i $(TESTS_DATA_DIR); \
              done
 
-# TARGET: Builds the example applications        
+# TARGET: Builds the example applications
 examples: all $(EXAMPLES_BIN_DIR) $(EXAMPLE_BINS) test_sets_copy_examples test_sets_copy_src
 
-# TARGET: Builds the utilities      
+# TARGET: Builds the utilities
 utils: all $(UTILS_BIN_DIR) $(UTILS_BINS) test_sets_copy_utils
 
-# TARGET: Builds the developers documentation    
+# TARGET: Builds the developers documentation
 doc:
 		cd $(DEV_DOC_DIR); doxygen Doxyfile
 
-# TARGET: Clean the build	
+# TARGET: Clean the build
 clean:
 		rm -f -r $(BIN_DIR)
-		
-# TARGET: Builds a library distribution/release		
+
+# TARGET: Builds a library distribution/release
 dist:
 		rm -f -r $(PROJECT_ROOT)/../../files/exip-$(EXIP_VERSION)
 		svn export $(PROJECT_ROOT) $(PROJECT_ROOT)/../../files/exip-$(EXIP_VERSION)
 		cd $(PROJECT_ROOT)/../../files && tar cvf - exip-$(EXIP_VERSION) | gzip > exip-$(EXIP_VERSION).tar.gz
 		cd $(PROJECT_ROOT)/../../files && zip -lvr exip-$(EXIP_VERSION).zip exip-$(EXIP_VERSION)
-		
+
 # Generating Prerequisites Automatically
 # for more information see: http://www.gnu.org/software/make/manual/make.html#Automatic-Prerequisites
 $(BIN_DIR)/%.d: %.c
 	@set -e; rm -f $@; mkdir -p $(BIN_DIR); \
 	$(COMPILE) -MM $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,$(@D)/\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$		
+	rm -f $@.$$$$
 
 include $(SOURCES_ALL:%.c=$(BIN_DIR)/%.d)
 
@@ -227,18 +232,21 @@ $(BIN_DIR)/%.o: %.c
 # Build the tests
 $(TESTS_BIN_DIR)/test_%: $(BIN_DIR)/check_%.o $(BIN_DIR)/schemaLoader.o
 		$(COMPILE) $(LDFLAGS) $^ -lcheck -lexip $(EXTRA_LINK_FLAGS) -o $@
-		
+
 # Build for the examples
 $(EXAMPLES_BIN_DIR)/exipe: $(EXIPE_OBJECTS) $(BIN_DIR)/schemaLoader.o
-		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@
+		$(COMPILE) $(LDFLAGS) $^ -lexip $(EXTRA_LINK_FLAGS) -o $@
 
 $(EXAMPLES_BIN_DIR)/exipd: $(EXIPD_OBJECTS) $(BIN_DIR)/schemaLoader.o
-		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@	
-		
+		$(COMPILE) $(LDFLAGS) $^ -lexip $(EXTRA_LINK_FLAGS) -o $@
+
 # Build for the utils
 $(UTILS_BIN_DIR)/exipg: $(EXIPG_OBJECTS)
-		$(COMPILE) $(LDFLAGS) $^ -lexip -o $@
-	
+		$(COMPILE) $(LDFLAGS) $^ -lexip $(EXTRA_LINK_FLAGS) -o $@
+
+$(UTILS_BIN_DIR)/exipb: $(EXIPB_OBJECTS)
+		$(COMPILE) $(LDFLAGS) $^ -lexip $(EXTRA_LINK_FLAGS) -o $@
+
 $(LIB_BIN_DIR)/libexip.$(STATIC_LIB_EXT): $(LIB_OBJECTS)
 		$(ARCHIVER) rcs $(LIB_BIN_DIR)/libexip.$(STATIC_LIB_EXT) $(LIB_OBJECTS)
 
@@ -248,19 +256,19 @@ $(LIB_BIN_DIR)/libexip.$(DYNAMIC_LIB_EXT): $(LIB_OBJECTS)
 
 $(BIN_DIR):
 		mkdir -p $(BIN_DIR)
-		
+
 $(LIB_BIN_DIR):
 		mkdir -p $(LIB_BIN_DIR)
-		
+
 $(EXAMPLES_BIN_DIR):
 		mkdir -p $(EXAMPLES_BIN_DIR)
-		
+
 $(UTILS_BIN_DIR):
 		mkdir -p $(UTILS_BIN_DIR)
-		
+
 $(TESTS_BIN_DIR):
 		mkdir -p $(TESTS_BIN_DIR)
-		
+
 copy_headers: $(BIN_DIR)
 		mkdir -p $(BIN_DIR)/headers
 		cp $(PROJECT_ROOT)/include/*.h $(BIN_DIR)/headers

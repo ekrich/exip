@@ -87,9 +87,9 @@ The easiest setup is to install Visual Studio Community Edition 2022 to get the 
 
 ![Visual Studio Installed Image](docs/www/vs2022.png)
 
-To get the `check` dependency we need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
+To get the `check` dependency you need to install `vcpkg` as described here: https://learn.microsoft.com/en-us/vcpkg/get_started/get-started-msbuild?pivots=shell-powershell
 
-Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. This seems to be a good practice. The project uses vcpkg manifest mode (via `build/vs2022/vcpkg.json`) to automatically install the `check` unit testing framework. vcpkg will install the appropriate architecture (x64-windows or x86-windows) based on your build configuration. Note that the vcpkg package provides the library as `checkDynamic.lib`. If you are behind a proxy or basic auth proxy and it fails to pull your dependency you can use the *Developer Command Prompt for VS 2022* or *Developer PowerShell for VS 2022* and set the proxy as follows depending on your proxy setup.
+Setting the env var `VCPKG_ROOT` and running the first command sets up the local repo as described in the instructions above. The project uses vcpkg manifest mode (via `build/vs2022/vcpkg.json` and `Directory.Build.props`) to automatically install the `check` unit testing framework. vcpkg will install the appropriate architecture (x64-windows or x86-windows) based on your build configuration. Note that the vcpkg package provides the library as `checkDynamic.lib`. If you are behind a proxy or basic auth proxy and it fails to pull your dependency you can use the *Developer Command Prompt for VS 2022* or *Developer PowerShell for VS 2022* and set the proxy as follows depending on your proxy setup.
 
 ```sh
 set http_proxy=http://user:pass@host:port
@@ -102,9 +102,7 @@ Visual Studio picks up those variables so then it compiles within the app. If yo
 start devenv
 ```
 
-If you don't have access to the Windows store the `vcpkg` bootstrap will fail so you should download the latest version from https://github.com/microsoft/vcpkg-tool The version used here was `2024-11-12` for reference. You should check the SHA and then make the executable runnable. Hint: `c:\Users\<user>\.local\bin` is typically on the path by default.
-
-Note: In vs2022, you can use the menu *Tools -> Options* and type in *vcpkg* for settings related to *vcpkg*.
+If you don't have access to the Windows store the `vcpkg` bootstrap will fail so you should download the latest version from https://github.com/microsoft/vcpkg-tool. You should check the SHA and then make the executable runnable. Hint: `c:\Users\<user>\.local\bin` is typically on the path by default.
 
 ### contiki-ng (IoT support)
 

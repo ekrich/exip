@@ -20,50 +20,67 @@ echo "Running examples..."
 cd ${EXAMPLES_DIR}
 
 echo
+echo "exipg (grammar generation)"
+echo
+
+echo "[1] exipg text output for EXIOptions schema"
+cd ${UTILS_DIR}
+./exipg -text -ops=0001000 -schema=EXIOptions-xsd.exi
+cd ${EXAMPLES_DIR}
+
+echo
 echo "exipe (encode)"
 echo
 
-echo "[1] exipe schema-informed example"
+echo "[2] exipe schema-informed example"
 ./exipe -schema=exipe-test-xsd.exi,exipe-test-types-xsd.exi,exipe-test-nested-xsd.exi exipe-test-schema.exi
 
-echo "[2] exipe schemaless example"
+echo "[3] exipe schemaless example"
 ./exipe exipe-test.exi
 
 echo
 echo "exipd (decode)"
 echo
 
-echo "[3] exipd schema example (XML output)"
+echo "[4] exipd schema example (XML output)"
 ./exipd -xml -schema=exipd-test-xsd.exi exipd-test.exi
 
-echo "[4] exipd schema example (EXI output)"
+echo "[5] exipd schema example (EXI output)"
 ./exipd -exi -schema=exipd-test-xsd.exi exipd-test.exi
 
-echo "[5] exipd schema example (XML output)"
+echo "[6] exipd schema example (XML output)"
 ./exipd -xml -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
 
-echo "[6] exipd schema example (EXI output)"
+echo "[7] exipd schema example (EXI output)"
 ./exipd -exi -schema=exipd-test-schema-xsd.exi exipd-test-schema.exi
 
-echo "[7] exipd schemaless example"
-./exipd -xml exipd-test.exi
-
-echo "[8] exipd with exipe-test (schema-informed roundtrip)"
-./exipd -xml -schema=exipe-test-xsd.exi,exipe-test-nested-xsd.exi,exipe-test-types-xsd.exi exipe-test-schema.exi
-
-echo "[9] exipd with exipe-test (schemaless roundtrip)"
-./exipd -xml exipe-test.exi
-
-echo "[10] exipd XML Schema document"
+echo "[8] exipd XML Schema document"
 ./exipd -xml -schema=XMLSchema-xsd.exi,xml-xsd.exi XMLSchema-schema-xsd.exi
 
-echo
-echo "exipg (grammar generation)"
-echo
+echo "[9] exipd schemaless example"
+./exipd -xml exipd-test.exi
 
-echo "[11] exipg text output for EXIOptions schema"
-cd ${UTILS_DIR}
-./exipg -text -ops=0001000 -schema=EXIOptions-xsd.exi
+echo "[10] exipd with exipe-test (schema-informed roundtrip)"
+./exipd -xml -schema=exipe-test-xsd.exi,exipe-test-nested-xsd.exi,exipe-test-types-xsd.exi exipe-test-schema.exi
+
+echo "[11] exipd with exipe-test (schemaless roundtrip)"
+./exipd -xml exipe-test.exi
+
+# Check if .exi files changed (only if git available and files tracked)
+if command -v git >/dev/null 2>&1; then
+    if git ls-files --error-unmatch exipe-test-schema.exi >/dev/null 2>&1; then
+        if ! git diff --quiet exipe-test-schema.exi; then
+            echo "WARNING: exipe-test-schema.exi changed after encoding"
+            exit 1
+        fi
+    fi
+    if git ls-files --error-unmatch exipe-test.exi >/dev/null 2>&1; then
+        if ! git diff --quiet exipe-test.exi; then
+            echo "WARNING: exipe-test.exi changed after encoding"
+            exit 1
+        fi
+    fi
+fi
 
 echo
 echo "Done."

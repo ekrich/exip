@@ -26,14 +26,22 @@ if not exist "%EXE_DIR%\exipd.exe" (
 )
 
 echo.
+echo exipg (grammar generation)
+echo.
+
+echo [1] exipg text output for EXIOptions schema
+%EXE_DIR%\exipg.exe -text -ops=0001000 -schema=utils\schemaGen\EXIOptions-xsd.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo.
 echo exipe (encode)
 echo.
 
-echo [1] exipe schema-informed example
+echo [2] exipe schema-informed example
 %EXE_DIR%\exipe.exe -schema=%ENCODING_DIR%\exipe-test-xsd.exi,%ENCODING_DIR%\exipe-test-types-xsd.exi,%ENCODING_DIR%\exipe-test-nested-xsd.exi %DECODING_DIR%\exipe-test-schema.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo [2] exipe schemaless example
+echo [3] exipe schemaless example
 %EXE_DIR%\exipe.exe %DECODING_DIR%\exipe-test.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
@@ -41,45 +49,58 @@ echo.
 echo exipd (decode)
 echo.
 
-echo [3] exipd schema example (XML output)
+echo [4] exipd schema example (XML output)
 %EXE_DIR%\exipd.exe -xml -schema=%DECODING_DIR%\exipd-test-xsd.exi %DECODING_DIR%\exipd-test.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo [4] exipd schema example (EXI output)
+echo [5] exipd schema example (EXI output)
 %EXE_DIR%\exipd.exe -exi -schema=%DECODING_DIR%\exipd-test-xsd.exi %DECODING_DIR%\exipd-test.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo [5] exipd schema example (XML output)
+echo [6] exipd schema example (XML output)
 %EXE_DIR%\exipd.exe -xml -schema=%DECODING_DIR%\exipd-test-schema-xsd.exi %DECODING_DIR%\exipd-test-schema.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo [6] exipd schema example (EXI output)
+echo [7] exipd schema example (EXI output)
 %EXE_DIR%\exipd.exe -exi -schema=%DECODING_DIR%\exipd-test-schema-xsd.exi %DECODING_DIR%\exipd-test-schema.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo [7] exipd schemaless example
-%EXE_DIR%\exipd.exe -xml %DECODING_DIR%\exipd-test.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo [8] exipd with exipe-test (schema-informed roundtrip)
-%EXE_DIR%\exipd.exe -xml -schema=%ENCODING_DIR%\exipe-test-xsd.exi,%ENCODING_DIR%\exipe-test-nested-xsd.exi,%ENCODING_DIR%\exipe-test-types-xsd.exi %DECODING_DIR%\exipe-test-schema.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo [9] exipd with exipe-test (schemaless roundtrip)
-%EXE_DIR%\exipd.exe -xml %DECODING_DIR%\exipe-test.exi
-if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
-
-echo [10] exipd XML Schema document
+echo [8] exipd XML Schema document
 %EXE_DIR%\exipd.exe -xml -schema=src\grammarGen\xmlSchema\XMLSchema-xsd.exi,src\grammarGen\xmlSchema\xml-xsd.exi src\grammarGen\xmlSchema\XMLSchema-schema-xsd.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
 
-echo.
-echo exipg (grammar generation)
-echo.
-
-echo [11] exipg text output for EXIOptions schema
-%EXE_DIR%\exipg.exe -text -ops=0001000 -schema=utils\schemaGen\EXIOptions-xsd.exi
+echo [9] exipd schemaless example
+%EXE_DIR%\exipd.exe -xml %DECODING_DIR%\exipd-test.exi
 if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [10] exipd with exipe-test (schema-informed roundtrip)
+%EXE_DIR%\exipd.exe -xml -schema=%ENCODING_DIR%\exipe-test-xsd.exi,%ENCODING_DIR%\exipe-test-nested-xsd.exi,%ENCODING_DIR%\exipe-test-types-xsd.exi %DECODING_DIR%\exipe-test-schema.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+echo [11] exipd with exipe-test (schemaless roundtrip)
+%EXE_DIR%\exipd.exe -xml %DECODING_DIR%\exipe-test.exi
+if !ERRORLEVEL! neq 0 set "EXITCODE=!ERRORLEVEL!"
+
+:: Check if .exi files changed (only if git available and files tracked)
+git --version >nul 2>&1
+if !ERRORLEVEL! equ 0 (
+    git ls-files --error-unmatch %DECODING_DIR%\exipe-test-schema.exi >nul 2>&1
+    if !ERRORLEVEL! equ 0 (
+        git diff --quiet %DECODING_DIR%\exipe-test-schema.exi
+        if !ERRORLEVEL! neq 0 (
+            echo WARNING: exipe-test-schema.exi changed after encoding
+            set "EXITCODE=1"
+        )
+    )
+    git ls-files --error-unmatch %DECODING_DIR%\exipe-test.exi >nul 2>&1
+    if !ERRORLEVEL! equ 0 (
+        git diff --quiet %DECODING_DIR%\exipe-test.exi
+        if !ERRORLEVEL! neq 0 (
+            echo WARNING: exipe-test.exi changed after encoding
+            set "EXITCODE=1"
+        )
+    )
+)
 
 :: Report error or success
 echo.

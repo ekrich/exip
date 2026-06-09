@@ -19,7 +19,8 @@
 #define ENCODETESTEXI_H_
 
 #include "procTypes.h"
+#include "exipe_data.h"
 
-errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(void* buf, size_t size, void* stream));
+errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(void* buf, size_t size, void* stream));
 
 #endif /* ENCODETESTEXI_H_ */

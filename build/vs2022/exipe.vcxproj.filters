@@ -5,6 +5,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{8ee6ee0c-f10c-471c-9b48-ab95210c8f05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\examples\simpleEncoding\encodeTestEXI.c">
@@ -16,5 +19,16 @@
     <ClCompile Include="..\..\utils\schemaLoader.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\examples\simpleEncoding\exipe_data.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\examples\simpleEncoding\exipe_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\examples\simpleEncoding\encodeTestEXI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

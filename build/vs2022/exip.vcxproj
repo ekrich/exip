@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\bindapi.h" />
     <ClInclude Include="..\..\include\contentHandler.h" />
     <ClInclude Include="..\..\include\errorHandle.h" />
     <ClInclude Include="..\..\include\EXIParser.h" />
@@ -50,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\common\src\ASCII_stringManipulate.c" />
+    <ClCompile Include="..\..\src\common\src\bindapi.c" />
     <ClCompile Include="..\..\src\common\src\contentHandler.c" />
     <ClCompile Include="..\..\src\common\src\dynamicArray.c" />
     <ClCompile Include="..\..\src\common\src\hashtable.c" />

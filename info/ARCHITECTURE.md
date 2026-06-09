@@ -19,6 +19,136 @@ EXI (Efficient XML Interchange) is a binary XML format that:
 1. **Schema-less Mode**: Processes EXI without schema knowledge (more flexible)
 2. **Schema-informed Mode**: Uses XML Schema to optimize encoding/decoding (more efficient)
 3. **Strict Mode**: Schema-informed with strict validation
+4. **EXI Profile Mode**: Restricted subset for severely constrained embedded devices (schema-only)
+
+#### EXI Profile
+
+EXI Profile is a W3C specification (http://www.w3.org/TR/exi-profile/) defining a restricted subset of EXI for embedded systems with severe constraints (16-bit microcontrollers, limited RAM/flash).
+
+**Profile Restrictions**:
+- Schema-informed mode only (no schemaless)
+- No built-in element grammars (`maximumNumberOfBuiltInElementGrammars = 0`)
+- No built-in productions (`maximumNumberOfBuiltInProductions = 0`)
+- No local value partitions (`localValuePartitions = 0`)
+- Minimal string tables and grammar complexity
+
+**EXIP Configuration**:
+- `EXI_PROFILE_DEFAULT ON` - Enables Profile mode, disables schemaless support
+- `EXI_PROFILE_DEFAULT OFF` - Full EXI support (default for both PC and embedded builds)
+
+**Historical Note**: EXIP was designed in the 16-bit microcontroller era when EXI Profile constraints were necessary. Modern 32-bit embedded platforms (ARM Cortex-M) can typically support full EXI mode, though Profile mode remains available for the most constrained devices.
+
+**Impact on bindapi**: When `EXI_PROFILE_DEFAULT ON`, bindapi's schemaless conversion paths are excluded at compile time, reducing code size to Profile-compliant minimum.
+
+#### Detecting Schema Mode
+
+After parsing the header, check `parser.strm.header.opts.schemaIDMode`:
+
+- `SCHEMA_ID_SET`: Schema ID provided - schema-informed mode required
+- `SCHEMA_ID_NIL`: Explicitly schemaless
+- `SCHEMA_ID_EMPTY`: Built-in XML Schema types only
+- `SCHEMA_ID_ABSENT`: No explicit schema info - optional (use if available)
+
+Strict mode (`WITH_STRICT(opts.enumOpt)`) always requires schema.
+
+**Example:**
+```c
+parse.parseHeader(&parser, false);
+switch(parser.strm.header.opts.schemaIDMode) {
+    case SCHEMA_ID_SET:    /* Schema required - ID in opts.schemaID */
+    case SCHEMA_ID_NIL:    /* Schemaless mode */
+    case SCHEMA_ID_EMPTY:  /* Built-in types only */
+    case SCHEMA_ID_ABSENT: /* Optional - use schema if available */
+}
+```
+
+## API Design Patterns
+
+EXIP provides two API styles for maximum flexibility:
+
+### OOP-Style VTable API (Recommended)
+
+The **preferred approach** uses global vtables that encapsulate implementation details:
+
+```c
+// Parser vtable (global const: parse)
+Parser parser;
+parse.initParser(&parser, buffer, app_data);
+parse.parseHeader(&parser, false);
+parse.setSchema(&parser, schema);
+while (parse.parseNext(&parser) == EXIP_OK) { /* ... */ }
+parse.destroyParser(&parser);
+
+// Serializer vtable (global const: serialize)
+EXIStream stream;
+serialize.initHeader(&stream);
+serialize.initStream(&stream, buffer, schema);
+serialize.exiHeader(&stream);
+serialize.startDocument(&stream);
+serialize.startElement(&stream, qname);
+serialize.stringData(&stream, value);
+serialize.endElement(&stream);
+serialize.endDocument(&stream);
+serialize.closeEXIStream(&stream);
+
+// Options builder vtable (global const: option)
+EXIOptions* opts = parse.options(&parser);
+option.strict(opts, true);
+option.blockSize(opts, 5000);
+option.preserve(opts, PRESERVE_COMMENTS);
+```
+
+**Benefits**:
+- **Encapsulation**: Hides internal struct layout (`parser.strm.header.opts` → `parse.options()`)
+- **Consistency**: Same pattern across parse/serialize/options APIs
+- **Thread-safe**: Global vtables are const, instances are user-provided
+- **Future-proof**: Can add functions without breaking ABI
+- **Generated code**: exipb binding generator uses this pattern
+- **Progressive disclosure**: Easy to drop to direct function calls if needed
+
+**Memory cost**: ~8 bytes per vtable pointer (stored in ROM/Flash, not RAM)
+
+### Direct Function Call API (Advanced)
+
+For performance-critical code or embedded targets, direct function calls bypass vtable indirection:
+
+```c
+// Direct calls (same functions, no vtable)
+Parser parser;
+initParser(&parser, buffer, app_data);
+parseHeader(&parser, false);
+// ... etc
+```
+
+**When to use**:
+- Ultra-tight loops where function pointer overhead matters
+- Debugging/profiling (easier to trace)
+- Power users who understand internal structures
+
+**Trade-off**: Couples code to implementation details
+
+### Macro-Based API (Expert)
+
+For maximum control, direct struct access with helper macros:
+
+```c
+Parser parser;
+initParser(&parser, buffer, app_data);
+SET_STRICT(parser.strm.header.opts.enumOpt);
+parser.strm.header.opts.blockSize = 5000;
+```
+
+**When to use**: Only when you need fine-grained control and accept maintenance burden
+
+### API Progression
+
+EXIP's API design supports progressive enhancement:
+
+1. **Beginner**: OOP vtable (`parse.*`, `serialize.*`, `option.*`)
+2. **Intermediate**: Direct function calls (`initParser()`, `parseNext()`)
+3. **Advanced**: Macros + direct struct access (`SET_STRICT`, `parser.strm.header.opts`)
+
+**Recommendation**: Start with OOP vtables. Only drop to lower levels when profiling shows a bottleneck or you need capabilities the high-level API doesn't expose.
 
 ## Architectural Layers
 
@@ -77,6 +207,7 @@ EXI (Efficient XML Interchange) is a binary XML format that:
 
 The EXIP codebase is organized into modular components with clear dependencies:
 
+**Runtime Library Modules:**
 ```
 ==========================================================================================
 |             Module              |                      Dependencies                    |
@@ -95,6 +226,14 @@ The EXIP codebase is organized into modular components with clear dependencies:
 ------------------------------------------------------------------------------------------
 ```
 
+**Build-Time Utilities (utils/):**
+- **exipg** (schemaGen/): Grammar generator - creates static EXI grammar representations from XSD files. Used internally for EXIOptions schema.
+- **exipb** (codeGen/): Binding generator - generates C structs and helper functions from XSD schemas (in development).
+- **schemaLoader**: Shared utilities for loading EXI-encoded XSD files, used by both exipg and exipb.
+
+These utilities are **not part of the runtime library** - they're development tools used during build/code generation.
+
+
 **Key Points:**
 - **common**: Foundation module with no dependencies - memory management, hash tables, dynamic arrays
 - **streamIO** and **stringTables**: Low-level modules depending only on common utilities
@@ -105,6 +244,68 @@ The EXIP codebase is organized into modular components with clear dependencies:
 ## Module Descriptions
 
 ### 1. Public API Layer
+
+EXIP provides two public API layers for different use cases:
+
+#### bindapi ([bindapi.h](include/bindapi.h)) - External Application API
+**Purpose**: High-level API for applications and code generation tools using native C types
+
+**Target Audience**:
+- Binding generators (exipb)
+- Application developers who want to work with standard C types
+- Users who need automatic schema/schemaless mode handling
+
+**Key Features**:
+- Works with native C types: `int`, `float`, `double`, `char*`
+- Hides EXIP internal types (`Integer`, `Float` struct, `String` struct)
+- Automatically detects schema vs schemaless mode and routes appropriately
+- No manual type conversion required
+
+**API Functions**:
+- `serializeIntValue()`: Serialize int (auto-detects schema/schemaless)
+- `serializeFloatValue()`: Serialize float (auto-detects schema/schemaless)
+- `serializeDoubleValue()`: Serialize double (auto-detects schema/schemaless)
+- `serializeStringValue()`: Serialize C string (auto-detects schema/schemaless)
+- `serializeBoolValue()`: Serialize boolean (auto-detects schema/schemaless)
+- `floatToExipFloat()`: Convert C float to EXIP Float (schema mode only)
+- `doubleToExipFloat()`: Convert C double to EXIP Float (schema mode only)
+- `int32_to_str()`, `uint32_to_str()`: Convert integers to strings (schemaless mode)
+
+**When to use**: Default choice for applications and generated bindings. Simplifies code and handles mode switching automatically.
+
+#### EXISerializer ([EXISerializer.h](include/EXISerializer.h)) - Internal Low-Level API
+**Purpose**: Low-level serialization API using EXIP internal types
+
+**Target Audience**:
+- Advanced users needing fine-grained control
+- Performance-critical code
+- Internal EXIP implementation
+
+**Key Features**:
+- Works with EXIP types: `Integer` (int64_t), `Float` struct, `String` struct
+- Direct control over encoding decisions
+- No automatic mode switching - caller must handle branching
+
+**API Functions** (via `serialize` vtable):
+- `serialize.intData()`: Encode Integer type
+- `serialize.floatData()`: Encode Float struct (mantissa/exponent)
+- `serialize.stringData()`: Encode String struct (pointer + length)
+- `serialize.booleanData()`: Encode boolean
+- `serialize.startElement()`, `serialize.endElement()`: Document structure
+- `serialize.attribute()`: Encode attributes
+
+**When to use**: Only when you need direct control and are willing to handle EXIP's internal type system and manual schema/schemaless branching.
+
+**API Relationship**:
+```
+Application Code (native C types: int, float, char*)
+         ↓
+    bindapi.h (external API - auto mode switching)
+         ↓
+  EXISerializer.h (internal API - EXIP types)
+         ↓
+    Binary EXI Stream
+```
 
 #### EXIParser ([EXIParser.h](include/EXIParser.h))
 **Purpose**: Parse EXI streams into application events
@@ -134,6 +335,30 @@ while (parseNext(&parser) == EXIP_OK) {
 }
 destroyParser(&parser);
 ```
+
+**Recommended OOP-Style API** (Preferred):
+EXIP provides vtable-based APIs that encapsulate internal structures and provide a cleaner, more maintainable interface:
+
+```c
+// OOP-style parsing (recommended)
+Parser parser;
+parse.initParser(&parser, buffer, app_data);
+parse.parseHeader(&parser, false);
+parse.setSchema(&parser, schema);
+while (parse.parseNext(&parser) == EXIP_OK) {
+    // Callbacks invoked
+}
+parse.destroyParser(&parser);
+```
+
+The global `parse` vtable provides all parser operations through function pointers. This approach:
+- Hides implementation details
+- Provides consistent API across parsing/serialization/options
+- Is the pattern generated code and bindings should use
+- Maintains backward compatibility (direct function calls still work)
+
+See "API Design Patterns" section below for full details on the OOP pattern.
+
 
 #### EXISerializer ([EXISerializer.h](include/EXISerializer.h))
 **Purpose**: Serialize XML-like events into EXI format

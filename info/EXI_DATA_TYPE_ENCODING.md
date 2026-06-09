@@ -33,29 +33,90 @@ All numeric types have implicit `whiteSpace="collapse"`.
 ## Numeric Types
 
 ### Integers
-- **Encoding**: Variable-length integers (varints)
-- **Sign handling**: Unsigned encoding with sign bit for signed types
+- **Default Encoding**: Variable-length integers (varints)
+- **Sign handling**: Sign bit + unsigned varint with offset for negatives
 - **Size**: Efficient for small values (1-8+ bytes depending on magnitude)
-- **Schema optimization**: Can use ranges (minInclusive/maxInclusive) for even better compression
 
-Examples:
+**Signed Integer Encoding** (see [streamEncode.c:139-159](../src/streamIO/src/streamEncode.c#L139-L159)):
+
+1. Write sign bit: `0` for positive/zero, `1` for negative
+2. **Positive** `n`: encode varint(n)
+3. **Negative** `-n`: encode varint(n - 1)
+
+**Why the offset?** This handles `INT_MIN` safely:
+- Without offset: negating `INT_MIN` (-2⁶³) would overflow since `abs(INT_MIN) > INT_MAX`
+- With offset: `INT_MIN + 1` can be safely negated to `INT_MAX`
+
+**Examples**:
+- `5`: sign=0, varint(5)
+- `-5`: sign=1, varint(4) → `-5` becomes `5-1=4`
+- `-1`: sign=1, varint(0) → `-1` becomes `1-1=0`
+- `INT_MIN`: sign=1, varint(INT_MAX)
+
+**Decoding** (see [streamDecode.c:148-167](../src/streamIO/src/streamDecode.c#L148-L167)):
+- Read sign bit
+- Read unsigned varint → `val`
+- If sign=0: result = `val`
+- If sign=1: result = `-(val + 1)`
+
+**Schema Optimization - Bounded Ranges**:
+
+When schema defines `minInclusive`/`maxInclusive` facets, EXI uses fixed n-bit encoding instead of varint:
+
+**Algorithm**:
+1. Subtract minimum: `encoded_value = actual_value - min`
+2. Calculate range: `range = max - min`
+3. Determine bits needed: `n = ceil(log2(range + 1))`
+4. Encode as n-bit unsigned integer
+
+**Examples**:
+
+`<xs:simpleType><xs:restriction base="xs:int"><xs:minInclusive value="0"/><xs:maxInclusive value="100"/></xs:restriction></xs:simpleType>`
+- Range: 0-100 (101 values)
+- Bits needed: 7 bits (2⁷ = 128 ≥ 101)
+- Value 55: `55 - 0 = 55` → encoded in 7 bits
+- **Always 7 bits, no varint overhead**
+
+`<xs:simpleType><xs:restriction base="xs:int"><xs:minInclusive value="-50"/><xs:maxInclusive value="50"/></xs:restriction></xs:simpleType>`
+- Range: -50 to 50 (101 values)
+- Bits needed: 7 bits
+- Value -50: `-50 - (-50) = 0` → encoded in 7 bits
+- Value 0: `0 - (-50) = 50` → encoded in 7 bits
+- Value 50: `50 - (-50) = 100` → encoded in 7 bits
+- **No sign bit needed** - offset converts to unsigned range 0-100
+
+**Benefits**:
+- Much more compact than varint for bounded ranges
+- Eliminates sign bit overhead for ranges spanning negative/positive
+- Predictable bit width simplifies parsing
+
+**Varint Examples** (unbounded or very large ranges):
 - `42` → 1-2 bytes
 - `1000` → 2 bytes
 - `123456789` → 4-5 bytes
 
-### Floats and Doubles
-- **Encoding**: IEEE 754 binary format
-- **Float**: Always 32 bits (4 bytes)
-- **Double**: Always 64 bits (8 bytes)
-- **No variable-length encoding** - structure doesn't allow it
-- **Scientific notation**: Parsed from XML (e.g., `1.23e5`) but always stored as IEEE 754
+### Floats and Doubles (`xs:float`, `xs:double`)
+- **Encoding**: Two varints (mantissa + exponent), same as decimals
+- **Variable size**: 2-10+ bytes depending on values
+- **Representation**: `45.4` → mantissa=454, exponent=-1
+- **Base-10**: Unlike IEEE 754, EXI uses decimal (base-10) representation
+- **Scientific notation**: Supported (e.g., `1.23e5`)
 
-| Type | Size | Mantissa Bits | Decimal Digits | Range |
-|------|------|---------------|----------------|-------|
-| `xs:float` | 4 bytes | 24 | ~7 digits | ±3.4×10³⁸ |
-| `xs:double` | 8 bytes | 53 | ~15-17 digits | ±1.7×10³⁰⁸ |
+| Type | Mantissa Range | Typical Size | Precision |
+|------|---------------|--------------|-----------|
+| `xs:float` | 32-bit signed | 2-6 bytes | ~7 decimal digits |
+| `xs:double` | 64-bit signed | 2-10 bytes | ~15-17 decimal digits |
 
-**Important**: These are **approximate** values - precision loss occurs beyond the decimal digit limits.
+**Important**:
+- EXI does NOT use IEEE 754 binary format for encoding
+- Values are converted to decimal mantissa/exponent pairs
+- Each component (mantissa, exponent) is encoded as a varint
+- More compact than fixed-size IEEE 754 for many values
+
+Examples:
+- `45.4` → mantissa=454, exponent=-1 → ~2-3 bytes
+- `1.23e5` → mantissa=123, exponent=3 → ~2-3 bytes
+- `0.0001` → mantissa=1, exponent=-4 → ~2 bytes
 
 ### Decimals (`xs:decimal`)
 - **Encoding**: Two varints (mantissa + exponent)
@@ -89,9 +150,11 @@ For `xs:double` with scientific notation:
 ```xml
 <avogadro>6.02214076e23</avogadro>
 ```
-- IEEE 754 double: 8 bytes
-- **Precision loss**: Only ~15-17 digits preserved, so digits beyond that are approximated
-- Stored approximately as: 6.02214076×10²³ (good to ~16 digits)
+EXI encoding (6.02214076 × 10²³ = 602214076 × 10¹⁵):
+- Mantissa: `602214076` → varint (~4-5 bytes)
+- Exponent: `15` → varint (~1 byte)
+- **Total: ~5-6 bytes**
+- **Precision**: Depends on how many digits preserved in mantissa (typically ~15-17 for double)
 
 For `xs:decimal` (must write without E-notation):
 ```xml
@@ -105,16 +168,18 @@ EXI encoding:
 - **Total: ~5-6 bytes**
 - **No precision loss** - exact representation
 
-**Trade-off**: `xs:double` uses fixed 8 bytes but loses precision beyond ~16 digits. `xs:decimal` uses 5-6 bytes and preserves all 24 digits exactly.
+**Note**: In EXI wire format, `xs:double` and `xs:decimal` use the same mantissa/exponent encoding. The difference is semantic - `xs:double` implies approximation with limited precision, while `xs:decimal` implies exact representation.
 
 ### When to Use Each
 
-| Type | Fixed Size | Best For |
-|------|-----------|----------|
+| Type | Size | Best For |
+|------|------|----------|
 | `xs:integer` | Variable | Whole numbers, counters |
-| `xs:float` | 4 bytes | Approximate scientific values (±3.4×10³⁸) |
-| `xs:double` | 8 bytes | High precision scientific (±1.7×10³⁰⁸) |
-| `xs:decimal` | Variable | Financial data, exact decimals, large integers |
+| `xs:float` | Variable | Approximate scientific values with ~7 digit precision |
+| `xs:double` | Variable | High precision scientific with ~15-17 digit precision |
+| `xs:decimal` | Variable | Financial data, exact decimals, no precision loss |
+
+**Note**: All floating-point types (`xs:float`, `xs:double`, `xs:decimal`) use the same mantissa/exponent encoding in EXI. The difference is in precision limits and semantic meaning in XML Schema, not in the wire format.
 
 ## Booleans
 - **Encoding**: Single bit

@@ -18,6 +18,7 @@
 #include "encodeTestEXI.h"
 #include "EXISerializer.h"
 #include "stringManipulate.h"
+#include "bindapi.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -46,16 +47,12 @@ const String ATTR_VERSION_STR = {"version", 7};
 const String ATTR_GOAL_STR = {"goal", 4};
 const String ATTR_ID_STR = {"id", 2};
 
-static char SOME_BINARY_DATA[] = {0x02, 0x6d, 0x2f, 0xa5, 0x20, 0xf2, 0x61, 0x9c, 0xee, 0x0f};
-static String SOME_BINARY_DATA_BASE64 = {"i3sd7fatzxad", 12};
-//static String ENUM_DATA_1 = {"hello", 5};
-//static String ENUM_DATA_2 = {"hi", 2};
-//static String ENUM_DATA_3 = {"hey", 3};
-static String ENUM_DATA_4 = {"hej", 3};
+// Base64 encoding of {0x02, 0x6d, 0x2f, 0xa5, 0x20, 0xf2, 0x61, 0x9c, 0xee, 0x0f}
+static String SOME_BINARY_DATA_BASE64 = {"Am0vpSDyYZzuDw==", 16};
 
 #define TRY_CATCH_ENCODE(func) TRY_CATCH(func, serialize.closeEXIStream(&testStrm))
 
-errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(void* buf, size_t size, void* stream))
+errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(void* buf, size_t size, void* stream))
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	EXIStream testStrm;
@@ -112,23 +109,22 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	{
 		// schema mode
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // testByte="
-		TRY_CATCH_ENCODE(serialize.intData(&testStrm, 55));
+		TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->encoder.testByte));
 	}
 	else
 	{
 		// schema-less mode
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // testByte="
-		TRY_CATCH_ENCODE(asciiToString("55", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindIntToString(&testStrm, testData->encoder.testByte));
 	}
 
 	qname.localName = &ATTR_VERSION_STR;
 	TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // version="
 
-	TRY_CATCH_ENCODE(asciiToString("0.2", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->encoder.version, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
-	TRY_CATCH_ENCODE(asciiToString("This is an example of serializing EXI streams using EXIP low level API", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->encoder.content, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </EXIPEncoder>
@@ -137,7 +133,7 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	qname.localName = &ELEM_DESCR_STR;
 	TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // <description>
 
-	TRY_CATCH_ENCODE(asciiToString("This is a test of processing XML schemes with multiple XSD files", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->description, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </description>
@@ -150,10 +146,10 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	qname.localName = &ATTR_GOAL_STR;
 	TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // goal="
 
-	TRY_CATCH_ENCODE(asciiToString("Verify that the implementation works!", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->testSetup.goal, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
-	TRY_CATCH_ENCODE(asciiToString("Simple test element with single attribute", &chVal, &testStrm.memList, false));
+	TRY_CATCH_ENCODE(asciiToString(testData->testSetup.content, &chVal, &testStrm.memList, false));
 	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </testSetup>
@@ -168,7 +164,7 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_ID_STR;
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // id="
-		TRY_CATCH_ENCODE(serialize.intData(&testStrm, 1001));
+		TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->typeTest.id));
 	}
 	else
 	{
@@ -176,8 +172,7 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 		qname.uri = &NS_EMPTY_STR;
 		qname.localName = &ATTR_ID_STR;
 		TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType)); // id="
-		TRY_CATCH_ENCODE(asciiToString("1001", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindIntToString(&testStrm, testData->typeTest.id));
 	}
 
 	qname.uri = &NS_NESTED_STR;
@@ -187,13 +182,12 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, true));
+		TRY_CATCH_ENCODE(serialize.booleanData(&testStrm, testData->typeTest.choice.boolValue));
 	}
 	else
 	{
 		// schema-less mode
-		TRY_CATCH_ENCODE(asciiToString("true", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindBoolToString(&testStrm, testData->typeTest.choice.boolValue));
 	}
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </bool>
@@ -211,13 +205,12 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		TRY_CATCH_ENCODE(serialize.intData(&testStrm, 11));
+		TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->extendedTypeTest.byteTest));
 	}
 	else
 	{
 		// schema-less mode
-		TRY_CATCH_ENCODE(asciiToString("11", &chVal, &testStrm.memList, false));
-		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
+		TRY_CATCH_ENCODE(bindIntToString(&testStrm, testData->extendedTypeTest.byteTest));
 	}
 
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </byteTest>
@@ -229,25 +222,21 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		EXIPDateTime dt;
+		EXIPDateTime dt = {0};
 
-		dt.presenceMask = FRACT_PRESENCE;
-
-		dt.dateTime.tm_year = 112; // 2012
-		dt.dateTime.tm_mon = 6;	// July
-		dt.dateTime.tm_mday = 31;
-		dt.dateTime.tm_hour = 13;
-		dt.dateTime.tm_min = 33;
-		dt.dateTime.tm_sec = 55;
-		dt.fSecs.value = 839;
-		dt.fSecs.offset = 5;
+		dt.dateTime = testData->extendedTypeTest.dateTimeTest.dateTime;
+		dt.presenceMask = testData->extendedTypeTest.dateTimeTest.presenceMask;
+		dt.TimeZone = testData->extendedTypeTest.dateTimeTest.TimeZone;
+		dt.fSecs.value = testData->extendedTypeTest.dateTimeTest.fSecs;
+		dt.fSecs.offset = testData->extendedTypeTest.dateTimeTest.fSecsOffset;
 
 		TRY_CATCH_ENCODE(serialize.dateTimeData(&testStrm, dt));
 	}
 	else
 	{
 		// schema-less mode
-		TRY_CATCH_ENCODE(asciiToString("2012 Jul 31 13:33", &chVal, &testStrm.memList, false));
+		// TODO: Need DateTime-to-ISO8601-string serializer for schemaless mode
+		TRY_CATCH_ENCODE(asciiToString("2012-07-31T13:33:55.000839", &chVal, &testStrm.memList, false));
 		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, chVal));
 	}
 
@@ -260,11 +249,14 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	if(schemaPtr != NULL)
 	{
 		// schema mode
-		TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, SOME_BINARY_DATA, 10));
+		// NOTE: Cast needed - EXIP API uses 'const char*' but binary data should be 'uint8_t*'
+		// See UNIMPLEMENTED_FEATURES.md - Binary data API signature
+		TRY_CATCH_ENCODE(serialize.binaryData(&testStrm, (const char*)testData->extendedTypeTest.binaryTest, testData->extendedTypeTest.binaryTestLen));
 	}
 	else
 	{
 		// schema-less mode
+		// TODO: Need binary-to-base64 encoder for schemaless mode
 		TRY_CATCH_ENCODE(serialize.stringData(&testStrm, SOME_BINARY_DATA_BASE64));
 	}
 
@@ -273,7 +265,11 @@ errorCode encode(EXIPSchema* schemaPtr, FILE *outfile, size_t (*outputStream)(vo
 	qname.uri = &NS_EMPTY_STR;
 	qname.localName = &ELEM_ENUM_TYPES_STR;
 	TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType)); // <enumTest>
-	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, ENUM_DATA_4));
+	String enumStr = {
+		.str = (CharType*)enum_type_strings[testData->extendedTypeTest.enumTest].str,
+		.length = enum_type_strings[testData->extendedTypeTest.enumTest].len
+	};
+	TRY_CATCH_ENCODE(serialize.stringData(&testStrm, enumStr));
 	TRY_CATCH_ENCODE(serialize.endElement(&testStrm)); // </enumTest>
 
 
