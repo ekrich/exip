@@ -5,8 +5,8 @@
  *
  * Demo applications:
  *   <dl>
- *     <dt>exipd</dt> <dd>Decodes arbitrary exi streams</dd>
- *     <dt>exipe</dt> <dd>Encodes a sample exi stream</dd>
+ *     <dt>exipd</dt> <dd>Decodes arbitrary EXI streams</dd>
+ *     <dt>exipe</dt> <dd>Encodes a sample EXI stream</dd>
  *   </dl>
  *
  * @date Jun 20, 2012

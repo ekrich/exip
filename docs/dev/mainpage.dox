@@ -1,0 +1,73 @@
+/**
+ * @mainpage  EXIP - Embeddable EXI Processor in C
+ *
+ * EXIP provides a general purpose EXI processing library that is efficient and
+ * easy to use for both: embedded platforms and desktop/server applications.
+ * The project strives to build large user community as well as committed
+ * and eager development team. The purpose of this development documentation
+ * is to help the C developers interested in the project to easily get the
+ * knowledge they need to work and enhance the code of the library.
+ * If you are only interested in using the library see the <em>EXIP
+ * User Guide</em> available from the project web site.
+ * <p>
+ *   Visit the <a href="https://github.com/ekrich/exip" target="_blank">EXIP GitHub repository</a>
+ *   to ask questions, submit issues, or contribute.
+ * </p>
+ * <p>
+ *  The main feature of the code is its modularity. Below are listed the main components
+ *  of the codebase (each has a separate Makefile build and uses
+ *  <a href="http://check.sourceforge.net/">Check Unit Testing Framework</a> for testing):
+ *  <pre>
+ *   Modules dependencies:
+ *   ==========================================================================================
+ *   |             Module              |                      Dependencies                    |
+ *   ==========================================================================================
+ *   |         @ref common             |                           N/A
+ *   ------------------------------------------------------------------------------------------
+ *   |      @ref streamIO              |                         common
+ *   ------------------------------------------------------------------------------------------
+ *   |     @ref stringTables           |                         common
+ *   ------------------------------------------------------------------------------------------
+ *   |        @ref grammar             |             common, streamIO, stringTables
+ *   ------------------------------------------------------------------------------------------
+ *   |      @ref contentIO             |         common, streamIO, stringTables, grammar
+ *   ------------------------------------------------------------------------------------------
+ *   |    @ref grammarGen              |   common, streamIO, stringTables, grammar, contentIO
+ *   ------------------------------------------------------------------------------------------
+ *  </pre>
+ * </p>
+ * <p>
+ *  More information about Efficient XML Interchange format can be found at - http://www.w3.org/TR/exi/
+ * </p>
+ *
+ * @section get_involved How do I get involved in the EXIP development?
+ * The code of the library is in active development. Filing a detailed bug report or
+ * submitting a pull request helps both yourself and the project. The culture of the
+ * EXIP development is based on the <em>"Help yourself and others will help you"</em>
+ * principle.
+ *
+ * @subsection getting_started Getting started
+ * Here are some basic steps for developers interested in contributing to the project:
+ * <ol start="0">
+ *   <li>Read the <em>EXIP User Guide</em> </li>
+ *   <li>Start using the library in your applications </li>
+ *   <li>Identify bugs, design improvements, or features you would like to see in the library. </li>
+ *   <li>Browse through the EXIP development documentation (i.e. the Doxygen pages) and
+ *       AGENTS.md to get deeper knowledge on the details of the problem </li>
+ *   <li>Implement the fix and create a pull request </li>
+ *	 <li>If the contribution follows the project coding rules and is approved,
+ *	     it will be merged. Note that your contribution will be distributed under the same
+ *       Apache License, Version 2.0 used for EXIP (@ref copyright "see below")</li>
+ *   <li>Being part of the project development allows you to influence the direction of the
+ *       project, set priorities on fixes and improvements, and contribute to a growing community. </li>
+ * </ol>
+ *
+ * @subsection copyright Contributions, copyrights and licenses
+ * All contributions are licensed under the Apache License, Version 2.0 used by the EXIP project.
+ * See the <a href="https://github.com/ekrich/exip/blob/main/LICENSE.txt" target="_blank"><em>LICENSE.txt</em></a>
+ * file for full license terms.
+ *
+ * @date Jun 10, 2026
+ * @author Rumen Kyusakov
+ * @author Eric K Richardson
+ */

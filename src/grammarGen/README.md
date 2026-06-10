@@ -21,7 +21,11 @@ exipg -static=10:0:1:5 -pfx=xmlscm_ \
 ```
 
 **Parameters:**
-- `-static=10:0:1:5` - Generate static grammar with capacity parameters (valuePartitionCapacity:valueMaxLength:fragment:selfContained)
+- `-static=10:0:1:5` - Generate static grammar with deviations (uri:ln:pfx:grammars)
+  - 10 additional URI namespaces beyond the schema
+  - 0 additional local names per namespace
+  - 1 additional prefix per namespace
+  - 5 additional built-in grammars
 - `-pfx=xmlscm_` - Use "xmlscm_" prefix for generated symbols
 - `-schema=` - Paths to XMLSchema and xml schemas (both EXI-encoded, comma-separated)
 - Output file: `src/grammarGen/xmlSchema/staticXmlSchema.c`

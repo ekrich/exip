@@ -208,9 +208,10 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	SimpleType sType;
 	Index elID;
 
-	// All built-in derived types use WHITESPACE_COLLAPSE (derived from xs:token or similar)
-	// This sets the default for all entries; individual entries can override if needed
-	sType.whiteSpace = WHITESPACE_COLLAPSE;
+	// Whitespace handling for built-in types:
+	// - Most types use WHITESPACE_COLLAPSE (derived from xs:token, numerics, dates, etc.)
+	// - xs:normalizedString uses WHITESPACE_REPLACE
+	// - xs:string uses WHITESPACE_PRESERVE
 
 	// entities
 	sType.content = 0;
@@ -218,6 +219,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = SIMPLE_TYPE_ENTITY;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// entity
@@ -227,6 +229,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// id
@@ -235,6 +238,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// idref
@@ -244,6 +248,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// idrefs
@@ -252,6 +257,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = SIMPLE_TYPE_IDREF;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// ncname
@@ -261,6 +267,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// nmtoken
@@ -270,6 +277,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// nmtokens
@@ -278,6 +286,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = SIMPLE_TYPE_NMTOKEN;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// notation
@@ -286,6 +295,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// name
@@ -295,6 +305,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// qname
@@ -303,6 +314,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// any simple type
@@ -312,6 +324,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// any type
@@ -321,6 +334,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// any uri
@@ -329,6 +343,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// base64 binary
@@ -337,6 +352,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// boolean
@@ -345,6 +361,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// byte
@@ -355,6 +372,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 127;
 	sType.min = -128;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// date
@@ -363,6 +381,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// date time
@@ -371,6 +390,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// decimal
@@ -380,6 +400,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// double
@@ -388,6 +409,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// duration
@@ -396,6 +418,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// float
@@ -404,6 +427,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// gDay
@@ -412,6 +436,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// gMonth
@@ -420,6 +445,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// gMonthDay
@@ -428,6 +454,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// gYear
@@ -436,6 +463,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// gYearMonth
@@ -444,6 +472,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// hex binary
@@ -452,6 +481,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Int
@@ -461,6 +491,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// integer
@@ -470,6 +501,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// language
@@ -478,6 +510,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// long
@@ -487,6 +520,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// negativeInteger
@@ -496,6 +530,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = -1;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// NonNegativeInteger
@@ -506,6 +541,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// NonPositiveInteger
@@ -516,6 +552,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// normalizedString
@@ -535,6 +572,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 1;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// short
@@ -546,6 +584,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 32767;
 	sType.min = -32768;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// String
@@ -564,6 +603,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// token
@@ -573,6 +613,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Unsigned byte
@@ -583,6 +624,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 255;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Unsigned int
@@ -593,6 +635,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Unsigned Long
@@ -603,6 +646,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 0;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	// Unsigned short
@@ -614,6 +658,7 @@ errorCode createBuiltInTypesDefinitions(SimpleTypeTable* simpleTypeTable, AllocL
 	sType.max = 65535;
 	sType.min = 0;
 	sType.length = 0;
+	sType.whiteSpace = WHITESPACE_COLLAPSE;
 	TRY(addDynEntry(&simpleTypeTable->dynArray, &sType, &elID));
 
 	return EXIP_OK;

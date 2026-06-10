@@ -18,7 +18,7 @@ more information on that).
 When the XML schemes are static (only used at
 compile time) the \texttt{grammarGen} module is not needed and can be excluded from the build.
 In this case the \texttt{EXIPSchema} object can be build from automatically generated source code
-by the \texttt{exipg} utility implemented in \texttt{utils/schemaHandling/createGrammars.c}.
+by the \texttt{exipg} utility implemented in \texttt{utils/schemaGen/createGrammars.c}.
 
 \subsection{Using exipg utility}
 The \texttt{exipg} utility is a command line tool for generating EXI grammar definitions
@@ -36,7 +36,7 @@ There are three modes defining the output of the tool:
  \end{description}
 As an example, the command line arguments used to generate the EXI Options document grammars are:
 \begin{lstlisting}
-exipg -static -pfx=ops_ -ops=0001000 -schema=EXIOptions-xsd.exi staticEXIOptions.c
+exipg -static -pfx=ops_ -ops=0001000 -schema=utils/schemaGen/EXIOptions-xsd.exi src/contentIO/src/staticEXIOptions.c
 \end{lstlisting}
 Note that the \texttt{-ops=} argument is required when the EXI options used during encoding of
 the XSD into EXI are not included in the EXI header i.e.\ they are communicated
