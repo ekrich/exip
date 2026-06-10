@@ -12,7 +12,7 @@ This file contains pre-compiled EXI grammar for the EXIOptions schema. It is gen
 
 ```bash
 exipg -static -pfx=ops_ -ops=0001000 \
-  -schema=utils/schemaHandling/EXIOptions-xsd.exi \
+  -schema=utils/schemaGen/EXIOptions-xsd.exi \
   src/contentIO/src/staticEXIOptions.c
 ```
 

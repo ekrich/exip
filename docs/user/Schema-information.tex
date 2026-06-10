@@ -36,7 +36,7 @@ There are three modes defining the output of the tool:
  \end{description}
 As an example, the command line arguments used to generate the EXI Options document grammars are:
 \begin{lstlisting}
-exipg -static -pfx=ops_ -ops=0001000 -schema=EXIOptions-xsd.exi staticEXIOptions.c
+exipg -static -pfx=ops_ -ops=0001000 -schema=utils/schemaGen/EXIOptions-xsd.exi src/contentIO/src/staticEXIOptions.c
 \end{lstlisting}
 Note that the \texttt{-ops=} argument is required when the EXI options used during encoding of
 the XSD into EXI are not included in the EXI header i.e.\ they are communicated
