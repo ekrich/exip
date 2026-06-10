@@ -21,6 +21,7 @@
 #include "sTables.h"
 #include <stdio.h>
 #include <time.h>
+#include <inttypes.h>
 #include "createGrammars.h"
 
 errorCode toText(EXIPSchema* schemaPtr, FILE *outfile)
@@ -85,7 +86,6 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviat
 	else
 		fprintf(outfile, "  * Compiled for no deviations from the schema! (lower memory usage) */\n\n");
 
-
 	fprintf(outfile, "#include \"procTypes.h\"\n\n");
 	fprintf(outfile, "#define CONST\n\n");
 
@@ -140,11 +140,12 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviat
 		for(stId = 0; stId < stIdMax; stId++)
 		{
 			fprintf(outfile,
-					"    {%d, %d, 0x%016lX, 0x%016lX}%s",
+					"    {.content = %d, .length = %d, .max = 0x%016" PRIx64 ", .min = 0x%016" PRIx64 ", .whiteSpace = %d}%s",
 					schemaPtr->simpleTypeTable.sType[stId].content,
 					schemaPtr->simpleTypeTable.sType[stId].length,
-					(long unsigned) schemaPtr->simpleTypeTable.sType[stId].max,
-					(long unsigned) schemaPtr->simpleTypeTable.sType[stId].min,
+					(uint64_t) schemaPtr->simpleTypeTable.sType[stId].max,
+					(uint64_t) schemaPtr->simpleTypeTable.sType[stId].min,
+					schemaPtr->simpleTypeTable.sType[stId].whiteSpace,
 					stId==(stIdMax-1) ? "\n};\n\n" : ",\n");
 		}
 	}
