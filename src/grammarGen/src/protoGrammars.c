@@ -11,7 +11,6 @@
  * @date May 11, 2011
  * @author Rumen Kyusakov
  * @version 0.5
- * @par[Revision] $Id$
  */
 
 #define RULE_EXTENSION_FACTOR 20

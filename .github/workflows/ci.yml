@@ -49,6 +49,15 @@ jobs:
             scripts\run-unit-tests.bat
             scripts\run-examples.bat
 
+      - name: Generate User Documentation
+        if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
+        run: |
+          # Install Tectonic
+          curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+          sudo mv tectonic /usr/local/bin/
+          # Generate user PDF
+          scripts/create-user-doc.sh
+
       - name: Prepare Pages Content
         if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
         run: |

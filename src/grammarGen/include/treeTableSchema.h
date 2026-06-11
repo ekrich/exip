@@ -13,7 +13,6 @@
  * @author Rumen Kyusakov
  * @author Robert Cragie
  * @version 0.5
- * @par[Revision] $Id$
  */
 
 #ifndef TREETABLESCHEMA_H_

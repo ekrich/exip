@@ -1,5 +1,4 @@
 /* Copyright (C) 2002 Christopher Clark <firstname.lastname@cl.cam.ac.uk> */
-/* @par[Revision] $Id$
  **/
 
 #ifndef __HASHTABLE_CWC22_H__

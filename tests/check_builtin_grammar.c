@@ -12,7 +12,6 @@
  * @date Mar 29, 2012
  * @author Ken Bannister
  * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include <stdio.h>

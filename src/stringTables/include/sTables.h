@@ -11,7 +11,6 @@
  * @date Sep 14, 2010
  * @author Rumen Kyusakov
  * @version 0.5
- * @par[Revision] $Id$
  */
 
 #ifndef STABLES_H_

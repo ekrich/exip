@@ -1,5 +1,4 @@
 /* Copyright (C) 2004 Christopher Clark <firstname.lastname@cl.cam.ac.uk> */
-/* @par[Revision] $Id$
  **/
 
 #include "hashtable.h"

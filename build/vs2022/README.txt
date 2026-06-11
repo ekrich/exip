@@ -31,5 +31,6 @@
  * @date Jun 10, 2026
  * @author Robert Cragie
  * @author Samuel Guilbard
+ * @author Eric K Richardson
  *
  */

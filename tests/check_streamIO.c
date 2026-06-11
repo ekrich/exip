@@ -13,7 +13,6 @@
  * @author Rumen Kyusakov
  * @author Ashok Gowtham
  * @version 0.5
- * @par[Revision] $Id$
  */
 
 /* Important for _REENT macro - sys/reent.h for Newlib (libc) */

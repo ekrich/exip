@@ -10,7 +10,6 @@
 # * @date Oct 8, 2010
 # * @author Rumen Kyusakov
 # * @version 0.4
-# * @par[Revision] $Id$
 # */
 
 .PHONY : clean all dynlib check examples utils doc dist \

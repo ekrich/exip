@@ -1,6 +1,5 @@
 /** AUTO-GENERATED: Wed Jun 10 13:09:02 2026
   * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU
-  * $Id$ */
 
 /** Compilation parameters:
   * Compiled for no deviations from the schema! (lower memory usage) */
