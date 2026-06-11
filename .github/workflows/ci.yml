@@ -52,8 +52,9 @@ jobs:
       - name: Generate User Documentation
         if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
         run: |
-          # Install Tectonic
-          curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+          # Download Tectonic (musl version is statically linked, no glibc dependency)
+          wget https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.16.9/tectonic-0.16.9-x86_64-unknown-linux-musl.tar.gz
+          tar -xzf tectonic-0.16.9-x86_64-unknown-linux-musl.tar.gz
           sudo mv tectonic /usr/local/bin/
           # Generate user PDF
           scripts/create-user-doc.sh
