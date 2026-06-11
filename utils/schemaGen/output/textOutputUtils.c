@@ -10,7 +10,6 @@
  * @brief Implement utility functions for storing EXIPSchema instances as human readable descriptions
  * @date May 7, 2012
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include "schemaOutputUtils.h"

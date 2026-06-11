@@ -11,7 +11,6 @@
  *
  * @date Nov 5, 2012
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include "createGrammars.h"

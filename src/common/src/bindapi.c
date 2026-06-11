@@ -11,7 +11,6 @@
  *
  * @date Jun 2, 2026
  * @author EXIP Contributors
- * @version 0.5
  */
 
 #include "bindapi.h"

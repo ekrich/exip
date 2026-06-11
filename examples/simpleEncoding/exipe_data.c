@@ -11,7 +11,6 @@
  *
  * @date Jun 3, 2026
  * @author EXIP Contributors
- * @version 0.5
  */
 
 #include "exipe_data.h"

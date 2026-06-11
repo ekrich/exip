@@ -9,6 +9,5 @@
  * @date Jan 29, 2011
  * @author Rumen Kyusakov
  * @author Ken Bannister
- * @version 0.5
  * 
  */

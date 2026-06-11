@@ -10,7 +10,6 @@
  * @brief Defines grammar related functions
  * @date Sep 13, 2010
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include "grammars.h"

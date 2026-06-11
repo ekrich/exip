@@ -10,7 +10,6 @@
  * @brief API for encoding EXI stream body
  * @date Sep 7, 2010
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #ifndef BODYENCODE_H_

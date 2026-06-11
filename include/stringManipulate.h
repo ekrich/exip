@@ -10,7 +10,6 @@
  * @brief String manipulation functions
  * @date Sep 3, 2010
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #ifndef STRINGMANIPULATE_H_

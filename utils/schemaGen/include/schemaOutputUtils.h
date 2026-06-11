@@ -10,7 +10,6 @@
  * @brief Utility functions for storing EXIPSchema instances to external streams
  * @date May 7, 2012
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #ifndef SCHEMABUILDUTILS_H_

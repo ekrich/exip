@@ -10,7 +10,6 @@
  * @brief Definitions and utility functions for EXI Proto-Grammars
  * @date May 11, 2011
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #ifndef PROTOGRAMMARS_H_

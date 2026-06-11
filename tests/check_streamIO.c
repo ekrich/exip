@@ -12,7 +12,6 @@
  * @date Aug 18, 2010
  * @author Rumen Kyusakov
  * @author Ashok Gowtham
- * @version 0.5
  */
 
 /* Important for _REENT macro - sys/reent.h for Newlib (libc) */

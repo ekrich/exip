@@ -11,7 +11,6 @@
  *
  * @date Mar 29, 2012
  * @author Ken Bannister
- * @version 0.5
  */
 
 #include <stdio.h>

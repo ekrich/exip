@@ -11,7 +11,6 @@
  *
  * @date Jul 12, 2012
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include <stdlib.h>

@@ -12,7 +12,6 @@
  * @date Mar 13, 2012
  * @author Rumen Kyusakov
  * @author Robert Cragie
- * @version 0.5
  */
 
 #ifndef TREETABLESCHEMA_H_

@@ -11,7 +11,6 @@
  *
  * @date Jan 25, 2011
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 

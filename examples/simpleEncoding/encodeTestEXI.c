@@ -11,7 +11,6 @@
  *
  * @date Nov 4, 2010
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include "encodeTestEXI.h"

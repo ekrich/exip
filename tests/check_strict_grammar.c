@@ -12,7 +12,6 @@
  * @date Mar 29, 2012
  * @author Ken Bannister
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include <stdio.h>

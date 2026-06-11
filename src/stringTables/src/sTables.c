@@ -10,7 +10,6 @@
  * @brief Implementation of functions describing EXI sting tables operations
  * @date Sep 21, 2010
  * @author Rumen Kyusakov
- * @version 0.5
  */
 
 #include "sTables.h"

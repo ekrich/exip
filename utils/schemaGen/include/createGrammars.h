@@ -11,7 +11,6 @@
  *
  * @date Oct 13, 2010
  * @author Rumen Kyusakov
- * @version 0.5
  */
 #ifndef CREATEGRAMMARS_H_
 #define CREATEGRAMMARS_H_
