@@ -832,7 +832,7 @@ errorCode unbind_Person(..., const EXIPSchema* schema, Person* person) {
 errorCode unbind_Person(..., const EXIPSchema* schema, Person* person) {
     // Schema METADATA tells binding: field "age" is xs:int type
     // Binding converts: string "30" → int 30
-    
+
     if (strcmp(element_name, "age") == 0) {
         // Schema says this field is int, so convert from string
         person->age = atoi(string_value);  // String → int conversion
@@ -2281,7 +2281,67 @@ typedef struct {
 
 ### 2. Polymorphism (xsi:type)
 
+**Schema:**
+```xml
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- Abstract base type -->
+  <xs:complexType name="Shape" abstract="true">
+    <xs:sequence>
+      <xs:element name="color" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Circle extends Shape -->
+  <xs:complexType name="Circle">
+    <xs:complexContent>
+      <xs:extension base="Shape">
+        <xs:sequence>
+          <xs:element name="radius" type="xs:double"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Rectangle extends Shape -->
+  <xs:complexType name="Rectangle">
+    <xs:complexContent>
+      <xs:extension base="Shape">
+        <xs:sequence>
+          <xs:element name="width" type="xs:double"/>
+          <xs:element name="height" type="xs:double"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Element that can hold any Shape subtype -->
+  <xs:element name="shape" type="Shape"/>
+
+</xs:schema>
+```
+
+**Example XML instance:**
+```xml
+<shape xsi:type="Circle" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <color>red</color>
+  <radius>5.0</radius>
+</shape>
+```
+
+**Generated C:**
 ```c
+typedef struct {
+    char color[64];
+    double radius;
+} Circle;
+
+typedef struct {
+    char color[64];
+    double width;
+    double height;
+} Rectangle;
+
 typedef enum {
     SHAPE_CIRCLE,
     SHAPE_RECTANGLE
@@ -2294,6 +2354,41 @@ typedef struct {
         Rectangle rectangle;
     } data;
 } Shape;
+
+// Constructor functions
+Shape create_circle(const char* color, double radius) {
+    Shape shape;
+    shape.type = SHAPE_CIRCLE;
+    strncpy(shape.data.circle.color, color, 64);
+    shape.data.circle.radius = radius;
+    return shape;
+}
+
+Shape create_rectangle(const char* color, double width, double height) {
+    Shape shape;
+    shape.type = SHAPE_RECTANGLE;
+    strncpy(shape.data.rectangle.color, color, 64);
+    shape.data.rectangle.width = width;
+    shape.data.rectangle.height = height;
+    return shape;
+}
+
+// Usage
+void process_shape(Shape* shape) {
+    switch(shape->type) {
+        case SHAPE_CIRCLE:
+            printf("Circle: color=%s, radius=%.2f\n",
+                   shape->data.circle.color,
+                   shape->data.circle.radius);
+            break;
+        case SHAPE_RECTANGLE:
+            printf("Rectangle: color=%s, %.2fx%.2f\n",
+                   shape->data.rectangle.color,
+                   shape->data.rectangle.width,
+                   shape->data.rectangle.height);
+            break;
+    }
+}
 ```
 
 ### 3. Validation
