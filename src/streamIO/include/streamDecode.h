@@ -11,8 +11,6 @@
  *
  * @date Jul 7, 2010
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #ifndef STREAMDECODE_H_

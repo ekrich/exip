@@ -11,8 +11,6 @@
  * @date Mar 13, 2012
  * @author Robert Cragie
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include "treeTableSchema.h"

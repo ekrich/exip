@@ -11,8 +11,6 @@
  *
  * @date Jul 12, 2012
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include <stdlib.h>

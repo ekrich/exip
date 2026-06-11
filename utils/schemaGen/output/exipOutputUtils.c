@@ -10,8 +10,6 @@
  * @brief Implement utility functions for storing EXIPSchema instances in exip-specific format
  * @date May 7, 2012
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include "schemaOutputUtils.h"

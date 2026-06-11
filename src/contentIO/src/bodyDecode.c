@@ -10,8 +10,6 @@
  * @brief Implementing an API for decoding EXI stream body
  * @date Oct 1, 2010
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include "bodyDecode.h"

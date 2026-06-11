@@ -11,8 +11,6 @@
  *
  * @date Nov 28, 2011
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include "initSchemaInstance.h"

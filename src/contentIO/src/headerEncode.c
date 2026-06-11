@@ -11,8 +11,6 @@
  *
  * @date Aug 23, 2010
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id$
  */
 
 #include "headerEncode.h"

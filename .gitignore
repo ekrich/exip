@@ -5,6 +5,7 @@
 
 # generated output
 /docs/dev/doxygen
+/docs/www/exip-user-guide.pdf
 /bin/
 error.log
 

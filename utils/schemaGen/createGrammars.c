@@ -11,8 +11,6 @@
  *
  * @date Oct 13, 2010
  * @author Rumen Kyusakov
- * @version 0.5
- * @par[Revision] $Id: decodeTestEXI.c 93 2011-03-30 15:39:41Z kjussakov $
  */
 
 #include "procTypes.h"
@@ -76,7 +74,7 @@ errorCode toStaticSrc(EXIPSchema* schemaPtr, char* prefix, FILE *outfile, Deviat
 	EXIGrammar* tmpGrammar;
 
 	time(&now);
-	fprintf(outfile, "/** AUTO-GENERATED: %.24s\n  * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU\n  * $Id$ */\n\n",  ctime(&now));
+	fprintf(outfile, "/** AUTO-GENERATED: %.24s\n  * Copyright (c) 2010 - 2011, Rumen Kyusakov, EISLAB, LTU\n  * Copyright (c) 2026, ekrich.org */\n\n",  ctime(&now));
 
 	fprintf(outfile, "/** Compilation parameters:\n");
 	if(dvis.grammar != 0 || dvis.ln != 0 || dvis.url != 0 || dvis.pfx != 0)
