@@ -52,13 +52,14 @@ jobs:
       - name: Prepare Pages Content
         if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
         run: |
-          mkdir staging
+          # Make the dirs
+          mkdir -p staging/user staging/doxygen
           # Copy your .nojekyll from root to staging
           cp .nojekyll staging/
           # Copy your new 'docs' content into staging
           cp -r docs/www/* staging/
-          cp -r docs/user staging/user
-          cp -r docs/dev/doxygen/html staging/doxygen
+          cp -r docs/user/* staging/user
+          cp -r docs/dev/doxygen/html/* staging/doxygen
 
       - name: Upload Pages Artifact
         if: startsWith(matrix.os, 'ubuntu') && (github.ref == 'refs/heads/main')
