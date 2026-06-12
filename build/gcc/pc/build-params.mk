@@ -10,8 +10,8 @@ DEBUGGING = -O0 -g #-fno-stack-protector
 # Warning flags
 WARNING = -Wpacked -Wall -Wextra
 
-# Add aditional CFLAGS if any 
-ADDITIONAL_CFLAGS = -std=c99
+# Add additional CFLAGS if any
+ADDITIONAL_CFLAGS = -std=c11
 
 # Whether to include the grammar generation module in the build
 INCLUDE_GRAMMAR_GENERATION = true
