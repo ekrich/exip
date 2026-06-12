@@ -22,7 +22,7 @@
 /*
 Credit for primes table: Aaron Krowne
  http://br.endernet.org/~akrowne/
- http://planetmath.org/encyclopedia/GoodHashTablePrimes.html
+ http://planetmath.org/goodhashtableprimes
 */
 static const uint32_t primes[] = {
 53, 97, 193, 389,
