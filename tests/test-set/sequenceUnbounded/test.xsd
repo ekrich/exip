@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="unqualified">
+
+   <!-- Root element -->
+   <xsd:element name="root" type="rootType"/>
+
+   <!-- Type with repeating sequence pattern that triggers EXIP limitation -->
+   <!-- This pattern is valid W3C XML Schema but causes assertion at genUtils.c:268 -->
+   <xsd:complexType name="rootType">
+      <xsd:sequence maxOccurs="unbounded">
+         <xsd:element name="item" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+</xsd:schema>

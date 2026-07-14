@@ -1813,6 +1813,23 @@ START_TEST (test_whitespace_schema_decode)
 }
 END_TEST
 
+/* Tests sequence with maxOccurs="unbounded" grammar generation
+ * Documents known limitation: triggers assertion at genUtils.c:268
+ * TODO: Once genUtils.c:268 is fixed, this test should pass
+ */
+START_TEST (test_sequence_unbounded)
+{
+	EXIPSchema schema;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+
+	parseSchema("sequenceUnbounded/test.xsd.exi", &schema);
+
+	destroySchema(&schema);
+}
+END_TEST
+
 /* Test suite */
 
 Suite* exip_suite(void)
@@ -1830,6 +1847,7 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_malformed_annotation_handling);
 	  tcase_add_test (tc_builtin, test_whitespace_schemaless_decode);
 	  tcase_add_test (tc_builtin, test_whitespace_schema_decode);
+	  tcase_add_test (tc_builtin, test_sequence_unbounded);
 	  suite_add_tcase (s, tc_builtin);
 	}
 

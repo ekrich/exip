@@ -2564,3 +2564,35 @@ These would return **EXIP `String` types**, not C strings. Generated code curren
 - String conversion helpers (string→int, string→bool, string→float)
 - Binary data handling (base64/hex for schemaless mode)
 - Error handling patterns
+
+## Encoding Function Generation Strategy
+
+**Approach:** Generate one encoding function per struct type. Each function directly references generated `LnEntry` arrays using numeric indices. Nested structs call their respective encoders recursively.
+
+**String References:**
+```c
+// Generated code uses numeric indices directly
+errorCode encode_Person(EXIStream* strm, const Person* data) {
+    QName qname;
+    EXITypeClass valueType;
+
+    // Reference existing LnEntry arrays with numeric indices
+    qname.uri = &xmlscm_uriEntry[1].uriStr;
+    qname.localName = &xmlscm_LnEntry_0[23].lnStr;  // No symbolic names needed
+    qname.prefix = NULL;
+
+    TRY(serialize.startElement(strm, qname, &valueType));
+    // ... encode fields in schema order ...
+    TRY(serialize.endElement(strm));
+    return EXIP_OK;
+}
+```
+
+**Key Principles:**
+- No symbolic constants needed - function names (`encode_Person`) provide readability
+- Numeric indices (`xmlscm_LnEntry_0[23]`) are generated from schema metadata
+- Nested structs: call child encoders (`TRY(encode_Address(strm, &data->address))`)
+- Arrays: loop and encode each element
+- Optional fields: check presence flags before encoding
+- Schema order: generator ensures fields encoded in correct sequence
+- Recursive traversal mirrors schema hierarchy
