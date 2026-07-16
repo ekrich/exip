@@ -5,12 +5,14 @@
    <!-- Root element -->
    <xsd:element name="root" type="rootType"/>
 
-   <!-- Type with repeating sequence pattern that triggers EXIP limitation -->
-   <!-- This pattern is valid W3C XML Schema but causes assertion at genUtils.c:268 -->
+   <!-- Nested unbounded pattern: (item* value*)* -->
+   <!-- Matches CCSDS NDM/XML 4.0 userDefinedType in common schema: (COMMENT* USER_DEFINED*)* -->
+   <!-- Tests collision resolution for unbounded sequences with unbounded children -->
+   <!-- Previously caused assertion at genUtils.c:268 -->
    <xsd:complexType name="rootType">
       <xsd:sequence maxOccurs="unbounded">
-         <xsd:element name="item" type="xsd:string" minOccurs="0"/>
-         <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+         <xsd:element name="item" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="value" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
       </xsd:sequence>
    </xsd:complexType>
 </xsd:schema>
