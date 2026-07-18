@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<root>
-   <item>first</item>
-   <value>data1</value>
-   <item>second</item>
-   <value>data2</value>
-</root>
+<!-- Minimal CCSDS NDM structure reproducer -->
+<ndm>
+   <COMMENT>NDM comment 1</COMMENT>
+   <COMMENT></COMMENT>
+   <COMMENT>NDM comment 2</COMMENT>
+   <omm>
+      <COMMENT>OMM comment 1</COMMENT>
+      <COMMENT>OMM comment 2</COMMENT>
+      <meanElements>Mean elements data</meanElements>
+      <userDefinedParameters>
+         <COMMENT>User defined comment</COMMENT>
+         <USER_DEFINED parameter="SEMIMAJOR_AXIS">7049.607</USER_DEFINED>
+         <USER_DEFINED parameter="DECAY_DATE"/>
+         <USER_DEFINED parameter="PERIOD">98.176</USER_DEFINED>
+      </userDefinedParameters>
+   </omm>
+</ndm>

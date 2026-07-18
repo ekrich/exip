@@ -230,12 +230,14 @@ static errorCode sample_endElement(void* app_data)
 	else if(appD->outputFormat == OUT_XML)
 	{
 		struct element* el;
+		el = pop(&(appD->stack));
 
 		if(appD->unclosedElement)
-			printf(">\n");
+			printf("/>\n");
+		else
+			printf("</%s>\n", el->name);
+
 		appD->unclosedElement = 0;
-		el = pop(&(appD->stack));
-		printf("</%s>\n", el->name);
 		destroyElement(el);
 	}
 
