@@ -124,7 +124,7 @@ extern "C" {
 #  define EXIP_DEBUG_LEVEL INFO
 # endif
 
-# define DEBUG_MSG(level, module, msg) do { if (level >= EXIP_DEBUG_LEVEL && module == ON) { DEBUG_OUTPUT(msg); } } while(0)
+# define DEBUG_MSG(level, module, msg) do { if (level >= EXIP_DEBUG_LEVEL && (level == ERROR || module == ON)) { DEBUG_OUTPUT(msg); } } while(0)
 #else
 #  define DEBUG_MSG(level, module, msg)
 #endif /* EXIP_DEBUG */

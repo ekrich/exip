@@ -265,7 +265,8 @@ static errorCode addProductionsToARule(ProtoGrammar* left, Index ruleIndxL, Prot
 						// <sequence><any> <any></sequence> or
 						// <sequence><element name="test"> <element name="test"></sequence>
 						// TODO: solve that!
-						assert(false);
+						DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("> Grammar collision: duplicate adjacent elements in sequence not implemented yet at %s, line %d\n", __FILE__, __LINE__));
+						return EXIP_NOT_IMPLEMENTED_YET;
 					}
 				}
 			}
