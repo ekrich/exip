@@ -129,7 +129,12 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 					}
 					else
 					{
-						DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("> An <import> statement in schema cannot be resolved"));
+						DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("> Cannot resolve <import"));
+						DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, (" namespace=\""));
+						printString(&(*treeT)[i].tree[g].attributePointers[ATTRIBUTE_NAMESPACE]);
+						DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\" schemaLocation=\""));
+						printString(&(*treeT)[i].tree[g].attributePointers[ATTRIBUTE_SCHEMA_LOCATION]);
+						DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\">\n"));
 						return EXIP_INVALID_EXIP_CONFIGURATION;
 					}
 				}
@@ -199,7 +204,10 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 				}
 				else
 				{
-					DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("> An <include> statement in schema cannot be resolved"));
+					DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("> Cannot resolve <include"));
+					DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, (" schemaLocation=\""));
+					printString(&(*treeT)[i].tree[includeTblIndex[tmpInclCnt]].attributePointers[ATTRIBUTE_SCHEMA_LOCATION]);
+					DEBUG_MSG(ERROR, DEBUG_GRAMMAR_GEN, ("\">\n"));
 					return EXIP_INVALID_EXIP_CONFIGURATION;
 				}
 			}

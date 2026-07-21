@@ -1,0 +1,24 @@
+## Sequence maxOccurs="unbounded" Test
+
+Attempted reproducer for a grammar collision issue found in CCSDS NDM/XML 4.0 schemas.
+
+### Real-World Issue
+
+CCSDS NDM/XML 4.0 schemas trigger a grammar collision error during schema generation:
+
+```
+> Grammar collision: duplicate adjacent elements in sequence not implemented yet at genUtils.c, line 269
+```
+
+The schemas return `EXIP_NOT_IMPLEMENTED_YET` (error code 1) and cannot be loaded.
+
+### Reproducer Status
+
+Incomplete - the minimal schema here does **not** trigger the collision. The `test_sequence_unbounded` test in `check_strict_grammar` currently passes (schema loads successfully with `EXIP_OK`).
+
+### Test Files
+
+- `test.xsd` - Minimal schema attempting to reproduce the pattern
+- `test.xsd.exi` - EXI-encoded schema
+- `test.xml` - Sample data
+- `test.xml.exi` - EXI-encoded data

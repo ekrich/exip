@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            elementFormDefault="unqualified">
+
+   <!-- Minimal CCSDS NDM structure reproducer -->
+   <xsd:element name="ndm" type="ndmType"/>
+
+   <!-- Matches ndmType: COMMENT* followed by unbounded choice -->
+   <xsd:complexType name="ndmType">
+      <xsd:sequence>
+         <xsd:element name="COMMENT" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="omm" type="ommType"/>
+         </xsd:choice>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <!-- Matches ommData structure -->
+   <xsd:complexType name="ommType">
+      <xsd:sequence>
+         <xsd:element name="COMMENT" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="meanElements" type="xsd:string"/>
+         <xsd:element name="userDefinedParameters" type="userDefinedType" minOccurs="0"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <!-- Matches userDefinedType: (COMMENT* USER_DEFINED*) -->
+   <xsd:complexType name="userDefinedType">
+      <xsd:sequence>
+         <xsd:element name="COMMENT" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+         <xsd:element name="USER_DEFINED" type="userDefinedParameterType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <!-- Matches userDefinedParameterType: simpleContent extension -->
+   <xsd:complexType name="userDefinedParameterType">
+      <xsd:simpleContent>
+         <xsd:extension base="xsd:string">
+            <xsd:attribute name="parameter" type="xsd:string" use="required"/>
+         </xsd:extension>
+      </xsd:simpleContent>
+   </xsd:complexType>
+</xsd:schema>

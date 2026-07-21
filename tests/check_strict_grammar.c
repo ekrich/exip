@@ -57,7 +57,7 @@ size_t writeFileOutputStream(void* buf, size_t readSize, void* stream)
 	return fwrite(buf, 1, readSize, outfile);
 }
 
-static void parseSchema(const char* fileName, EXIPSchema* schema)
+static errorCode parseSchema(const char* fileName, EXIPSchema* schema)
 {
 	FILE *schemaFile;
 	BinaryBuffer buffer;
@@ -73,38 +73,33 @@ static void parseSchema(const char* fileName, EXIPSchema* schema)
 	{
 		fail("Unable to open file %s", exipath);
 	}
-	else
+
+	//Get file length
+	fseek(schemaFile, 0, SEEK_END);
+	buffer.bufLen = ftell(schemaFile) + 1;
+	fseek(schemaFile, 0, SEEK_SET);
+
+	//Allocate memory
+	buffer.buf = (char *)malloc(buffer.bufLen);
+	if (!buffer.buf)
 	{
-		//Get file length
-		fseek(schemaFile, 0, SEEK_END);
-		buffer.bufLen = ftell(schemaFile) + 1;
-		fseek(schemaFile, 0, SEEK_SET);
-
-		//Allocate memory
-		buffer.buf = (char *)malloc(buffer.bufLen);
-		if (!buffer.buf)
-		{
-			fclose(schemaFile);
-			fail("Memory allocation error!");
-		}
-
-		//Read file contents into buffer
-		fread(buffer.buf, buffer.bufLen, 1, schemaFile);
 		fclose(schemaFile);
-
-		buffer.bufContent = buffer.bufLen;
-		buffer.ioStrm.readWriteToStream = NULL;
-		buffer.ioStrm.stream = NULL;
-
-		tmp_err_code = generateSchemaInformedGrammars(&buffer, 1, SCHEMA_FORMAT_XSD_EXI, NULL, schema, NULL);
-
-		if(tmp_err_code != EXIP_OK)
-		{
-			fail("\n Error reading schema: %d", tmp_err_code);
-		}
-
-		free(buffer.buf);
+		fail("Memory allocation error!");
 	}
+
+	//Read file contents into buffer
+	fread(buffer.buf, buffer.bufLen, 1, schemaFile);
+	fclose(schemaFile);
+
+	buffer.bufContent = buffer.bufLen;
+	buffer.ioStrm.readWriteToStream = NULL;
+	buffer.ioStrm.stream = NULL;
+
+	tmp_err_code = generateSchemaInformedGrammars(&buffer, 1, SCHEMA_FORMAT_XSD_EXI, NULL, schema, NULL);
+
+	free(buffer.buf);
+
+	return tmp_err_code;
 }
 
 
@@ -288,7 +283,8 @@ START_TEST (test_acceptance_for_A_01)
 	// Parsing steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &schema);
+	tmp_err_code = parseSchema(schemafname, &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I.B: Define an external stream for the input to the parser if any
 	size_t pathlen = strlen(dataDir);
@@ -450,7 +446,8 @@ START_TEST (test_acceptance_for_A_01_exip1)
 	// Parsing steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &schema);
+	tmp_err_code = parseSchema(schemafname, &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I.B: Define an external stream for the input to the parser if any
 	size_t pathlen = strlen(dataDir);
@@ -572,7 +569,8 @@ START_TEST (test_acceptance_for_A_01b)
 	// Serialization steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &schema);
+	tmp_err_code = parseSchema(schemafname, &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I: First initialize the header of the stream
 	serialize.initHeader(&testStrm);
@@ -843,7 +841,8 @@ static error_code serializeIOMsg(char* buf, unsigned int buf_size, unsigned int*
 	// Serialization steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &lkab_schema);
+	tmp_err_code = parseSchema(schemafname, &lkab_schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I: First initialize the header of the stream
 	serialize.initHeader(&strm);
@@ -940,7 +939,8 @@ static error_code serializeDevDescMsg(char* buf, unsigned int buf_size, unsigned
 	// Serialization steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &lkab_schema);
+	tmp_err_code = parseSchema(schemafname, &lkab_schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I: First initialize the header of the stream
 	serialize.initHeader(&strm);
@@ -1079,7 +1079,8 @@ static error_code parseIOMsg(char* buf, unsigned int buf_size, BoolValue *val)
 	// Parsing steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &lkab_schema);
+	tmp_err_code = parseSchema(schemafname, &lkab_schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I: First, define an external stream for the input to the parser if any
 	buffer.ioStrm.stream = NULL;
@@ -1152,7 +1153,8 @@ static error_code parseDevDescMsg(char* buf, unsigned int buf_size, DevDescribti
 	// Parsing steps:
 
 	// I.A: First, read in the schema
-	parseSchema(schemafname, &lkab_schema);
+	tmp_err_code = parseSchema(schemafname, &lkab_schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// I: First, define an external stream for the input to the parser if any
 	buffer.ioStrm.stream = NULL;
@@ -1618,7 +1620,8 @@ START_TEST (test_whitespace_facets)
 
 	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
 
-	parseSchema("xsWhitespace/whitespace-test.xsd.exi", &schema);
+	tmp_err_code = parseSchema("xsWhitespace/whitespace-test.xsd.exi", &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// Before fix: parseSchema fails with EXIP_NOT_IMPLEMENTED_YET
 	// After fix: should return EXIP_OK and load all whiteSpace facets
@@ -1638,7 +1641,8 @@ START_TEST (test_annotation_handling)
 
 	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
 
-	parseSchema("xsAnnotation/annotation-test.xsd.exi", &schema);
+	tmp_err_code = parseSchema("xsAnnotation/annotation-test.xsd.exi", &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// Annotations should be filtered during parsing (treeTableBuild.c)
 	// Grammar generation should succeed without errors
@@ -1659,7 +1663,8 @@ START_TEST (test_malformed_annotation_handling)
 
 	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
 
-	parseSchema("xsAnnotation/malformed-annotation-test.xsd.exi", &schema);
+	tmp_err_code = parseSchema("xsAnnotation/malformed-annotation-test.xsd.exi", &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	// Even malformed schemas should not crash
 	// Annotations in invalid positions should still be filtered
@@ -1756,7 +1761,8 @@ START_TEST (test_whitespace_schema_decode)
 
 	// Load schema
 	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
-	parseSchema(schemafname, &schema);
+	tmp_err_code = parseSchema(schemafname, &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
 	buffer.buf = buf;
 	buffer.bufContent = 0;
@@ -1813,6 +1819,41 @@ START_TEST (test_whitespace_schema_decode)
 }
 END_TEST
 
+/* Tests sequence with maxOccurs="unbounded" grammar generation
+ * Documents known limitation: triggers assertion at genUtils.c:268
+ * TODO: Once genUtils.c:268 is fixed, this test should pass
+ */
+START_TEST (test_sequence_unbounded)
+{
+	EXIPSchema schema;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+
+	tmp_err_code = parseSchema("sequenceUnbounded/test.xsd.exi", &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
+
+	destroySchema(&schema);
+}
+END_TEST
+
+START_TEST (test_missing_import)
+{
+	EXIPSchema schema;
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+
+	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
+
+	// This should fail with EXIP_INVALID_EXIP_CONFIGURATION because missing.xsd is not provided
+	tmp_err_code = parseSchema("schemaImport/main.xsd.exi", &schema);
+
+	destroySchema(&schema);
+
+	fail_unless(tmp_err_code == EXIP_INVALID_EXIP_CONFIGURATION,
+	            "Expected EXIP_INVALID_EXIP_CONFIGURATION(12) but got %d", tmp_err_code);
+}
+END_TEST
+
 /* Test suite */
 
 Suite* exip_suite(void)
@@ -1830,6 +1871,8 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_malformed_annotation_handling);
 	  tcase_add_test (tc_builtin, test_whitespace_schemaless_decode);
 	  tcase_add_test (tc_builtin, test_whitespace_schema_decode);
+	  tcase_add_test (tc_builtin, test_sequence_unbounded);
+	  tcase_add_test (tc_builtin, test_missing_import);
 	  suite_add_tcase (s, tc_builtin);
 	}
 
