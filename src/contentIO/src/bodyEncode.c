@@ -635,7 +635,7 @@ errorCode encodeQName(EXIStream* strm, QName qname, EventType eventT, QNameID* q
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 
-	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Encoding QName\n"));
+	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Encoding: QName\n"));
 
 /******* Start: URI **********/
 	TRY(encodeUri(strm, (String*) qname.uri, &qnameID->uriId));

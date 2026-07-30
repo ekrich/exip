@@ -137,7 +137,7 @@ static errorCode handleProduction(EXIStream* strm, Production* prodHit, SmallInd
 			}
 		break;
 		case EVENT_EE:
-			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, ("> EE event:\n"));
+			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">EE event:\n"));
 			strm->context.isNilType = false;
 			if(handler->endElement != NULL)
 			{
@@ -232,6 +232,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 		{
 			case 0:
 				// StartTagContent : EE event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">EE event:\n"));
 				strm->context.isNilType = false;
 				if(handler->endElement != NULL)
 				{
@@ -245,6 +246,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			break;
 			case 1:
 				// StartTagContent : AT(*) event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(*) event:\n"));
 				*nonTermID_out = GR_START_TAG_CONTENT;
 
 				TRY(decodeATWildcardEvent(strm, handler, nonTermID_out, app_data));
@@ -265,14 +267,17 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			break;
 			case 2:
 				// StartTagContent : NS event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">NS event:\n"));
 				TRY(decodeNSEvent(strm, handler, nonTermID_out, app_data));
 			break;
 			case 3:
 				// StartTagContent : SC event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SC event:\n"));
 				return EXIP_NOT_IMPLEMENTED_YET;
 			break;
 			case 4:
 				// SE(*) event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(*) event:\n"));
 				strm->gStack->currNonTermID = GR_ELEMENT_CONTENT;
 
 				TRY(decodeSEWildcardEvent(strm, handler, nonTermID_out, app_data));
@@ -280,7 +285,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			break;
 			case 5:
 				// CH event
-				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event\n"));
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event:\n"));
 
 				*nonTermID_out = GR_ELEMENT_CONTENT;
 
@@ -290,10 +295,12 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			break;
 			case 6:
 				// ER event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">ER event:\n"));
 				return EXIP_NOT_IMPLEMENTED_YET;
 			break;
 			case 7:
 				// CM or PI event
+				DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CM/PI event:\n"));
 				return EXIP_NOT_IMPLEMENTED_YET;
 			break;
 			default:
@@ -461,7 +468,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				{
 					case 0:
 						// AT(xsi:type) event
-						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:type) event\n"));
+						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:type) event:\n"));
 						strm->context.currAttr.uriId = XML_SCHEMA_INSTANCE_ID;
 						strm->context.currAttr.lnId = XML_SCHEMA_INSTANCE_TYPE_ID;
 						qname.uri = &strm->schema->uriTable.uri[strm->context.currAttr.uriId].uriStr;
@@ -479,7 +486,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 						if(nil == true)
 							strm->context.isNilType = true;
 
-						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:nil) event\n"));
+						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:nil) event:\n"));
 						strm->context.currAttr.uriId = XML_SCHEMA_INSTANCE_ID;
 						strm->context.currAttr.lnId = XML_SCHEMA_INSTANCE_NIL_ID;
 						qname.uri = &strm->schema->uriTable.uri[strm->context.currAttr.uriId].uriStr;
@@ -599,6 +606,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			{
 				case 0:
 					// EE event
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">EE event:\n"));
 					strm->context.isNilType = false;
 					if(handler->endElement != NULL)
 					{
@@ -608,7 +616,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				break;
 				case 1:
 					// AT(xsi:type) event
-					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:type) event\n"));
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:type) event:\n"));
 					strm->context.currAttr.uriId = XML_SCHEMA_INSTANCE_ID;
 					strm->context.currAttr.lnId = XML_SCHEMA_INSTANCE_TYPE_ID;
 					qname.uri = &strm->schema->uriTable.uri[strm->context.currAttr.uriId].uriStr;
@@ -628,7 +636,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 						if(nil == true)
 							strm->context.isNilType = true;
 
-						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:nil) event\n"));
+						DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(xsi:nil) event:\n"));
 						strm->context.currAttr.uriId = XML_SCHEMA_INSTANCE_ID;
 						strm->context.currAttr.lnId = XML_SCHEMA_INSTANCE_NIL_ID;
 						qname.uri = &strm->schema->uriTable.uri[strm->context.currAttr.uriId].uriStr;
@@ -648,23 +656,28 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				break;
 				case 3:
 					// AT(*)
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(*) event:\n"));
 					*nonTermID_out = strm->gStack->currNonTermID;
 					TRY(decodeATWildcardEvent(strm, handler, nonTermID_out, app_data));
 				break;
 				case 4:
 					// third level AT: eighter AT (qname) [untyped value] or AT (*) [untyped value]
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(untyped) event:\n"));
 					return EXIP_NOT_IMPLEMENTED_YET;
 				break;
 				case 5:
 					// NS Element i, 0
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">NS event:\n"));
 					TRY(decodeNSEvent(strm, handler, nonTermID_out, app_data));
 				break;
 				case 6:
 					// SC event
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SC event:\n"));
 					return EXIP_NOT_IMPLEMENTED_YET;
 				break;
 				case 7:
 					// SE(*) content|same_rule
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(*) event:\n"));
 					if(isContent2Grammar || strm->gStack->currNonTermID < GET_CONTENT_INDEX(strm->gStack->grammar->props))
 					{
 						// currNonTermID should point to the content grammar rule
@@ -677,7 +690,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				break;
 				case 8:
 					// CH [untyped value] content|same_rule
-					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event\n"));
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event:\n"));
 					if(isContent2Grammar || strm->gStack->currNonTermID < GET_CONTENT_INDEX(strm->gStack->grammar->props))
 					{
 						// nonTermID_out should point to the content grammar rule
@@ -692,10 +705,12 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				break;
 				case 9:
 					// ER event
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">ER event:\n"));
 					return EXIP_NOT_IMPLEMENTED_YET;
 				break;
 				case 10:
 					// third level: CM or PI event
+					DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CM/PI event:\n"));
 					return EXIP_NOT_IMPLEMENTED_YET;
 				break;
 				default:
@@ -728,7 +743,7 @@ errorCode decodeQName(EXIStream* strm, QName* qname, QNameID* qnameID)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 
-	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Decoding QName\n"));
+	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Decoding: QName\n"));
 
 	TRY(decodeUri(strm, &qnameID->uriId));
 	qname->uri = &(strm->schema->uriTable.uri[qnameID->uriId].uriStr);
@@ -748,13 +763,13 @@ errorCode decodeUri(EXIStream* strm, SmallIndex* uriId)
 	if(tmp_val_buf == 0) // uri miss
 	{
 		String str;
-		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">URI miss\n"));
+		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">URI: miss\n"));
 		TRY(decodeString(strm, &str));
 		TRY(addUriEntry(&strm->schema->uriTable, str, uriId));
 	}
 	else // uri hit
 	{
-		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">URI hit\n"));
+		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">URI: hit\n"));
 		*uriId = (SmallIndex) (tmp_val_buf - 1);
 		if(*uriId >= strm->schema->uriTable.count)
 			return EXIP_INVALID_EXI_INPUT;
@@ -774,7 +789,7 @@ errorCode decodeLn(EXIStream* strm, Index uriId, Index* lnId)
 	{
 		unsigned long l_lnId;
 		unsigned char lnBits = getBitsNumber((unsigned int)(strm->schema->uriTable.uri[uriId].lnTable.count - 1));
-		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">local-name table hit\n"));
+		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">local-name table: hit\n"));
 		TRY(decodeNBitUnsignedInteger(strm, lnBits, &l_lnId));
 
 		if(l_lnId >= strm->schema->uriTable.uri[uriId].lnTable.count)
@@ -784,7 +799,7 @@ errorCode decodeLn(EXIStream* strm, Index uriId, Index* lnId)
 	else // local-name table miss
 	{
 		String lnStr;
-		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">local-name table miss\n"));
+		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">local-name table: miss\n"));
 
 		TRY(allocateStringMemoryManaged(&(lnStr.str),(Index) (tmpVar - 1), &strm->memList));
 		TRY(decodeStringOnly(strm, (Index)tmpVar - 1, &lnStr));
@@ -840,13 +855,13 @@ errorCode decodePfx(EXIStream* strm, SmallIndex uriId, SmallIndex* pfxId)
 	if(tmp_val_buf == 0) // prefix miss
 	{
 		String str;
-		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix miss\n"));
+		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix: miss\n"));
 		TRY(decodeString(strm, &str));
 		TRY(addPfxEntry(&strm->schema->uriTable.uri[uriId].pfxTable, str, pfxId));
 	}
 	else // prefix hit
 	{
-		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix hit\n"));
+		DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Prefix: hit\n"));
 		*pfxId = (SmallIndex) (tmp_val_buf-1);
 		if(*pfxId >= strm->schema->uriTable.uri[uriId].pfxTable.count)
 			return EXIP_INVALID_EXI_INPUT;
@@ -883,7 +898,7 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 	{
 		unsigned long valueEntryID = 0;
 		unsigned char valueBits;
-		
+
 		valueBits = getBitsNumber(strm->valueTable.count - 1);
 		TRY(decodeNBitUnsignedInteger(strm, valueBits, &valueEntryID));
 
@@ -971,7 +986,7 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 		break;
 		case EVENT_AT_QNAME:
 		{
-			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(qname) event\n"));
+			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(qname) event:\n"));
 			strm->context.currAttr = prodHit->qnameId;
 			qname.uri = &strm->schema->uriTable.uri[strm->context.currAttr.uriId].uriStr;
 			qname.localName = &GET_LN_URI_QNAME(strm->schema->uriTable, prodHit->qnameId).lnStr;
@@ -991,7 +1006,7 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 		break;
 		case EVENT_CH:
 		{
-			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event\n"));
+			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event:\n"));
 			assert(strm->context.isNilType == false);
 			TRY(decodeValueItem(strm, prodHit->typeId, handler, nonTermID_out, strm->gStack->currQNameID, app_data));
 		}
@@ -1079,7 +1094,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		case VALUE_TYPE_FLOAT:
 		{
 			Float flVal;
-			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Float value\n"));
+			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Value: Float\n"));
 			TRY(decodeFloatValue(strm, &flVal));
 			if(handler->floatData != NULL)  // Invoke handler method
 			{
@@ -1119,7 +1134,7 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 			{
 				TRY_CATCH(handler->binaryData(binary_val, nbytes, app_data), EXIP_MFREE(binary_val));
 			}
-			
+
 			/* Free the memory allocated by decodeBinary() */
 			EXIP_MFREE(binary_val);
 		}
@@ -1297,7 +1312,7 @@ errorCode decodeSEWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 	QName qname;
 	QNameID qnameId = {URI_MAX, LN_MAX};
 
-	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(*) event\n"));
+	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(*) event:\n"));
 
 	// The content of SE event is the element qname
 	TRY(decodeQName(strm, &qname, &qnameId));
@@ -1431,7 +1446,7 @@ errorCode decodeATWildcardEvent(EXIStream* strm, ContentHandler* handler, SmallI
 	QName qname;
 	QNameID qnameId = {URI_MAX, LN_MAX};
 
-	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(*) event\n"));
+	DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">AT(*) event:\n"));
 
 	TRY(decodeQName(strm, &qname, &qnameId));
 
