@@ -72,6 +72,10 @@ All new source files should include the standard EXIP header:
 - **Constants**: UPPER_SNAKE_CASE (e.g., `EXIP_OK`, `INDEX_MAX`)
 - **Macros**: UPPER_SNAKE_CASE (e.g., `SET_STRICT`, `WITH_COMPRESSION`)
 
+### Comments
+
+Code should be self-documenting through clear naming. Only add comments for non-obvious logic (invariants, constraints, edge cases, missing implementation) or W3C EXI/XML Schema specification references. Public APIs in `include/` use Doxygen-style documentation.
+
 ### File Organization
 
 ```
