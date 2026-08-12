@@ -19,6 +19,11 @@
 #include "initSchemaInstance.h"
 #include "sTables.h"
 
+/**
+ * Internal functions from other grammarGen module files (not public API)
+ */
+errorCode initTreeTable(TreeTable* treeT);
+errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema);
 
 static int compareLn(const void* lnRow1, const void* lnRow2);
 static int compareUri(const void* uriRow1, const void* uriRow2);
@@ -27,6 +32,24 @@ static int compareUri(const void* uriRow1, const void* uriRow2);
  * Sorts the pre-populated entries in the string tables according to the spec.
  */
 static void sortUriTable(UriTable* uriTable);
+
+errorCode generateTreeTables(BinaryBuffer* buffers, unsigned int bufCount, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema)
+{
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	unsigned int i;
+
+	for(i = 0; i < bufCount; i++)
+	{
+		TRY(initTreeTable(&treeT[i]));
+	}
+
+	for(i = 0; i < bufCount; i++)
+	{
+		TRY(generateTreeTable(buffers[i], schemaFormat, opt, &treeT[i], schema));
+	}
+
+	return EXIP_OK;
+}
 
 errorCode generateOptimizedTreeTable(const BinaryBuffer* buffers, const unsigned int bufCount, const SchemaFormat schemaFormat, const EXIOptions* opt,
 		TreeTable** treeT, unsigned int* treeTCount, SubstituteTable* subsTbl, EXIPSchema* schema,
@@ -46,20 +69,12 @@ errorCode generateOptimizedTreeTable(const BinaryBuffer* buffers, const unsigned
 	/* Initialize the SubstituteTable in case there are substitution groups defined in the schema */
 	TRY(createDynArray(&subsTbl->dynArray, sizeof(SubtGroupHead), 5));
 
-	for(i = 0; i < bufCount; i++)
-	{
-		TRY(initTreeTable(&(*treeT)[i]));
-	}
-
 	if(schema != NULL)
 	{
 		TRY(initSchema(schema, INIT_SCHEMA_SCHEMA_ENABLED));
 	}
 
-	for(i = 0; i < bufCount; i++)
-	{
-		TRY(generateTreeTable(buffers[i], schemaFormat, (EXIOptions*)opt, &(*treeT)[i], schema));
-	}
+	TRY(generateTreeTables((BinaryBuffer*)buffers, bufCount, schemaFormat, (EXIOptions*)opt, *treeT, schema));
 
 	TRY(resolveIncludeImportReferences(schema, treeT, treeTCount, loadSchemaHandler));
 

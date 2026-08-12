@@ -86,11 +86,30 @@ static errorCode xsd_intData(Integer int_val, void* app_data);
 
 static void initEntryContext(TreeTableEntry* entry);
 
-////////////
-
 static const char TRUE_CHAR_STR[] = "true";
 static const char FALSE_CHAR_STR[] = "false";
 
+/**
+ * @brief Builds a TreeTable from a single schema file
+ *
+ * Parses one schema buffer and builds an in-memory TreeTable representation.
+ * Also fills pre-populated entries in the EXIPSchema string tables if schema parameter is provided.
+ *
+ * Schema files should be encoded with Preserve.prefixes option and can be encoded either
+ * schema-informed (using GRAMMAR_GEN_SCHEMA) or schemaless.
+ *
+ * Called once per schema file. For schemas with <import>/<include>, this function is called
+ * multiple times (once per file) by generateTreeTables().
+ *
+ * Internal function - not part of public API.
+ *
+ * @param[in] buffer input buffer holding the schema representation
+ * @param[in] schemaFormat SCHEMA_FORMAT_XSD_EXI (only format currently supported), SCHEMA_FORMAT_XSD, or SCHEMA_FORMAT_DTD
+ * @param[in] opt EXI options for decoding the schema buffer (can be NULL)
+ * @param[out] treeT TreeTable to populate (must be initialized via initTreeTable())
+ * @param[out] schema EXIPSchema for string table population (can be NULL for code generation)
+ * @return Error handling code
+ */
 errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;

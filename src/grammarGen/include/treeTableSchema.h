@@ -383,14 +383,6 @@ struct SubstituteTable
 typedef struct SubstituteTable SubstituteTable;
 
 /**
- * @brief Initialize a TreeTable object
- *
- * @param[in, out] treeT a tree table container
- * @return Error handling code
- */
-errorCode initTreeTable(TreeTable* treeT);
-
-/**
  * @brief Destroy a TreeTable object (free the memory allocations)
  *
  * @param[in, out] treeT a tree table object
@@ -398,26 +390,29 @@ errorCode initTreeTable(TreeTable* treeT);
 void destroyTreeTable(TreeTable* treeT);
 
 /**
- * @brief Performs two things: builds a treeTable and the string tables of the EXIPSchema object
+ * @brief Initialize and generate TreeTables from multiple schema buffers
  *
- * -# From the XML schema definitions builds an analogous treeTable
- * -# Fills in the pre-populated entries in the string tables of the EXIPSchema object
- * 
+ * Performs batch initialization and generation of TreeTables from an array of schema buffers.
+ * Handles the required two-phase pattern (initialize all, then generate all) internally.
+ *
+ * -# From the XML schema definitions builds analogous treeTables
+ * -# Fills in the pre-populated entries in the string tables of the EXIPSchema object (if schema is not NULL)
+ *
  * The pre-populated entries in the string tables are sorted in generateSchemaInformedGrammars()
  * after all the treeTables are generated.
- * 
- * The schema and treeT objects should be initialized before calling this function.
- * @param[in] buffer an input buffer holding (part of) the representation of the schema
+ *
+ * @param[in] buffers array of input buffers holding schema representations
+ * @param[in] bufCount number of buffers in the array
  * @param[in] schemaFormat EXI, XSD, DTD or any other schema representation supported
  * @param[in] opt options used for EXI schemaFormat - otherwise NULL. If options are set then they will be used
  * for processing the EXI XSD stream although no options are specified in the EXI header. If there are
  * options defined in the EXI header of the XSD stream then this parameter must be NULL.
- * @param[out] treeT a memory representation of the XML schema definitions. Must be initialized.
+ * @param[out] treeT pointer to pre-allocated TreeTable array (size must be bufCount)
  * @param[out] schema partly built schema information (only the string tables) used for processing EXI streams.
- * Must be initialized.
+ * Can be NULL for code generation (saves memory - TreeTable AST only, no runtime string table population).
  * @return Error handling code
  */
-errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema);
+errorCode generateTreeTables(BinaryBuffer* buffers, unsigned int bufCount, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema);
 
 /**
  * @brief Given a set of TreeTable instances, resolve the &lt;include&gt; or &lt;import&gt; dependencies
