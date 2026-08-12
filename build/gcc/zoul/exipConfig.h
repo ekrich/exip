@@ -29,6 +29,7 @@
 #define DEBUG_CONTENT_IO  OFF
 #define DEBUG_GRAMMAR     OFF
 #define DEBUG_GRAMMAR_GEN OFF
+#define DEBUG_BINDING     OFF
 #define DEBUG_STRING_TBLS OFF
 
 #define DEBUG_CHAR_OUTPUT(character)	do {_printf ("%c", character);} while(0)
