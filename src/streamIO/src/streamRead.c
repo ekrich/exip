@@ -49,7 +49,7 @@ errorCode readNextBit(EXIStream* strm, bool* bit_val)
 
 errorCode readBits(EXIStream* strm, unsigned char n, unsigned long* bits_val)
 {
-	unsigned int numBytesToBeRead = 1 + ((n + strm->context.bitPointer - 1) / 8);
+	unsigned int numBytesToBeRead = 1 + ((n + strm->context.bitPointer - 1) >> 3);
 	unsigned int byteIndx = 1;
 	unsigned char *buf;
 
@@ -63,21 +63,28 @@ errorCode readBits(EXIStream* strm, unsigned char n, unsigned long* bits_val)
 
 	buf = (unsigned char *) strm->buffer.buf + strm->context.bufferIndx;
 
-	*bits_val = (buf[0] & BIT_MASK[8 - strm->context.bitPointer])<<((numBytesToBeRead-1)*8);
+	// Left and right shifts clear out the used bits.
+	// Replaced (* 8) with (<< 3) to avoid slow multiplication.
+	// Cast to unsigned long prevents sign-extension if bits shift into the sign slot.
+	unsigned int shiftAmount = (numBytesToBeRead << 3) - 8;
+	*bits_val = (unsigned long)(((buf[0] << strm->context.bitPointer) & 0xFF) >> strm->context.bitPointer);
+	*bits_val = *bits_val << shiftAmount;
 
+	// Deduct 8 from the shiftAmount register on each loop instead of recalculating multiplication.
 	while(byteIndx < numBytesToBeRead)
 	{
-		*bits_val += (unsigned long) (buf[byteIndx])<<((numBytesToBeRead-byteIndx-1)*8);
+		shiftAmount -= 8;
+		*bits_val += (unsigned long)(buf[byteIndx]) << shiftAmount;
 		byteIndx++;
 	}
 
-	*bits_val = *bits_val >> (numBytesToBeRead*8 - n - strm->context.bitPointer);
+	*bits_val = *bits_val >> ((numBytesToBeRead << 3) - n - strm->context.bitPointer);
 
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, (">> %lu [0x%lX] (%u bits)", *bits_val, *bits_val, n));
 
 	n += strm->context.bitPointer;
-	strm->context.bufferIndx += n / 8;
-	strm->context.bitPointer = n % 8;
+	strm->context.bufferIndx += n >> 3;
+	strm->context.bitPointer = n & 7;
 
 	DEBUG_MSG(INFO, DEBUG_STREAM_IO, ("  @%u:%u\n", (unsigned int) strm->context.bufferIndx, strm->context.bitPointer));
 
