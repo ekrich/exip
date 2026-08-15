@@ -189,6 +189,7 @@ int main(int argc, char *argv[])
 
     printf("Success! Generated %u TreeTable(s)\n", treeTCount);
     printf("Schema has %zu namespaces\n", schema.uriTable.count);
+    printf("Schema has %zu namespaces\n", schema.uriTable.count);
 
 #if DEBUG_BINDING == ON
     // Print tree table structure for inspection (debug output only)
