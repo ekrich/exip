@@ -16,8 +16,6 @@
 #include "streamWrite.h"
 #include "ioUtil.h"
 
-extern const unsigned char BIT_MASK[];
-
 errorCode writeNextBit(EXIStream* strm, bool bit_val)
 {
 	if(strm->buffer.bufLen <= strm->context.bufferIndx) // the whole buffer is filled! flush it!
@@ -47,7 +45,8 @@ errorCode writeNBits(EXIStream* strm, unsigned char nbits, unsigned long bits_va
 	unsigned int numBitsWrite = 0; // Number of the bits written so far
 	unsigned char tmp = 0;
 	int bits_in_byte = 0; // Number of bits written in one iteration
-	unsigned int numBytesToBeWritten = ((unsigned int) nbits) / 8 + (8 - strm->context.bitPointer < nbits % 8 );
+	// Replaced (* 8) with (<< 3) and replaced (nbits & 7) with (nbits % 8)
+	unsigned int numBytesToBeWritten = (((unsigned int) nbits) >> 3) + (8 - strm->context.bitPointer < (nbits & 7));
 
 	if(strm->buffer.bufLen <= strm->context.bufferIndx + numBytesToBeWritten)
 	{
@@ -65,9 +64,13 @@ errorCode writeNBits(EXIStream* strm, unsigned char nbits, unsigned long bits_va
 		else // The rest of the unwritten bits are more than the bits in the current byte from the stream
 			bits_in_byte = 8 - strm->context.bitPointer;
 
-		tmp = (bits_val >> (nbits - numBitsWrite - bits_in_byte)) & BIT_MASK[bits_in_byte];
+		// Creates a mask of 1s on the fly by shifting 1 and subtracting 1
+		unsigned int mask = (1U << bits_in_byte) - 1;
+		tmp = (unsigned char)((bits_val >> (nbits - numBitsWrite - bits_in_byte)) & mask);
 		tmp = tmp << (8 - strm->context.bitPointer - bits_in_byte);
-		strm->buffer.buf[strm->context.bufferIndx] = strm->buffer.buf[strm->context.bufferIndx] & (~BIT_MASK[8 - strm->context.bitPointer]); // Initialize the unused bits with 0s
+		// Creates an eraser mask to clear unused bit slots without 8-bit overflow
+		unsigned int clear_mask = 0xFFFFFFFFU << (8 - strm->context.bitPointer);
+		strm->buffer.buf[strm->context.bufferIndx] = strm->buffer.buf[strm->context.bufferIndx] & clear_mask;
 		strm->buffer.buf[strm->context.bufferIndx] = strm->buffer.buf[strm->context.bufferIndx] | tmp;
 
 		numBitsWrite += bits_in_byte;

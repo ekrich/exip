@@ -16,16 +16,6 @@
 #include "streamRead.h"
 #include "ioUtil.h"
 
-const unsigned char BIT_MASK[] = {	(char) 0x00,	// 0b00000000
-									(char) 0x01,	// 0b00000001
-									(char) 0x03,	// 0b00000011
-									(char) 0x07,	// 0b00000111
-									(char) 0x0F,	// 0b00001111
-									(char) 0x1F,	// 0b00011111
-									(char) 0x3F,	// 0b00111111
-									(char) 0x7F,	// 0b01111111
-									(char) 0xFF	};	// 0b11111111
-
 errorCode readNextBit(EXIStream* strm, bool* bit_val)
 {
 	if(strm->buffer.bufContent <= strm->context.bufferIndx) // the whole buffer is parsed! read another portion
