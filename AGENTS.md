@@ -249,7 +249,7 @@ When adding features, update:
 - Primary: Make (cross-platform)
 - Secondary: Visual Studio projects (Windows)
 - Support: gcc, clang, MSVC compilers
-- Target: C99 standard
+- Target: C11 standard
 - Platform: Windows, Linux, macOS, embedded
 
 **Note for AI Assistants**: Do not run builds or compilation commands. The user will handle building the project themselves.

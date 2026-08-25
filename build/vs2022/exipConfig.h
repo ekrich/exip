@@ -38,6 +38,8 @@
  * 		Turns the debugging ON/OFF for the GRAMMAR module
  * @def DEBUG_GRAMMAR_GEN
  * 		Turns the debugging ON/OFF for the GRAMMAR_GEN module
+ * @def DEBUG_BINDING
+ * 		Turns the debugging ON/OFF for the BINDING module (exipb code generation)
  * @def DEBUG_STRING_TBLS
  * 		Turns the debugging ON/OFF for the STRING_TBLS module
  * @ref debugging */
@@ -49,6 +51,7 @@
 #define DEBUG_CONTENT_IO  OFF
 #define DEBUG_GRAMMAR     OFF
 #define DEBUG_GRAMMAR_GEN OFF
+#define DEBUG_BINDING     ON
 #define DEBUG_STRING_TBLS OFF
 
 #if EXIP_DEBUG != ON

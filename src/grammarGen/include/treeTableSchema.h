@@ -44,75 +44,142 @@
 /** Enumeration of elements found in the schema */
 enum ElemEnum
 {
-	ELEMENT_ELEMENT          =0,
-	ELEMENT_ATTRIBUTE        =1,
-	ELEMENT_CHOICE           =2,
-	ELEMENT_COMPLEX_TYPE     =3,
-	ELEMENT_COMPLEX_CONTENT  =4,
-	ELEMENT_GROUP            =5,
-	ELEMENT_IMPORT           =6,
-	ELEMENT_SEQUENCE         =7,
-	ELEMENT_ALL              =8,
-	ELEMENT_EXTENSION        =9,
-	ELEMENT_RESTRICTION     =10,
-	ELEMENT_SIMPLE_CONTENT  =11,
-	ELEMENT_ANY             =12,
-	ELEMENT_SIMPLE_TYPE     =13,
-	ELEMENT_MIN_INCLUSIVE   =14,
-	ELEMENT_ANNOTATION      =15,
-	ELEMENT_DOCUMENTATION   =16,
-	ELEMENT_MAX_LENGTH      =17,
-	ELEMENT_MAX_INCLUSIVE   =18,
-	ELEMENT_LIST	        =19,
-	ELEMENT_UNION		    =20,
-	ELEMENT_ATTRIBUTE_GROUP =21,
-	ELEMENT_ANY_ATTRIBUTE   =22,
-	ELEMENT_ENUMERATION     =23,
-	ELEMENT_KEY             =24,
-	ELEMENT_SELECTOR        =25,
-	ELEMENT_FIELD           =26,
-	ELEMENT_NOTATION        =27,
-	ELEMENT_INCLUDE         =28,
-	ELEMENT_REDEFINE        =29,
-	ELEMENT_MIN_EXCLUSIVE   =30,
-	ELEMENT_MAX_EXCLUSIVE   =31,
-	ELEMENT_TOTAL_DIGITS    =32,
-	ELEMENT_FRACTION_DIGITS =33,
-	ELEMENT_LENGTH          =34,
-	ELEMENT_MIN_LENGTH      =35,
-	ELEMENT_WHITE_SPACE     =36,
-	ELEMENT_PATTERN         =37,
-	ELEMENT_APPINFO         =38,
-	ELEMENT_VOID            =39
+	ELEMENT_ELEMENT          = 0,
+	ELEMENT_ATTRIBUTE        = 1,
+	ELEMENT_CHOICE           = 2,
+	ELEMENT_COMPLEX_TYPE     = 3,
+	ELEMENT_COMPLEX_CONTENT  = 4,
+	ELEMENT_GROUP            = 5,
+	ELEMENT_IMPORT           = 6,
+	ELEMENT_SEQUENCE         = 7,
+	ELEMENT_ALL              = 8,
+	ELEMENT_EXTENSION        = 9,
+	ELEMENT_RESTRICTION      = 10,
+	ELEMENT_SIMPLE_CONTENT   = 11,
+	ELEMENT_ANY              = 12,
+	ELEMENT_SIMPLE_TYPE      = 13,
+	ELEMENT_MIN_INCLUSIVE    = 14,
+	ELEMENT_ANNOTATION       = 15,
+	ELEMENT_DOCUMENTATION    = 16,
+	ELEMENT_MAX_LENGTH       = 17,
+	ELEMENT_MAX_INCLUSIVE    = 18,
+	ELEMENT_LIST	         = 19,
+	ELEMENT_UNION		     = 20,
+	ELEMENT_ATTRIBUTE_GROUP  = 21,
+	ELEMENT_ANY_ATTRIBUTE    = 22,
+	ELEMENT_ENUMERATION      = 23,
+	ELEMENT_KEY              = 24,
+	ELEMENT_SELECTOR         = 25,
+	ELEMENT_FIELD            = 26,
+	ELEMENT_NOTATION         = 27,
+	ELEMENT_INCLUDE          = 28,
+	ELEMENT_REDEFINE         = 29,
+	ELEMENT_MIN_EXCLUSIVE    = 30,
+	ELEMENT_MAX_EXCLUSIVE    = 31,
+	ELEMENT_TOTAL_DIGITS     = 32,
+	ELEMENT_FRACTION_DIGITS  = 33,
+	ELEMENT_LENGTH           = 34,
+	ELEMENT_MIN_LENGTH       = 35,
+	ELEMENT_WHITE_SPACE      = 36,
+	ELEMENT_PATTERN          = 37,
+	ELEMENT_APPINFO          = 38,
+	ELEMENT_VOID             = 39
 };
 
 typedef enum ElemEnum ElemEnum;
 
+/** String names for ElemEnum values (matches order exactly) */
+static const char* const elemStrings[] = {
+	"element",
+	"attribute",
+	"choice",
+	"complexType",
+	"complexContent",
+	"group",
+	"import",
+	"sequence",
+	"all",
+	"extension",
+	"restriction",
+	"simpleContent",
+	"any",
+	"simpleType",
+	"minInclusive",
+	"annotation",
+	"documentation",
+	"maxLength",
+	"maxInclusive",
+	"list",
+	"union",
+	"attributeGroup",
+	"anyAttribute",
+	"enumeration",
+	"key",
+	"selector",
+	"field",
+	"notation",
+	"include",
+	"redefine",
+	"minExclusive",
+	"maxExclusive",
+	"totalDigits",
+	"fractionDigits",
+	"length",
+	"minLength",
+	"whiteSpace",
+	"pattern",
+	"appinfo",
+	"void"
+};
+
 /** Codes for the attributes found in the schema */
 enum AttrEnum
 {
-	ATTRIBUTE_NAME               =0,
-	ATTRIBUTE_TYPE               =1,
-	ATTRIBUTE_REF                =2,
-	ATTRIBUTE_MIN_OCCURS         =3,
-	ATTRIBUTE_MAX_OCCURS         =4,
-	ATTRIBUTE_FORM               =5,
-	ATTRIBUTE_BASE               =6,
-	ATTRIBUTE_USE                =7,
-	ATTRIBUTE_NAMESPACE          =8,
-	ATTRIBUTE_PROC_CONTENTS      =9,
-	ATTRIBUTE_VALUE              =10,
-	ATTRIBUTE_NILLABLE           =11,
-	ATTRIBUTE_ITEM_TYPE          =12,
-	ATTRIBUTE_MEMBER_TYPES       =13,
-	ATTRIBUTE_MIXED              =14,
-	ATTRIBUTE_SCHEMA_LOCATION    =15,
-	ATTRIBUTE_SUBSTITUTION_GROUP =16,
-	ATTRIBUTE_ABSTRACT           =17,
-	ATTRIBUTE_CONTEXT_ARRAY_SIZE =18
+	ATTRIBUTE_NAME               = 0,
+	ATTRIBUTE_TYPE               = 1,
+	ATTRIBUTE_REF                = 2,
+	ATTRIBUTE_MIN_OCCURS         = 3,
+	ATTRIBUTE_MAX_OCCURS         = 4,
+	ATTRIBUTE_FORM               = 5,
+	ATTRIBUTE_BASE               = 6,
+	ATTRIBUTE_USE                = 7,
+	ATTRIBUTE_NAMESPACE          = 8,
+	ATTRIBUTE_PROC_CONTENTS      = 9,
+	ATTRIBUTE_VALUE              = 10,
+	ATTRIBUTE_NILLABLE           = 11,
+	ATTRIBUTE_ITEM_TYPE          = 12,
+	ATTRIBUTE_MEMBER_TYPES       = 13,
+	ATTRIBUTE_MIXED              = 14,
+	ATTRIBUTE_SCHEMA_LOCATION    = 15,
+	ATTRIBUTE_SUBSTITUTION_GROUP = 16,
+	ATTRIBUTE_ABSTRACT           = 17,
+	ATTRIBUTE_CONTEXT_ARRAY_SIZE = 18
 };
 
 typedef enum AttrEnum AttrEnum;
+
+/** String names for AttrEnum values (matches order exactly) */
+static const char* const attrStrings[] = {
+	"name",
+	"type",
+	"ref",
+	"minOccurs",
+	"maxOccurs",
+	"form",
+	"base",
+	"use",
+	"namespace",
+	"processContents",
+	"value",
+	"nillable",
+	"itemType",
+	"memberTypes",
+	"mixed",
+	"schemaLocation",
+	"substitutionGroup",
+	"abstract",
+	"contextArraySize"
+};
 
 /** Namespace and prefix defined in a XML schema file */
 struct PfxNsEntry
@@ -316,14 +383,6 @@ struct SubstituteTable
 typedef struct SubstituteTable SubstituteTable;
 
 /**
- * @brief Initialize a TreeTable object
- *
- * @param[in, out] treeT a tree table container
- * @return Error handling code
- */
-errorCode initTreeTable(TreeTable* treeT);
-
-/**
  * @brief Destroy a TreeTable object (free the memory allocations)
  *
  * @param[in, out] treeT a tree table object
@@ -331,26 +390,29 @@ errorCode initTreeTable(TreeTable* treeT);
 void destroyTreeTable(TreeTable* treeT);
 
 /**
- * @brief Performs two things: builds a treeTable and the string tables of the EXIPSchema object
+ * @brief Initialize and generate TreeTables from multiple schema buffers
  *
- * -# From the XML schema definitions builds an analogous treeTable
- * -# Fills in the pre-populated entries in the string tables of the EXIPSchema object
- * 
+ * Performs batch initialization and generation of TreeTables from an array of schema buffers.
+ * Handles the required two-phase pattern (initialize all, then generate all) internally.
+ *
+ * -# From the XML schema definitions builds analogous treeTables
+ * -# Fills in the pre-populated entries in the string tables of the EXIPSchema object (if schema is not NULL)
+ *
  * The pre-populated entries in the string tables are sorted in generateSchemaInformedGrammars()
  * after all the treeTables are generated.
- * 
- * The schema and treeT objects should be initialized before calling this function.
- * @param[in] buffer an input buffer holding (part of) the representation of the schema
+ *
+ * @param[in] buffers array of input buffers holding schema representations
+ * @param[in] bufCount number of buffers in the array
  * @param[in] schemaFormat EXI, XSD, DTD or any other schema representation supported
  * @param[in] opt options used for EXI schemaFormat - otherwise NULL. If options are set then they will be used
  * for processing the EXI XSD stream although no options are specified in the EXI header. If there are
  * options defined in the EXI header of the XSD stream then this parameter must be NULL.
- * @param[out] treeT a memory representation of the XML schema definitions. Must be initialized.
+ * @param[out] treeT pointer to pre-allocated TreeTable array (size must be bufCount)
  * @param[out] schema partly built schema information (only the string tables) used for processing EXI streams.
- * Must be initialized.
+ * Can be NULL for code generation (saves memory - TreeTable AST only, no runtime string table population).
  * @return Error handling code
  */
-errorCode generateTreeTable(BinaryBuffer buffer, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema);
+errorCode generateTreeTables(BinaryBuffer* buffers, unsigned int bufCount, SchemaFormat schemaFormat, EXIOptions* opt, TreeTable* treeT, EXIPSchema* schema);
 
 /**
  * @brief Given a set of TreeTable instances, resolve the &lt;include&gt; or &lt;import&gt; dependencies

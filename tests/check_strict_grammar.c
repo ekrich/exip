@@ -1819,21 +1819,65 @@ START_TEST (test_whitespace_schema_decode)
 }
 END_TEST
 
-/* Tests sequence with maxOccurs="unbounded" grammar generation
- * Documents known limitation: triggers assertion at genUtils.c:268
- * TODO: Once genUtils.c:268 is fixed, this test should pass
+/* Tests simpleContent extension with empty element
+ * Verifies empty elements with simpleContent extensions trigger proper
+ * second-level EE handling and isContent2Grammar logic
  */
-START_TEST (test_sequence_unbounded)
+START_TEST (test_simple_content_empty)
 {
 	EXIPSchema schema;
+	FILE *infile;
+	Parser testParser;
+	char buf[INPUT_BUFFER_SIZE];
+	const char *schemafname = "simpleContentExt/test.xsd.exi";
+	const char *exifname = "simpleContentExt/test.xml.exi";
+	char exipath[MAX_PATH_LEN + sizeof(exifname)];
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	BinaryBuffer buffer;
 
+	// Load schema
 	initSchema(&schema, INIT_SCHEMA_SCHEMA_ENABLED);
-
-	tmp_err_code = parseSchema("sequenceUnbounded/test.xsd.exi", &schema);
+	tmp_err_code = parseSchema(schemafname, &schema);
 	fail_unless(tmp_err_code == EXIP_OK, "Error loading schema: %d", tmp_err_code);
 
+	// Open EXI instance file
+	size_t pathlen = strlen(dataDir);
+	memcpy(exipath, dataDir, pathlen);
+	exipath[pathlen] = '/';
+	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
+
+	infile = fopen(exipath, "rb");
+	fail_if(!infile, "Unable to open file %s", exipath);
+
+	buffer.buf = buf;
+	buffer.bufContent = 0;
+	buffer.bufLen = INPUT_BUFFER_SIZE;
+	buffer.ioStrm.readWriteToStream = readFileInputStream;
+	buffer.ioStrm.stream = infile;
+
+	// Initialize parser
+	tmp_err_code = initParser(&testParser, buffer, NULL);
+	fail_unless(tmp_err_code == EXIP_OK, "initParser failed: %d", tmp_err_code);
+
+	// Parse header
+	tmp_err_code = parseHeader(&testParser, false);
+	fail_unless(tmp_err_code == EXIP_OK, "parseHeader failed: %d", tmp_err_code);
+
+	// Set schema
+	tmp_err_code = setSchema(&testParser, &schema);
+	fail_unless(tmp_err_code == EXIP_OK, "setSchema failed: %d", tmp_err_code);
+
+	// Parse body - verify decode completes successfully
+	while(tmp_err_code == EXIP_OK)
+		tmp_err_code = parseNext(&testParser);
+
+	fail_unless(tmp_err_code == EXIP_PARSING_COMPLETE,
+	            "Decode failed: got error %d instead of EXIP_PARSING_COMPLETE", tmp_err_code);
+
+	// Cleanup
+	destroyParser(&testParser);
 	destroySchema(&schema);
+	fclose(infile);
 }
 END_TEST
 
@@ -1871,7 +1915,7 @@ Suite* exip_suite(void)
 	  tcase_add_test (tc_builtin, test_malformed_annotation_handling);
 	  tcase_add_test (tc_builtin, test_whitespace_schemaless_decode);
 	  tcase_add_test (tc_builtin, test_whitespace_schema_decode);
-	  tcase_add_test (tc_builtin, test_sequence_unbounded);
+	  tcase_add_test (tc_builtin, test_simple_content_empty);
 	  tcase_add_test (tc_builtin, test_missing_import);
 	  suite_add_tcase (s, tc_builtin);
 	}

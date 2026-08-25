@@ -545,6 +545,10 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 			{
 					isContent2Grammar = true;
 			}
+			else if(strm->gStack->currNonTermID == GET_CONTENT_INDEX(strm->gStack->grammar->props))
+			{
+				isContent2Grammar = true;
+			}
 
 			prodCnt = 2; // SE(*), CH(untyped) always available, position 7 and 8
 			state_mask[7] = true;
@@ -593,6 +597,7 @@ static errorCode stateMachineProdDecode(EXIStream* strm, GrammarRule* currentRul
 				state_mask[10] = true;
 			}
 
+			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">Second-level prodCnt: %u, currNonTermID: %u\n", (unsigned int) prodCnt, (unsigned int) strm->gStack->currNonTermID));
 			TRY(decodeNBitUnsignedInteger(strm, getBitsNumber(prodCnt - 1), &tmp_bits_val));
 
 			state = tmp_bits_val;
@@ -997,6 +1002,7 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, ("\n"));
 #endif
 			TRY(decodePfxQname(strm, &qname, prodHit->qnameId.uriId));
+
 			if(handler->attribute != NULL)  // Invoke handler method
 			{
 				TRY(handler->attribute(qname, app_data));

@@ -4,7 +4,7 @@
 -I/opt/homebrew/include
 
 # Compile flags
--std=c99
+-std=c11
 -Wpacked -Wall -Wextra -Wuninitialized -Wconditional-uninitialized
 
 # src

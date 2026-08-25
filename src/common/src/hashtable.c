@@ -20,9 +20,9 @@
 #define CEIL(VARIABLE) ( ((VARIABLE) - (unsigned int)(VARIABLE))==0 ? (unsigned int)(VARIABLE) : (unsigned int) (VARIABLE)+1 )
 
 /*
-Credit for primes table: Aaron Krowne
- http://br.endernet.org/~akrowne/
- http://planetmath.org/encyclopedia/GoodHashTablePrimes.html
+Credit for primes table: Aaron Krowne (BS Math, MS CompSci, JD NY Law)
+Co-creator of PlanetMath
+ http://planetmath.org/goodhashtableprimes
 */
 static const uint32_t primes[] = {
 53, 97, 193, 389,

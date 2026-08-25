@@ -28,9 +28,12 @@ Incomplete - the minimal schema here does **not** trigger the collision. The `te
 Currently the test mentioned above does not decode the `test.xml.exi` file but we can test via the following command which could be added to examples which serves as additional tests.
 
 **Windows:**
+Schema-informed and schemaless respectively.
 
 ```sh
 ./build/vs2022/Debug/exipd.exe -xml -schema=tests/test-set/sequenceUnbounded/test.xsd.exi tests/test-set/sequenceUnbounded/test.xml.exi
+
+./build/vs2022/Debug/exipd.exe -xml tests/test-set/sequenceUnbounded/test.xml.sl.exi
 ```
 
 **Linux/macOS:**

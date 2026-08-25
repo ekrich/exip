@@ -110,17 +110,9 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 
 							*treeT = tmpPtr;
 
-							for(n = *count; n < *count + bufCount; n++)
-							{
-								TRY(initTreeTable(&(*treeT[n])));
-							}
+							TRY(generateTreeTables(newBuffers, bufCount, schemaFormat, options, &(*treeT)[*count], schema));
 
-							for(n = *count; n < *count + bufCount; n++)
-							{
-								TRY(generateTreeTable(newBuffers[n-*count], schemaFormat, options, &(*treeT[n]), schema));
-							}
-
-							*count = (*count + bufCount);
+							*count += bufCount;
 						}
 						else
 						{
@@ -184,17 +176,9 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
 
 							*treeT = tmpPtr;
 
-							for(n = *count; n < *count + bufCount; n++)
-							{
-								TRY(initTreeTable(&(*treeT[n])));
-							}
+							TRY(generateTreeTables(newBuffers, bufCount, schemaFormat, options, &(*treeT)[*count], schema));
 
-							for(n = *count; n < *count + bufCount; n++)
-							{
-								TRY(generateTreeTable(newBuffers[n-*count], schemaFormat, options, &(*treeT[n]), schema));
-							}
-
-							*count = (*count + bufCount);
+							*count += bufCount;
 						}
 						else
 						{
@@ -231,6 +215,16 @@ errorCode resolveIncludeImportReferences(EXIPSchema* schema, TreeTable** treeT, 
  */
 static errorCode resolveEntry(EXIPSchema* schema, TreeTable* treeT, unsigned int count, unsigned int currTreeT, TreeTableEntry* entry);
 
+/**
+ * @brief Initialize a TreeTable object
+ *
+ * Prepares a TreeTable structure for use by initializing its internal data structures.
+ * Must be called before generateTreeTable().
+ * Internal function - called by generateTreeTables(). Not part of public API.
+ *
+ * @param[in, out] treeT a tree table container
+ * @return Error handling code
+ */
 errorCode initTreeTable(TreeTable* treeT)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
