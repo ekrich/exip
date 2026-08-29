@@ -1,57 +1,63 @@
 # Code Generation from Schema - Vision Document
 
-## Why XSD + EXI is Better Than Protobuf
+## Introduction
 
-XSD's type system is **vastly richer** than Protobuf's `.proto`, enabling better code generation, stronger guarantees, and functional composition patterns that eliminate code duplication.
+**The Problem:** Working with EXI streams requires tedious, error-prone manual coding using EXIP's low-level `serialize.*()` and `parse.*()` APIs. Developers must carefully track grammar states, handle type conversions, manage memory, and implement validation by hand. This makes EXI adoption harder than it should be.
 
-### Type System Comparison
+**The Solution:** `exipb` (EXI Binding Generator) is a code generator that automatically creates type-safe C structs and encode/decode functions from XSD schemas. Write your data model in XSD once, then use clean, idiomatic C code with compile-time safety and automatic validation.
 
-**XSD provides:**
-- `xs:choice` → Tagged unions → Pattern matching
-- `xs:extension` / `xs:restriction` → Type hierarchies
-- Abstract types → Polymorphism
-- Substitution groups → Type families
-- Facets (`minInclusive`, `maxLength`, `pattern`) → Compile-time constraints
-- `default` and `fixed` values → Schema-enforced defaults
-- `minOccurs="0"` / `minOccurs="1"` → Explicit optional vs required fields
-- `minOccurs` / `maxOccurs` → Array size constraints (e.g., 1-10 items)
-- Value bounds (`minInclusive`, `maxInclusive`) → Integer/decimal range validation
-- String constraints (`minLength`, `maxLength`, `pattern`) → Length and format validation
+**Killer Feature: Schema-Enforced Validation.** Unlike Protocol Buffers (no constraints) or hand-written parsers (manual validation), `exipb` bakes XSD constraints directly into generated code. String length limits, numeric ranges, array bounds, and required fields are enforced automatically at encode/decode time—defense-in-depth for embedded systems where malformed input can cause crashes or security vulnerabilities.
 
-**Protobuf provides:**
-- Flat messages with only composition support
-- `oneof` (weak choice, no discriminator type)
-- Fake inheritance via duplicated fields across message types
-- No abstract types or type hierarchies
-- No compile-time validation of constraints
-- No default value support (deprecated in proto3)
-- **proto3: All fields optional by default** - no way to declare required fields (removed from proto2)
-- **proto2: `required` keyword deprecated** - Google recommends against using it
-- **No array bounds** - `repeated` fields have no min/max constraints
-- **No value bounds** - integers/floats have no range validation
-- **No string length limits** - no minLength/maxLength facets
-- **No pattern validation** - no regex constraints
+**Current Status:** `exipb` is currently a stub/concept. This document describes the target architecture and implementation approach. The EXIP library already provides the foundation (schema parser, EXI encoder/decoder); `exipb` will generate the binding layer on top.
 
-**Key limitation:** Protobuf has **zero real OOP support**. You can only compose messages. To simulate inheritance, you must manually duplicate common fields across every message type that needs them. This creates maintenance burden and error-prone repetition.
-
-### Security: Protobuf's Lack of Validation is Dangerous for Embedded
-
-Protobuf's absence of schema-enforced constraints creates **serious security vulnerabilities**, especially in resource-constrained embedded systems:
-
-#### Buffer Overflow Risks
-
-**Protobuf (unbounded):**
+**What Developers Get:**
 ```c
-// Schema: message Person { string name = 1; }
-// Generated struct has no bounds
-char* name;  // Can be ANY length - attacker sends 10MB string
+// Generated from XSD schema automatically
+Person person = create_Person("Alice", 30, create_Address("123 Main St", "Boston", 02101));
 
-// Decoder allocates unbounded memory
-name = malloc(incoming_length);  // Attacker controls this!
-memcpy(name, input, incoming_length);  // Potential heap overflow
+// Encode to EXI stream (validation automatic)
+errorCode err = encode_Person(&stream, &person);
+
+// Decode from EXI stream (validation automatic)
+Person received;
+err = decode_Person(&parser, &received);
 ```
 
-**XSD+EXI (bounded):**
+Clean, functional API. No manual EXI calls. Type safety enforced by the compiler. Validation enforced by the schema.
+
+---
+
+## Type System: XSD to C Mappings
+
+This section describes how XSD schema constructs map to idiomatic C code patterns.
+
+### Basic Type Mapping
+
+XSD built-in types map to C primitive types with optional compile-time bounds:
+
+**Integers:**
+```xml
+<xs:element name="age" type="xs:int"/>  <!-- 32-bit signed -->
+<xs:element name="count">
+  <xs:simpleType>
+    <xs:restriction base="xs:int">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="100"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:element>
+```
+
+```c
+// Generated C
+int32_t age;           // Unrestricted int
+int32_t count;         // 0-100 range enforced at validate/encode/decode
+
+// Validation (if EXIP_VALIDATION_MODE >= 2)
+if (count < 0 || count > 100) return EXIP_INVALID_EXI_INPUT;
+```
+
+**Strings:**
 ```xml
 <xs:element name="name">
   <xs:simpleType>
@@ -61,468 +67,232 @@ memcpy(name, input, incoming_length);  // Potential heap overflow
   </xs:simpleType>
 </xs:element>
 ```
+
 ```c
-// Generated with compile-time bounds
-char name[65];  // Fixed size, no malloc
+// Generated C - fixed-size array (embedded-friendly)
+char name[65];  // maxLength=64 + null terminator
 
-// Decoder enforces maxLength from schema
-if (incoming_length > 64) return EXIP_INVALID_EXI_INPUT;
-memcpy(name, input, min(incoming_length, 64));  // Safe
+// Validation (if EXIP_VALIDATION_MODE >= 3)
+if (strlen(name) > 64) return EXIP_INVALID_EXI_INPUT;
 ```
 
-#### Denial of Service (Resource Exhaustion)
+**Unbounded strings (no maxLength specified):**
+- `exipb` defaults to `char[256]` (255 chars + null terminator)
+- Warns during code generation: "No maxLength for element 'name', defaulting to 255"
+- Embedded systems should always specify maxLength in schemas for predictable memory usage
 
-**Protobuf vulnerability:**
-```protobuf
-message Packet {
-  repeated int32 values = 1;  // NO maxOccurs limit
-}
-```
-Attacker sends: 10 million `values` → decoder allocates 40MB → embedded device crashes (out of memory).
+**Type mapping table:**
+| XSD Type | C Type | Notes |
+|----------|--------|-------|
+| `xs:int` | `int32_t` | 32-bit signed |
+| `xs:long` | `int64_t` | 64-bit signed |
+| `xs:short` | `int16_t` | 16-bit signed |
+| `xs:byte` | `int8_t` | 8-bit signed |
+| `xs:unsignedInt` | `uint32_t` | 32-bit unsigned |
+| `xs:boolean` | `bool` (C99) | true/false |
+| `xs:float` | `float` | 32-bit IEEE 754 |
+| `xs:double` | `double` | 64-bit IEEE 754 |
+| `xs:string` (bounded) | `char[N+1]` | Fixed array, N from maxLength |
+| `xs:string` (unbounded) | `char[256]` | Default 255+null, warns during codegen |
+| `xs:dateTime` | `int64_t` | Unix epoch milliseconds |
 
-**XSD+EXI mitigation:**
+### Sequences and Structs
+
+XSD complex types with sequences become C structs:
+
 ```xml
-<xs:element name="values" type="xs:int" minOccurs="0" maxOccurs="1000"/>
+<xs:complexType name="Person">
+  <xs:sequence>
+    <xs:element name="name" type="xs:string"/>
+    <xs:element name="age" type="xs:int"/>
+  </xs:sequence>
+</xs:complexType>
 ```
-Schema enforces max 1000 items. EXI decoder rejects messages exceeding this limit BEFORE allocating memory.
 
-#### Injection Attacks (No Pattern Validation)
+```c
+// Generated C struct
+typedef struct {
+    char name[256];  // Default maxLength=255 if not specified in schema
+    int32_t age;
+} Person;
 
-**Protobuf vulnerability:**
-```protobuf
-message Command {
-  string sql_query = 1;  // NO pattern constraint
+// Generated constructor
+Person create_Person(const char* name, int32_t age) {
+    Person p = {0};
+    strncpy(p.name, name, sizeof(p.name) - 1);
+    p.age = age;
+    return p;
 }
 ```
-Attacker sends: `sql_query = "'; DROP TABLE users; --"` → No schema-level defense.
 
-**XSD+EXI mitigation:**
+**Nested sequences** (structs containing structs):
 ```xml
-<xs:element name="userId">
-  <xs:simpleType>
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[A-Za-z0-9]{8,16}"/>  <!-- Alphanumeric, 8-16 chars -->
-    </xs:restriction>
-  </xs:simpleType>
-</xs:element>
+<xs:complexType name="Employee">
+  <xs:sequence>
+    <xs:element name="id" type="xs:int"/>
+    <xs:element name="person" type="Person"/>
+  </xs:sequence>
+</xs:complexType>
 ```
-Schema rejects malformed input at decode time (with super-strict validation enabled).
 
-#### Integer Overflow (No Range Validation)
+```c
+typedef struct {
+    int32_t id;
+    Person person;  // Nested struct by value
+} Employee;
 
-**Protobuf vulnerability:**
-```protobuf
-message Config {
-  int32 buffer_size = 1;  // NO bounds
+// Constructor composes nested types
+Employee create_Employee(int32_t id, Person person) {
+    Employee e = {0};
+    e.id = id;
+    e.person = person;  // Copy by value
+    return e;
 }
 ```
-Attacker sends: `buffer_size = -1` or `2147483647` → Application allocates huge/invalid buffer → crash or exploit.
 
-**XSD+EXI mitigation:**
+### Optional Fields (minOccurs="0")
+
+**For strings:** Use empty string check (idiomatic C, no wrapper needed):
+
 ```xml
-<xs:element name="bufferSize">
-  <xs:simpleType>
-    <xs:restriction base="xs:int">
-      <xs:minInclusive value="1"/>
-      <xs:maxInclusive value="4096"/>
-    </xs:restriction>
-  </xs:simpleType>
-</xs:element>
+<xs:element name="email" type="xs:string" minOccurs="0"/>
 ```
-Schema enforces 1-4096 range. Decoder rejects out-of-range values before they reach application logic.
 
-#### Why Embedded Systems Are Particularly Vulnerable
-
-1. **Limited Memory** - No virtual memory, fixed RAM. Unbounded allocations = instant crash.
-2. **No OS Protections** - Bare-metal systems lack memory protection units (MPU). Buffer overflow = memory corruption.
-3. **Long Lifecycles** - Embedded devices (automotive, medical, IoT) run for years. Vulnerabilities persist.
-4. **Network-Exposed** - IoT devices receive untrusted input from the internet. Schema validation is first line of defense.
-5. **Safety-Critical** - Medical devices, automotive systems. Memory corruption can be fatal.
-
-#### Defense-in-Depth with XSD+EXI
-
-**Layer 1: Schema Design** - Define maxLength, maxOccurs, minInclusive, pattern in XSD
-**Layer 2: Compile-Time** - Generated code uses fixed arrays (`char[65]`), not pointers
-**Layer 3: Generated Code Validation** - exipb inserts bounds checks in encode/decode functions
-**Layer 4: Decode-Time** - EXI decoder enforces schema constraints before data reaches app
-
-#### Generated Code Validation (Practical Defense)
-
-The binding generator can emit validation code directly into encode/decode functions, enforcing schema constraints **even if someone manually constructs an attack struct**:
-
-**Example: Range validation on decode**
 ```c
-// Schema: <xs:minInclusive value="0"/> <xs:maxInclusive value="150"/>
-errorCode decode_person(Parser* parser, Person* person) {
-    // ... parse age from EXI stream ...
+typedef struct {
+    char email[256];  // Empty string (email[0] == '\0') means not present
+    char name[64];    // Required field
+} Contact;
 
-    // GENERATED VALIDATION CHECK
-    if (person->age < 0 || person->age > 150) {
-        return EXIP_INVALID_EXI_INPUT;  // Reject out-of-range
-    }
-
-    return EXIP_OK;
+// Usage - idiomatic C null check
+if (contact.email[0] != '\0') {
+    printf("Email: %s\n", contact.email);
 }
 ```
 
-**Example: Array bounds on encode**
-```c
-// Schema: <xs:element name="tags" maxOccurs="100"/>
-errorCode encode_person(EXIStream* strm, const Person* person) {
-    // GENERATED VALIDATION CHECK
-    if (person->tagsCount > 100) {
-        return EXIP_INVALID_EXI_INPUT;  // Catch attack before encoding
-    }
+**For non-strings:** Generate wrapper structs with `.exists` and `.value` fields:
 
-    for (size_t i = 0; i < person->tagsCount; i++) {
-        // ... encode each tag ...
-    }
-    return EXIP_OK;
-}
+```xml
+<xs:element name="age" type="xs:int" minOccurs="0"/>
+<xs:element name="score" type="xs:int" minOccurs="0"/>
 ```
 
-**Example: String length on encode**
 ```c
-// Schema: <xs:maxLength value="64"/>
-errorCode encode_person(EXIStream* strm, const Person* person) {
-    size_t nameLen = strlen(person->name);
+// Generated wrapper types (reused across schema)
+typedef struct {
+    int32_t value;
+    bool exists;
+} OptionalInt32;
 
-    // GENERATED VALIDATION CHECK
-    if (nameLen > 64) {
-        return EXIP_INVALID_EXI_INPUT;  // Catch oversized string
-    }
+typedef struct {
+    float value;
+    bool exists;
+} OptionalFloat;
 
-    // Safe to encode
-    asciiToString(person->name, &strVal, &strm->memList, false);
-    TRY(serialize.stringData(strm, strVal));
-    return EXIP_OK;
+// Person struct uses wrappers for optional fields
+typedef struct {
+    char name[64];        // Required - plain field
+    OptionalInt32 age;    // Optional - wrapped
+    OptionalInt32 score;  // Optional - wrapped
+} Person;
+
+// Constructor helpers
+Person create_Person_with_age(const char* name, int32_t age) {
+    Person p = {0};
+    strncpy(p.name, name, sizeof(p.name) - 1);
+    p.age.value = age;
+    p.age.exists = true;
+    p.score.exists = false;  // Not provided
+    return p;
 }
-```
 
-**Debug vs Release Modes:**
-```c
-// exipb --validation=debug: Use asserts (fast, crash on violation)
-#ifdef EXIPB_VALIDATION_DEBUG
-    assert(person->age >= 0 && person->age <= 150);
-#endif
+// Usage - uniform pattern for all optional fields
+if (person.age.exists) {
+    printf("Age: %d\n", person.age.value);
+}
 
-// exipb --validation=strict: Use runtime checks (return error codes)
-#ifdef EXIPB_VALIDATION_STRICT
-    if (person->age < 0 || person->age > 150) {
-        return EXIP_INVALID_EXI_INPUT;
-    }
-#endif
-
-// exipb --validation=off: No checks (production, trust input)
+if (person.score.exists) {
+    printf("Score: %d\n", person.score.value);
+}
 ```
 
 **Benefits:**
-- ✅ **Catches malicious data** - Even manually constructed attack structs are validated
-- ✅ **Zero EXIP core changes** - All validation in generated code
-- ✅ **Configurable** - Debug (asserts), strict (checks), off (performance)
-- ✅ **Schema-driven** - Constraints from XSD automatically become validation code
-- ✅ **Early detection** - Encode validation catches bad data before hitting wire
-- ✅ **Decode defense** - Reject invalid data before it reaches application logic
+- ✅ **Uniform access**: Always `field.exists` and `field.value`
+- ✅ **Type-safe**: Compiler prevents using value without checking exists
+- ✅ **Self-documenting**: Type signature shows optionality
+- ✅ **Familiar**: Similar to Rust's `Option<T>` or Haskell's `Maybe`
 
-**The Security Model:**
+**Note:** Strings use implicit presence (empty string) to avoid the extra indirection and keep string handling idiomatic.
 
-The **receiver** is the critical security boundary. Any **legitimate receiving system** must use the **generated decode code** with validation enabled. This is the defense against untrusted input:
+**Optional constructor helpers** (generated for cleaner function calls):
 
-1. **Sender** (trusted or compromised) → Encodes EXI stream
-2. **Network transmission** → EXI binary stream (untrusted)
-3. **Receiver uses generated decode** → **Validates incoming data, rejects attacks**
-
-**Attack scenarios and defenses:**
-
-- **Compromised sender** bypasses generated encode, crafts malicious EXI → **Receiver's decode validation catches it**
-- **Network attacker** intercepts and modifies stream → **Receiver's decode validation rejects it**
-- **Programming bug** on sender creates invalid struct → **Receiver's decode catches it** (encode validation helps too, but not the security boundary)
-
-**Encode validation is defense-in-depth, not the security boundary:**
-
-Encode validation (on the sender) helps catch bugs and provides belt-and-suspenders, but a determined attacker can bypass it:
 ```c
-// Attacker can skip generated encode entirely
-// encode_person(strm, &person);  // BYPASSED
+// Generated helper macros for constructing Optional values
+#define SOME(T, val) ((Optional##T){.exists = true, .value = (val)})
+#define NONE(T) ((Optional##T){.exists = false})
 
-// Attacker crafts raw EXI bytes with buffer overflow attempt
-uint8_t malicious_exi[] = { /* hand-crafted attack */ };
-fwrite(malicious_exi, 1, sizeof(malicious_exi), network_socket);
-```
-
-**Decode validation (on the receiver) is the security boundary:**
-
-The receiver has **two layers of validation** - both defend against attacks:
-
-**Layer 1: EXIP Core Decoder (Structure & Grammar)**
-```c
-// EXIP's parser validates:
-// - EXI stream structure (well-formed binary)
-// - Grammar state matching (correct element order)
-// - Type matching in strict mode (intData matches grammar's expected type)
-errorCode err = parse.parseNext(parser);  // Returns error if grammar violated
-```
-
-**Layer 2: Generated Binding Code (Facets & Constraints)**
-```c
-// Generated decode adds constraint validation AFTER EXIP accepts the structure:
-errorCode decode_person(Parser* parser, Person* person) {
-    // ... EXIP layer already parsed and validated grammar ...
-
-    // GENERATED VALIDATION (facets from schema)
-    // Overhead: Simple integer comparisons (nanoseconds)
-    if (person->age < 0 || person->age > 150) {
-        return EXIP_INVALID_EXI_INPUT;  // REJECT CONSTRAINT VIOLATION
-    }
-
-    if (person->tagsCount > 100) {
-        return EXIP_INVALID_EXI_INPUT;  // REJECT ARRAY BOUNDS VIOLATION
-    }
-
-    return EXIP_OK;
+// Or as inline functions (type-safe alternative to macros)
+static inline OptionalInt32 some_int32(int32_t value) {
+    return (OptionalInt32){.exists = true, .value = value};
 }
+
+static inline OptionalInt32 none_int32(void) {
+    return (OptionalInt32){.exists = false};
+}
+
+// Constructor using Optional parameters (cleaner than pointer-or-NULL)
+Person create_Person_full(const char* name, OptionalInt32 age, OptionalInt32 score) {
+    Person p = {0};
+    strncpy(p.name, name, sizeof(p.name) - 1);
+    p.age = age;
+    p.score = score;
+    return p;
+}
+
+// Usage - explicit and readable
+Person p1 = create_Person_full("Alice", SOME(Int32, 30), NONE(Int32));
+Person p2 = create_Person_full("Bob", some_int32(25), some_int32(95));
+
+// Compare to old pointer-or-NULL pattern (awkward):
+// Person p = create_person("Alice", &age, NULL);  // Address-of, NULL magic
 ```
 
-**Validation Overhead:**
+### Arrays (maxOccurs > 1)
 
-The overhead is **negligible** - simple integer comparisons:
-- Range check: 2 comparisons + 1 branch (`age < 0 || age > 150`)
-- Array bound: 1 comparison + 1 branch (`tagsCount > 100`)
-- Modern CPUs: ~1-2 nanoseconds per check, branch prediction handles common case
+Repeated elements become arrays with count fields:
 
-Cost comparison:
-- **EXI decoding**: Microseconds (bitstream parsing, grammar state, memory allocation)
-- **Validation checks**: Nanoseconds (integer comparison)
-- **Ratio**: Validation is <0.1% of decode time
-
-For embedded systems, this is **essentially free** compared to network I/O or the parsing itself.
-
-**Array Count and Binary Length Encoding:**
-
-EXI encodes arrays and binary data differently:
-
-**Arrays (repeated elements):**
 ```xml
-<!-- Schema: maxOccurs="100" -->
-<tag>employee</tag>
-<tag>manager</tag>
-<tag>admin</tag>
+<xs:element name="tags" type="xs:string" minOccurs="0" maxOccurs="10"/>
 ```
-- **No count sent** in EXI stream
-- Each `<tag>` encoded sequentially
-- Grammar state tracks occurrences, enforces maxOccurs
-- Decoder builds array: `tags[0]`, `tags[1]`, `tags[2]` → `tagsCount = 3`
-- Attacker can't "claim 10, send 8" - count IS the number decoded
-- Attacker sending 200 items → grammar rejects after 100th (maxOccurs)
 
-**Binary data (base64Binary/hexBinary):**
+```c
+// Fixed-size array (when maxOccurs is bounded)
+typedef struct {
+    char tags[10][64];  // Array of strings
+    size_t tagsCount;   // How many are valid
+} TaggedItem;
+```
+
 ```xml
-<binaryTest><!-- raw bytes --></binaryTest>
-```
-- **Length IS sent** in EXI stream: `[Length=150] [150 bytes]`
-- Length-prefix encoding (not delimiter-based)
-- **EXIP behavior (current):**
-  1. Reads length from stream
-  2. Allocates memory (`malloc(length)`)
-  3. Reads exactly `length` bytes
-  4. **Does NOT validate against maxLength facet**
-- **Generated code validation (after EXIP):**
-  ```c
-  // After EXIP allocates and decodes
-  if (test->binaryTestLen > MAX_BINARY_LENGTH) {
-      free(test->binaryTest);  // Clean up
-      return EXIP_INVALID_EXI_INPUT;
-  }
-  ```
-  Catches constraint violations, but allocation already happened
-- **Future enhancement:** EXIP "Super Strict Mode" could validate maxLength **before** allocating (validate-then-allocate pattern)
-
-**Security benefit of length-prefix encoding:**
-- ✅ Deterministic - know exactly how many bytes to read
-- ✅ No scanning for delimiters
-- ✅ Read exactly `length` bytes, no buffer overrun
-- ✅ **Generated code validates BEFORE allocating** - length comes first in stream, check against maxLength facet, then malloc
-- ⚠️ EXIP core: Currently allocates without checking facets (doesn't know about maxLength)
-- 💡 Future EXIP enhancement: Core could accept facet limits and validate before allocating (optional)
-
-**Encoder Validation Limitations (C Memory Safety):**
-
-The encoder faces a fundamental C limitation: **it cannot validate pointer+length integrity**. This issue **only affects dynamic data** (binary, unbounded arrays) - **fixed buffers in structs are safe**.
-
-**Safe: Fixed buffers (embedded in struct)**
-```c
-struct Person {
-    char name[256];    // Buffer IN struct, size known at compile time
-    int age;
-};
-
-Person p;
-strcpy(p.name, "Alice");
-encode_Person(&p);  // ✅ Safe - compiler knows buffer is 256 bytes, can't over-read
+<xs:element name="values" type="xs:int" maxOccurs="unbounded"/>
 ```
 
-**Unsafe: Pointer + length (only if constructor bypassed)**
 ```c
-// Binary data is generated for xs:base64Binary and xs:hexBinary XSD types
-struct TypesTest {
-    uint8_t* binaryTest;      // Pointer to binary data (NOT in struct)
-    size_t binaryTestLen;     // User CLAIMS this is the length
-    // NULL = not present, no separate bool flag needed
-};
-```
+// Dynamic array (when maxOccurs="unbounded")
+typedef struct {
+    int32_t* values;
+    size_t valuesCount;
+    size_t valuesCapacity;
+} DataSet;
 
-**Note:** Binary fields (`uint8_t*` + length) are only generated for:
-- `xs:base64Binary` - binary data encoded as base64 in XML
-- `xs:hexBinary` - binary data encoded as hex in XML
-
-For optional pointer+length data, we need **both fields**:
-- **Pointer** - where the data is (NULL = not present)
-- **Length** - how much data (not null-terminated, explicit length required)
-
-No bool flag needed - check `if (ptr != NULL)` to determine presence.
-
-**The Problem (only when bypassing constructors):**
-```c
-// What if this happens?
-uint8_t small_buf[10];
-TypesTest test;
-test.binaryTest = small_buf;
-test.binaryTestLen = 1000;     // LIES! Only 10 bytes allocated
-
-// Encoder trusts the struct
-encode_types_test(strm, &test);
-// → Reads 1000 bytes from 10-byte buffer
-// → Buffer over-read, undefined behavior, crash or memory leak
-```
-
-**The encoder has NO WAY to know the actual allocated size.** C doesn't track allocation sizes at runtime. It must trust `binaryTestLen`.
-
-**This issue only affects pointer+length pairs:**
-- ✅ Binary data (`xs:base64Binary`, `xs:hexBinary`) - always pointer+length
-- ✅ Unbounded arrays (`maxOccurs="unbounded"`) - always pointer+count
-- ✅ Unbounded strings (no `maxLength`) - pointer (if using pointers instead of default fixed buffer)
-
-**Fixed buffers are immune:**
-- ✅ Strings with `maxLength` → `char[N]` - size baked into struct, no separate length needed (use strlen)
-- ✅ Bounded arrays with known `maxOccurs` → `Type array[N]` - size baked into struct
-- ✅ All primitive fields - no pointers, no length tracking, just value+bool flag if optional
-
-**Partial Defenses (Encode Validation):**
-
-**1. Constructor enforces correctness (best practice - prevents the issue):**
-```c
-TypesTest create_types_test(uint8_t* data, size_t len, EnumType* enumVal) {
-    return (TypesTest){
-        .binaryTest = data,
-        .binaryTestLen = len  // User provides both together
-    };
-}
-
-// Usage encourages correctness
-uint8_t buf[150];
-TypesTest test = create_types_test(buf, sizeof(buf), NULL);  // Correct by construction
-```
-
-**2. Encode validation checks schema maxLength:**
-```c
-errorCode encode_types_test(EXIStream* strm, const TypesTest* test) {
-    // VALIDATION: Check against schema constraint
-    if (test->binaryTestLen > MAX_BINARY_LENGTH) {
-        return EXIP_INVALID_EXI_INPUT;  // Catches obviously wrong lengths
-    }
-
-    // But CAN'T catch: allocated 10, claimed 15
-    serialize.binaryData(strm, test->binaryTest, test->binaryTestLen);
+// Requires cleanup function
+void destroy_DataSet(DataSet* ds) {
+    free(ds->values);
+    ds->values = NULL;
+    ds->valuesCount = 0;
+    ds->valuesCapacity = 0;
 }
 ```
-
-**3. Sanity checks (partial):**
-```c
-// Check for obvious lies
-if (test->binaryTest == NULL && test->binaryTestLen > 0) {
-    return EXIP_INVALID_EXI_INPUT;  // Pointer NULL but claims non-zero length
-}
-
-if (test->binaryTest != NULL && test->binaryTestLen == 0) {
-    // Valid - pointer set but zero length (empty data)
-}
-```
-
-**4. What encode validation CANNOT catch:**
-- ❌ User allocates 10 bytes, claims 1000 → buffer over-read
-- ❌ User allocates 1000 bytes, claims 10 → works but wastes bandwidth
-- ❌ User frees memory, then encodes → use-after-free
-- ❌ Pointer to stack variable that goes out of scope
-- ❌ Uninitialized pointer with valid-looking address
-
-This is C's fundamental memory unsafety. No runtime check can validate pointer validity without OS-level memory tracking (AddressSanitizer, Valgrind, etc.).
-
-**Why Decode Validation IS Complete:**
-
-On **decode**, the situation is much better:
-
-```c
-errorCode decode_types_test(Parser* parser, TypesTest* test) {
-    // EXI stream contains length=150
-    uint32_t length = decode_length_from_stream(parser);
-
-    // VALIDATE BEFORE ALLOCATING
-    if (length > MAX_BINARY_LENGTH) {
-        return EXIP_INVALID_EXI_INPUT;  // Reject before malloc
-    }
-
-    // Safe allocation - WE control it
-    test->binaryTest = malloc(length);
-    if (!test->binaryTest) {
-        return EXIP_OUT_OF_MEMORY;  // Handle allocation failure
-    }
-
-    test->binaryTestLen = length;  // Guaranteed correct
-    test->hasBinaryTest = true;
-
-    // Read exactly 'length' bytes
-    read_bytes(parser, test->binaryTest, length);
-}
-```
-
-**Decode controls allocation** → length is guaranteed correct → fully validated.
-**Encode trusts user struct** → user controls allocation → can only check constraints, not memory safety (for pointer+length pairs).
-
-**Summary:**
-- **Fixed buffers** (`char[256]`, `int array[10]`) - **always safe**, size in struct definition
-- **Pointer+length** (binary data, unbounded arrays) - **safe if using constructors**, unsafe if manually constructed
-- **Optional fields** - primitives use bool flag, pointers use NULL check (cleaner, more idiomatic C)
-- **Best practice**: Always use `create_*()` constructors - correct by construction
-- **Validation**: Catches schema violations (maxLength exceeded), NOT allocation bugs (under-allocated buffer)
-
-**Security Implications:**
-
-This explains why **decode validation is the security boundary**:
-
-| Layer | Input Trust | Allocation Control | What Can Be Validated |
-|-------|-------------|-------------------|----------------------|
-| **Decode** | Untrusted (network) | We control | ✅ Schema constraints (maxLength, ranges)<br>✅ Memory safety (validate before allocate)<br>✅ Pointer+length integrity (we set both) |
-| **Encode** | Trusted (local struct) | User controls | ✅ Schema constraints (maxLength, ranges)<br>❌ Memory safety (C can't verify)<br>❌ Pointer+length integrity (user set, we trust) |
-
-**Bottom line:** Encode validation catches **schema constraint violations** (out-of-range, too-long strings, too-many array items). It cannot catch **memory safety bugs** (under-allocated buffers, dangling pointers). That's a fundamental C limitation. The best defense is:
-1. Use constructors (correct by construction)
-2. Enable encode validation (catches constraint violations)
-3. Good coding practices (code review, static analysis, AddressSanitizer in test)
-4. **Defense-in-depth on decode** (the security boundary for untrusted input)
-
-**Defense-in-Depth:**
-1. **EXIP strict mode** catches structural attacks (wrong element order, type mismatches, occurrence violations)
-2. **Generated validation** catches constraint attacks (out-of-range values, oversized arrays/strings)
-
-An attacker must defeat BOTH layers. If EXIP accepts the stream (valid structure), generated code still rejects constraint violations. This is **layered security** - even if one layer has a bug, the other catches it.
-
-The key: **Validate on decode (untrusted input), optionally validate on encode (catch bugs early).**
-
-Systems that DON'T use generated decode code (hand-rolled parsers) must implement validation manually. But that's their choice to bypass the safety layer.
-
-With Protobuf, you must implement ALL validation manually in application code. With XSD+EXI, the schema IS the security policy, enforced automatically by **generated decode code**.
-
-**Bottom line:** Protobuf's "simplicity" (no constraints) is a **security liability** in embedded systems. XSD's "complexity" (rich constraints) is **defense-in-depth by design**.
 
 ### XSD Choice → Pattern Matching Without Duplication
 
@@ -571,11 +341,18 @@ switch(message.content.type) {
 }
 ```
 
-The discriminator (`type`) is explicit and type-safe. With Protobuf `oneof`, you check which field is set at runtime with no compile-time guarantees.
+### XSD Extension → Type-Safe Polymorphism with Discriminated Unions
 
-### XSD Extension → Type-Safe Polymorphism with Embedded Base
+C doesn't have true inheritance, but we can achieve **type-safe polymorphism** through **discriminated unions (tagged unions)**. This is the most **idiomatic C approach** for handling type hierarchies, used extensively in compilers, parsers, network protocols, and system software.
 
-C doesn't have true inheritance, but we can achieve **type-safe polymorphism** through the "embed base as first field" pattern. This is the standard C approach used by GTK, Linux kernel, and other large C codebases.
+**Why discriminated unions are the standard C pattern:**
+- ✅ **Explicit and clear** - type tag makes runtime type visible
+- ✅ **Type-safe** - compiler warns on missing switch cases
+- ✅ **No pointer casting** - no unsafe casts or assumptions about memory layout
+- ✅ **Single allocation** - entire object fits on stack
+- ✅ **Common in production C** - compilers (AST nodes), parsers (tokens), protocols (packets)
+- ✅ **Embedded-friendly** - fixed size, no hidden overhead
+- ✅ **Exhaustive checking** - compiler enforces handling all variants
 
 #### Pattern 1: Concrete Extension (Non-Abstract Base)
 
@@ -599,46 +376,83 @@ C doesn't have true inheritance, but we can achieve **type-safe polymorphism** t
 </xs:complexType>
 ```
 
-**Generated C:**
+**Generated C (Discriminated Union):**
 ```c
-// Base type (can be instantiated directly)
+// Discriminator enum - explicit runtime type
+typedef enum {
+    PERSON_TYPE_BASE,      // Just Person
+    PERSON_TYPE_EMPLOYEE   // Employee extension
+} PersonType;
+
+// Generated struct with discriminator + union
 typedef struct {
+    PersonType type;
+
+    // Base fields (common to all variants)
     char name[256];
     int age;
+
+    // Extended fields (variant-specific)
+    union {
+        struct {
+            int employeeId;
+        } employee;
+        // Future extensions go here
+    };
 } Person;
 
-// Extended type - base MUST be first field for pointer casting
-typedef struct {
-    Person base;       // CRITICAL: must be first!
-    int employeeId;
-} Employee;
+// Type-safe constructors
+Person create_person(const char* name, int age) {
+    Person p = {0};
+    p.type = PERSON_TYPE_BASE;
+    strncpy(p.name, name, 255);
+    p.age = age;
+    return p;
+}
 
-// Type-safe constructor
-Employee create_employee(const char* name, int age, int id) {
-    Employee emp = {0};
-    strncpy(emp.base.name, name, 255);
-    emp.base.age = age;
-    emp.employeeId = id;
-    return emp;
+Person create_employee(const char* name, int age, int id) {
+    Person p = {0};
+    p.type = PERSON_TYPE_EMPLOYEE;
+    strncpy(p.name, name, 255);
+    p.age = age;
+    p.employee.employeeId = id;
+    return p;
 }
 ```
 
-**Polymorphic usage (pointer casting works):**
+**Type-safe usage (compiler enforces checking):**
 ```c
 void print_person(Person* p) {
+    // Common fields available on all variants
     printf("Name: %s, Age: %d\n", p->name, p->age);
+
+    // Type-specific fields require explicit check
+    switch (p->type) {
+        case PERSON_TYPE_BASE:
+            // Just a person, no extra fields
+            break;
+        case PERSON_TYPE_EMPLOYEE:
+            printf("Employee ID: %d\n", p->employee.employeeId);
+            break;
+    }
 }
 
-Employee emp = create_employee("Alice", 30, 12345);
+// Usage
+Person person = create_person("Bob", 25);
+Person employee = create_employee("Alice", 30, 12345);
 
-// Upcast works because base is first field (C guarantees this)
-print_person((Person*)&emp);  ✅ Valid, safe, standard C pattern
-
-// Direct access to derived fields
-printf("Employee ID: %d\n", emp.employeeId);
+print_person(&person);
+print_person(&employee);
 ```
 
-**Embedded-friendly:** Fixed layout, no pointers, stack-allocatable.
+**Benefits over embedded base approach:**
+- ✅ **No pointer casting** - access fields directly, no `(Person*)` casts
+- ✅ **Explicit type checking** - must check discriminator before accessing variant fields
+- ✅ **Single struct** - simpler API, one type name instead of Base/Derived
+- ✅ **Compiler warnings** - missing switch cases caught at compile time
+- ✅ **Standard C idiom** - immediately recognizable pattern
+
+**Embedded-friendly:** Fixed layout, single allocation, stack-allocatable.
 
 #### Pattern 2: Abstract Base Type (Polymorphic Element)
 
@@ -675,58 +489,52 @@ printf("Employee ID: %d\n", emp.employeeId);
 <xs:element name="shape" type="Shape"/>  <!-- Polymorphic -->
 ```
 
-**Generated C (Embed + Discriminator):**
+**Generated C (Discriminated Union - Idiomatic):**
 ```c
-// Base type (abstract - not instantiated directly)
-typedef struct {
-    char color[64];
-    int id;
-} Shape;
-
-// Concrete subtypes - base MUST be first field
-typedef struct {
-    Shape base;      // MUST be first!
-    double radius;
-} Circle;
-
-typedef struct {
-    Shape base;      // MUST be first!
-    double width;
-    double height;
-} Rectangle;
-
-// Discriminator enum for type safety
+// Discriminator enum for runtime type identification
 typedef enum {
     SHAPE_TYPE_CIRCLE,
     SHAPE_TYPE_RECTANGLE
 } ShapeType;
 
-// Polymorphic wrapper (what <element name="shape" type="Shape"/> generates)
+// Single struct with discriminator + union
 typedef struct {
     ShapeType type;      // Runtime type tag
-    union {              // C11 anonymous union
-        Circle circle;
-        Rectangle rectangle;
+
+    // Base fields (common to all shape variants)
+    char color[64];
+    int id;
+
+    // Variant-specific fields in union
+    union {
+        struct {
+            double radius;
+        } circle;
+
+        struct {
+            double width;
+            double height;
+        } rectangle;
     };
-} ShapeElement;
+} Shape;
 ```
 
 **Type-safe constructors (impossible to create invalid state):**
 ```c
-ShapeElement create_circle(const char* color, int id, double radius) {
-    ShapeElement shape = {0};
+Shape create_circle(const char* color, int id, double radius) {
+    Shape shape = {0};
     shape.type = SHAPE_TYPE_CIRCLE;
-    strncpy(shape.circle.base.color, color, 63);
-    shape.circle.base.id = id;
+    strncpy(shape.color, color, 63);
+    shape.id = id;
     shape.circle.radius = radius;
     return shape;
 }
 
-ShapeElement create_rectangle(const char* color, int id, double w, double h) {
-    ShapeElement shape = {0};
+Shape create_rectangle(const char* color, int id, double w, double h) {
+    Shape shape = {0};
     shape.type = SHAPE_TYPE_RECTANGLE;
-    strncpy(shape.rectangle.base.color, color, 63);
-    shape.rectangle.base.id = id;
+    strncpy(shape.color, color, 63);
+    shape.id = id;
     shape.rectangle.width = w;
     shape.rectangle.height = h;
     return shape;
@@ -735,52 +543,108 @@ ShapeElement create_rectangle(const char* color, int id, double w, double h) {
 
 **Pattern matching (type-specific processing):**
 ```c
-void process_shape(ShapeElement* shape) {
+void process_shape(Shape* shape) {
+    // Access common fields directly - no casting needed
+    printf("Shape #%d, color: %s\n", shape->id, shape->color);
+
+    // Type-specific logic with explicit discriminator check
     switch (shape->type) {
         case SHAPE_TYPE_CIRCLE:
-            printf("Circle: color=%s, radius=%.2f\n",
-                   shape->circle.base.color,
-                   shape->circle.radius);
+            printf("  Circle with radius %.2f\n", shape->circle.radius);
+            double area = 3.14159 * shape->circle.radius * shape->circle.radius;
+            printf("  Area: %.2f\n", area);
             break;
+
         case SHAPE_TYPE_RECTANGLE:
-            printf("Rectangle: color=%s, %.2fx%.2f\n",
-                   shape->rectangle.base.color,
+            printf("  Rectangle %.2f x %.2f\n",
                    shape->rectangle.width,
                    shape->rectangle.height);
+            double area = shape->rectangle.width * shape->rectangle.height;
+            printf("  Area: %.2f\n", area);
             break;
     }
 }
+
+// Compiler warns if a case is missing - exhaustive checking!
 ```
 
-**Polymorphic access (common base fields):**
+**Usage example:**
 ```c
-// Helper: upcast to base type
-Shape* get_base_shape(ShapeElement* shape) {
-    // Safe because 'base' is first field in ALL union members
-    return (Shape*)shape;  // Direct cast - union is anonymous
-}
+// Create shapes
+Shape circle = create_circle("red", 1, 5.0);
+Shape rect = create_rectangle("blue", 2, 10.0, 20.0);
 
-// Process common fields without switch
-void print_common(ShapeElement* shape) {
-    Shape* s = get_base_shape(shape);
-    printf("ID: %d, Color: %s\n", s->id, s->color);
+// Process them
+process_shape(&circle);
+process_shape(&rect);
+
+// Array of polymorphic shapes - single type!
+Shape shapes[] = {
+    create_circle("green", 3, 3.0),
+    create_rectangle("yellow", 4, 8.0, 6.0)
+};
+
+for (size_t i = 0; i < 2; i++) {
+    process_shape(&shapes[i]);
 }
 ```
 
 **Type safety guarantees:**
-- ✅ Compiler enforces discriminator matches union field (via constructors)
-- ✅ Switch statements are exhaustive (compiler warning if case missing)
-- ✅ Pointer casting is safe (C guarantees first-field layout)
-- ✅ Can't access wrong union field without checking discriminator first
-- ✅ No vtables, no function pointers, no runtime overhead
+- ✅ **Explicit type tag** - `shape->type` makes runtime type visible and required
+- ✅ **Exhaustive switch checking** - compiler warns if case is missing (-Wswitch)
+- ✅ **No unsafe casts** - access fields directly without pointer casting
+- ✅ **Single struct type** - simpler API, no base/derived type juggling
+- ✅ **Compiler-enforced checking** - must check discriminator to access variant fields
+- ✅ **No vtables, no function pointers** - zero runtime overhead
+- ✅ **Familiar pattern** - used in compilers, parsers, protocols throughout C codebases
 
 **Embedded-friendly aspects:**
-- ✅ No malloc required (stack or static allocation)
-- ✅ Fixed size known at compile time (`sizeof(ShapeElement)`)
-- ✅ No pointers (except for unbounded arrays/optional elements)
-- ✅ Cache-friendly (contiguous memory)
-- ✅ Zero runtime dispatch overhead
-- ✅ Works in bare-metal environments
+- ✅ **No malloc required** - stack or static allocation
+- ✅ **Fixed size known at compile time** - `sizeof(Shape)` is constant
+- ✅ **Single allocation** - no separate allocations for base/derived
+- ✅ **Cache-friendly** - contiguous memory layout
+- ✅ **Zero runtime dispatch overhead** - direct field access
+- ✅ **Works in bare-metal environments** - no hidden dependencies
+
+**Real-world usage examples:**
+
+This pattern appears throughout production C code:
+
+```c
+// Compiler AST nodes
+typedef enum { NODE_IF, NODE_WHILE, NODE_CALL } NodeType;
+typedef struct {
+    NodeType type;
+    union {
+        struct { Expr* cond; Stmt* body; } if_stmt;
+        struct { Expr* cond; Stmt* body; } while_stmt;
+        struct { char* func; Expr** args; } call;
+    };
+} ASTNode;
+
+// Network protocol messages
+typedef enum { MSG_CONNECT, MSG_DATA, MSG_CLOSE } MsgType;
+typedef struct {
+    MsgType type;
+    union {
+        struct { char* hostname; uint16_t port; } connect;
+        struct { uint8_t* bytes; size_t len; } data;
+        struct { uint32_t reason; } close;
+    };
+} Message;
+```
+
+**Why discriminated unions beat embedded base:**
+
+| Aspect | Discriminated Union | Embedded Base |
+|--------|-------------------|--------------|
+| **Type checking** | Explicit tag, compiler enforces | Implicit via pointer cast, runtime only |
+| **Field access** | Direct: `shape->color` | Via cast or `.base`: `circle.base.color` |
+| **Pointer casting** | Not needed | Required for polymorphism |
+| **API simplicity** | Single type name | Multiple types (Base, Derived1, Derived2...) |
+| **Switch exhaustiveness** | Compiler warns missing cases | N/A |
+| **Common in C** | Very common (compilers, parsers) | Less common (GTK, kernel) |
+| **Learning curve** | Immediately clear | Requires understanding memory layout |
 
 **TreeTable structure:**
 ```
@@ -809,15 +673,11 @@ void print_common(ShapeElement* shape) {
 **Code generation strategy:**
 1. Walk TreeTable, find all types with `abstract="true"`
 2. Find all types with `extension base="AbstractType"`
-3. Generate base struct + all concrete subtypes with embedded base
-4. Generate discriminator enum from subtype names
+3. Generate discriminator enum from subtype names
+4. Generate single struct with:
 5. Generate wrapper struct with discriminator + union for polymorphic elements
 6. Generate type-safe constructor per subtype
 7. Generate helper for upcast to base type
-
-**With Protobuf, you'd either:**
-- Duplicate base fields in every message type (error-prone, violates DRY)
-- Use awkward wrapper messages with oneof (no type safety, manual management)
 
 **XSD's inheritance + EXI's grammar + generated C pattern = type-safe polymorphism without runtime overhead.**
 
@@ -869,20 +729,6 @@ event.setTimestamp(/* XMLGregorianCalendar confusion */);
 // ... endless setter calls, opaque structure, can't see the message shape
 ```
 
-### Wire Format: EXI vs Protobuf
-
-**EXI advantages:**
-- Schema-informed compression (often **smaller** than Protobuf)
-- XSD validation built-in (Protobuf has no validation)
-- Supports XML text AND binary (one schema, two formats)
-- Handles complex XSD features (inheritance, choice, facets)
-- W3C standard, not Google-only
-
-**Protobuf advantages:**
-- Simpler (but less powerful)
-- More language support (though this can change with exipb)
-- Better known (but EXI is proven in IoT/automotive/aerospace)
-
 ### The Vision
 
 Combine:
@@ -891,13 +737,13 @@ Combine:
 3. **Functional C API** - for composable, type-safe code
 4. **Pattern matching** - for duplication-free processing
 
-Result: A **Protobuf killer** for domains that need:
+Result: Clean, type-safe C code for domains that need:
 - Rich schemas (finance, healthcare, legal, aerospace)
 - Type hierarchies and polymorphism
 - Validation and constraints
 - Both binary efficiency AND human-readable XML fallback
 
-The composable constructor pattern + XSD's type system creates something fundamentally better than Protobuf's flat message approach.
+The composable constructor pattern + XSD's type system creates idiomatic, functional C code.
 
 ## Generated Binding API Architecture
 
@@ -917,7 +763,8 @@ The binding generator (`exipb`) produces type-safe encoding/decoding functions t
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
-                    │bind_person_impl()│  Binding layer (generated)
+                    │  bind_Person()   │  Binding layer (generated)
+                    │   + validate     │  (may inline later)
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
@@ -946,8 +793,8 @@ The binding generator (`exipb`) produces type-safe encoding/decoding functions t
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
-                    │unbind_person_impl│  Binding layer (generated)
-                    │  + extract_*()   │
+                    │ unbind_Person()  │  Binding layer (generated)
+                    │   + validate     │  (may inline later)
                     └────────┬─────────┘
                              │
                     ┌────────▼─────────┐
@@ -965,6 +812,9 @@ The binding generator (`exipb`) produces type-safe encoding/decoding functions t
 
 **User-facing API:**
 ```c
+// Validation - user can call directly for pre-flight checks
+errorCode validate_Person(const Person* person);
+
 // Encoding - user calls after composing struct with create_*()
 errorCode encode_Person(EXIStream* strm, const Person* person);
 
@@ -974,22 +824,26 @@ errorCode decode_Person(Parser* parser, Person* person);
 
 **Internal implementation (not exposed to user):**
 ```c
-// Binding layer - validates and encodes
-static errorCode bind_person_impl(EXIStream* strm, const Person* person);
+// Validation layer - can be ifdef'd out with EXIP_VALIDATION_MODE
+// Recursive: validates nested types (Address, etc.)
+static errorCode validate_Person(const Person* person);
 
-// Binding layer - parses and assembles
-static errorCode unbind_person_impl(Parser* parser, Person* person);
+// Binding layer - validates then encodes to EXI stream
+// Calls validate_Person(), then serialize.* functions
+// May be inlined into encode_Person() in future (kept separate for now)
+static errorCode bind_Person(EXIStream* strm, const Person* person);
 
-// Assembly helpers - extract fields from stream
-static errorCode extract_Address(Parser* parser, Address* addr);
-static errorCode extract_string(Parser* parser, char* dest, size_t maxLen);
+// Unbinding layer - decodes from EXI stream into struct
+// Calls parse.* functions, populates struct fields directly
+// For nested types, calls their unbind_*() recursively
+static errorCode unbind_Person(Parser* parser, Person* person);
 ```
 
 ### Design Principles
 
 **1. Three-layer architecture**
-- **User API**: `create_*()`, `encode_*()`, `decode_*()` - clean interface
-- **Binding layer**: `bind_*_impl()`, `unbind_*_impl()`, `extract_*()` - generated implementation
+- **User API**: `create_*()`, `validate_*()`, `encode_*()`, `decode_*()` - clean interface
+- **Binding layer**: `bind_*()`, `unbind_*()` - validation + EXI stream operations (may be simplified later)
 - **EXIP core**: `serialize.*()`, `parse.*()` - existing low-level API
 
 **2. User owns memory**
@@ -1094,7 +948,7 @@ Generated functions internally use:
 ```c
 // Schema tells EXIP: "next is 'age' element, type xs:int"
 // Binding knows: "'age' → person.age field (int type)"
-static errorCode unbind_person_impl(Parser* parser, Person* person) {
+static errorCode unbind_Person(Parser* parser, Person* person) {
     // Schema-informed parse: EXIP calls intData handler
     // Binding knows which field based on schema grammar state
     person->age = received_int;  // Direct assignment
@@ -1105,7 +959,7 @@ static errorCode unbind_person_impl(Parser* parser, Person* person) {
 ```c
 // No schema grammar, everything is strings
 // Element name: "age", value: "30" (as string)
-static errorCode unbind_person_impl(Parser* parser, Person* person) {
+static errorCode unbind_Person(Parser* parser, Person* person) {
     // Schema METADATA tells binding: field "age" is xs:int type
     // Binding converts: string "30" → int 30
 
@@ -1150,136 +1004,6 @@ The schema gives the binding essential metadata:
 
 **Key:** `generateOptimizedTreeTable()` does all TreeTable generation, include/import resolution, and type hierarchy linking in one call. Generated code uses EXIP's existing `serialize.*Data()` API with simple type conversions where needed.
 
-## Type Conversion Strategy
-
-Generated code uses **normal C types** in structs but needs to convert to EXIP types when calling the serialization API:
-
-```c
-// User struct - pure C types
-struct Person {
-    int age;           // Normal C int
-    float height;      // Normal C float
-    bool enabled;      // Standard bool
-    char name[101];    // Fixed C string
-};
-
-// Generated encode function
-errorCode encode_Person(EXIStream* strm, Person* p) {
-    // Simple cast for integers
-    TRY(serialize.intData(strm, (Integer)p->age));
-
-    // Boolean - no conversion needed
-    TRY(serialize.booleanData(strm, p->enabled));
-
-    // Float requires mantissa/exponent calculation - use helper
-    Float f = floatToExipFloat(p->height);
-    TRY(serialize.floatData(strm, f));
-
-    // String conversion using existing EXIP function
-    String s;
-    TRY(asciiToString(p->name, &s, &strm->memList, false));
-    TRY(serialize.stringData(strm, s));
-
-    return EXIP_OK;
-}
-```
-
-### Constructor Pattern for Data Initialization
-
-Generated code provides **constructor-style functions** that return fully initialized structs:
-
-```c
-// Each struct type gets a create_<typename>() constructor
-// Optional parameters use pointers (NULL = not present)
-static inline TypesTest create_types_test(EnumType* greeting);
-static inline Person create_person(int age, const char* name);
-
-// Sub-objects are constructed separately, then passed to parent constructors
-EnumType greeting = HEJ;
-TypesTest types = create_types_test(&greeting);      // With optional enum
-TypesTest types2 = create_types_test(NULL);          // Without optional enum
-
-MultipleXSDsTest data = create_test_data(types);     // Compose!
-
-// Cleanup only needed if dynamic allocations exist
-destroy_multiple_xsds_test(&data);
-```
-
-**Benefits:**
-- Single-statement initialization with parameters
-- No separate `init()` function needed - constructors handle everything
-- Lengths and optional flags calculated automatically
-- NULL pointer = "optional element not present"
-- Composable - build sub-objects first, pass them up
-- Reusable - call constructor again with different parameters
-
-**Default and Fixed Values:**
-
-XSD schemas can specify `default` and `fixed` attribute values:
-
-```xml
-<!-- Default value (used if element/attribute absent) -->
-<xs:element name="priority" type="xs:int" default="5"/>
-
-<!-- Fixed value (must always be this value if present) -->
-<xs:attribute name="version" type="xs:string" fixed="1.0"/>
-```
-
-Generated constructors handle these automatically:
-
-```c
-static inline Task create_task(int* priority) {
-    return (Task){
-        .priority = priority ? *priority : 5,  // Use default=5 if NULL
-        .hasPriority = (priority != NULL)
-    };
-}
-
-// For fixed values, generate as const:
-static const char ATTR_VERSION[] = "1.0";  // Fixed, not a parameter
-```
-
-**Key points:**
-- `default` → used when optional parameter is NULL
-- `fixed` → not a parameter, generated as compile-time constant
-- Without `default`, NULL means "not present" with dummy value in struct
-- Specify defaults in schema for better generated code and documentation
-
-**Binary Data (base64Binary, hexBinary):**
-
-Binary data requires both pointer and length tracking:
-
-```c
-typedef struct {
-    uint8_t* binaryData;      // Pointer to binary data
-    size_t binaryDataLen;     // Length in bytes
-    bool hasBinaryData;       // Optional flag
-} Message;
-
-// Constructor with optional binary data
-static inline Message create_message(uint8_t* data, size_t len) {
-    return (Message){
-        .binaryData = data,
-        .binaryDataLen = len,
-        .hasBinaryData = (data != NULL && len > 0)  // Auto-calculate
-    };
-}
-
-// Usage with static binary data
-static uint8_t sample[] = {0x02, 0x6d, 0x2f, 0xa5};
-Message msg = create_message(sample, sizeof(sample));
-
-// Usage without binary (optional not present)
-Message msg2 = create_message(NULL, 0);
-```
-
-EXI binary encoding is NOT self-describing - `serialize.binaryData(strm, data, length)` requires explicit length. The length must be tracked in the struct alongside the pointer.
-
-#### When to Generate Constructor Functions
-
-The binding generator should be **selective** about when to create `create_XXX()` functions. Not every struct needs one.
-
-#### Memory Ownership Pattern
 
 Generated bindings follow EXIP's ownership model: **caller owns pointer data**.
 
@@ -1831,498 +1555,6 @@ errorCode decode_person(Parser* parser, Person* person) {
 **Higher precision needs:**
 If clients need platform-specific high-precision types (`struct timespec` on Unix, `FILETIME` on Windows, `std::chrono` in C++), provide optional conversion helpers but keep binding structs portable with the local `DateTime` type.
 
-## Overview
-
-Automatically generate C structures and bind/unbind code from XML Schema (XSD) files, supporting both schema-informed and schemaless EXI processing.
-
-## Goals
-
-1. **Generate C structures** from XSD that mirror the schema
-2. **Generate bind code** (C struct → EXI)
-3. **Generate unbind code** (EXI → C struct)
-4. **Support both modes** - schema-informed and schemaless with same structs
-5. **Handle nested structures** automatically
-6. **Type-safe** - leverage C compiler for validation
-
-## Example Workflow
-
-### Input: XML Schema (XSD)
-
-```xml
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://example.com/person"
-           xmlns:tns="http://example.com/person">
-
-  <xs:complexType name="Address">
-    <xs:sequence>
-      <xs:element name="street" type="xs:string"/>
-      <xs:element name="city" type="xs:string"/>
-      <xs:element name="zipCode" type="xs:int"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="Person">
-    <xs:sequence>
-      <xs:element name="id" type="xs:int"/>
-      <xs:element name="name" type="xs:string"/>
-      <xs:element name="age" type="xs:int"/>
-      <xs:element name="active" type="xs:boolean"/>
-      <xs:element name="address" type="tns:Address"/>
-      <xs:element name="tags" type="xs:string" maxOccurs="unbounded"/>
-    </xs:sequence>
-    <xs:attribute name="version" type="xs:string"/>
-  </xs:complexType>
-
-  <xs:element name="person" type="tns:Person"/>
-</xs:schema>
-```
-
-### Generated Output: C Header
-
-```c
-/* Auto-generated from person.xsd */
-#ifndef PERSON_H
-#define PERSON_H
-
-#include "EXIParser.h"
-#include "EXISerializer.h"
-#include <stdbool.h>
-
-// Forward declarations
-typedef struct Address Address;
-typedef struct Person Person;
-
-// Generated structures - clean C types, no EXIP leakage
-// String strategy:
-//   - char[N+1] when schema defines maxLength=N (efficient, no malloc)
-//   - char* when no maxLength constraint (unbounded, malloc'd)
-//
-// Code generator warnings emitted for:
-//   - WARNING: Type 'Address' contains unbounded string 'street', consider adding maxLength
-//   - WARNING: Type 'Address' contains unbounded string 'city', consider adding maxLength
-//   - WARNING: Type 'Person' embeds 'Address' which contains unbounded strings
-
-struct Address {
-    char* street;      // No maxLength in schema -> char* (malloc'd, warning)
-    char* city;        // No maxLength -> char* (warning)
-    int zipCode;
-};
-
-struct Person {
-    int id;
-    char* name;        // No maxLength -> char* (warning)
-    int age;
-    bool active;
-    Address address;   // Embedded - allowed but warned
-
-    // Dynamic array for unbounded maxOccurs
-    char** tags;
-    unsigned int tagsCount;
-
-    // Optional attribute
-    char* version;     // Warning
-};
-
-// Example with constrained strings (preferred for efficiency, no warnings):
-// <xs:simpleType name="CountryCode">
-//   <xs:restriction base="xs:string">
-//     <xs:maxLength value="2"/>
-//   </xs:restriction>
-// </xs:simpleType>
-// Generates: char countryCode[3];  // maxLength+1 for null terminator
-
-//==============================================================================
-// OOP-style vtable API (following EXIP's parse.*, serialize.* pattern)
-//==============================================================================
-
-struct PersonOps {
-    void (*init)(Person* p);
-    void (*destroy)(Person* p);
-    errorCode (*encode_person)(EXIStream* strm, const Person* p);
-    errorCode (*decode_person)(Parser* parser, Person* p);
-    errorCode (*encodeDocument)(const char* filename, const Person* p, EXIPSchema* schema);
-    errorCode (*decodeDocument)(const char* filename, Person* p, EXIPSchema* schema);
-};
-
-struct AddressOps {
-    void (*init)(Address* a);
-    void (*destroy)(Address* a);
-    errorCode (*encode_address)(EXIStream* strm, const Address* a);
-    errorCode (*decode_address)(Parser* parser, Address* a);
-};
-
-// Global vtables (const, stored in ROM)
-extern const struct PersonOps person;
-extern const struct AddressOps address;
-
-#endif /* PERSON_H */
-```
-
-**Usage example:**
-```c
-Person p;
-person.init(&p);
-person.encode_person(strm, &p);
-person.destroy(&p);
-```
-
-This follows EXIP's existing OOP vtable pattern (`parse.*`, `serialize.*`, `option.*`).
-
-### Generated Output: C Implementation
-
-```c
-/* Auto-generated from person.xsd */
-#include "person.h"
-#include <stdlib.h>
-#include <string.h>
-
-// Namespace constants
-static const String NS_PERSON = {"http://example.com/person", 26};
-static const String NS_EMPTY = {NULL, 0};
-
-// Element name constants
-static const String ELEM_ADDRESS = {"address", 7};
-static const String ELEM_STREET = {"street", 6};
-static const String ELEM_CITY = {"city", 4};
-static const String ELEM_ZIPCODE = {"zipCode", 7};
-static const String ELEM_PERSON = {"person", 6};
-static const String ELEM_ID = {"id", 2};
-static const String ELEM_NAME = {"name", 4};
-static const String ELEM_AGE = {"age", 3};
-static const String ELEM_ACTIVE = {"active", 6};
-static const String ELEM_TAGS = {"tags", 4};
-static const String ATTR_VERSION = {"version", 7};
-
-//==============================================================================
-// Initialization functions (internal)
-//==============================================================================
-
-static void init_person_impl(Person* person) {
-    memset(person, 0, sizeof(Person));
-    person->tags.items = NULL;
-    person->tags.count = 0;
-    person->tags.capacity = 0;
-    address.init(&person->address);  // Use vtable for nested types
-}
-
-static void init_address_impl(Address* addr) {
-    memset(addr, 0, sizeof(Address));
-}
-
-static void destroy_person_impl(Person* person) {
-    // Free dynamic array
-    for(size_t i = 0; i < person->tags.count; i++) {
-        free(person->tags.items[i]);
-    }
-    free(person->tags.items);
-    person->tags.items = NULL;
-    person->tags.count = 0;
-    person->tags.capacity = 0;
-}
-
-//==============================================================================
-// Encode functions (C struct -> EXI)
-//==============================================================================
-
-errorCode encode_address(EXIStream* stream, const Address* address) {
-    errorCode err;
-    QName qname;
-    String strVal;
-    EXITypeClass valueType;
-
-    // <address>
-    qname.uri = &NS_PERSON;
-    qname.localName = &ELEM_ADDRESS;
-    qname.prefix = NULL;
-    TRY(serialize.startElement(stream, qname, &valueType));
-
-    // <street>
-    qname.localName = &ELEM_STREET;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    asciiToString(address->street, &strVal, &stream->memList, false);
-    TRY(serialize.stringData(stream, strVal));
-    TRY(serialize.endElement(stream));
-
-    // <city>
-    qname.localName = &ELEM_CITY;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    asciiToString(address->city, &strVal, &stream->memList, false);
-    TRY(serialize.stringData(stream, strVal));
-    TRY(serialize.endElement(stream));
-
-    // <zipCode>
-    qname.localName = &ELEM_ZIPCODE;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    TRY(encodeInt(stream, address->zipCode));  // Auto-switches schema/schemaless
-    TRY(serialize.endElement(stream));
-
-    // </address>
-    TRY(serialize.endElement(stream));
-
-    return EXIP_OK;
-}
-
-errorCode encode_person(EXIStream* stream, const Person* person) {
-    errorCode err;
-    QName qname;
-    String strVal;
-    EXITypeClass valueType;
-
-    // <person>
-    qname.uri = &NS_PERSON;
-    qname.localName = &ELEM_PERSON;
-    qname.prefix = NULL;
-    TRY(serialize.startElement(stream, qname, &valueType));
-
-    // @version attribute
-    qname.uri = &NS_EMPTY;
-    qname.localName = &ATTR_VERSION;
-    TRY(serialize.attribute(stream, qname, true, &valueType));
-    asciiToString(person->version, &strVal, &stream->memList, false);
-    TRY(serialize.stringData(stream, strVal));
-
-    // <id>
-    qname.uri = &NS_PERSON;
-    qname.localName = &ELEM_ID;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    TRY(encodeInt(stream, person->id));
-    TRY(serialize.endElement(stream));
-
-    // <name>
-    qname.localName = &ELEM_NAME;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    TRY(encodeString(stream, person->name));
-    TRY(serialize.endElement(stream));
-
-    // <age>
-    qname.localName = &ELEM_AGE;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    TRY(encodeInt(stream, person->age));
-    TRY(serialize.endElement(stream));
-
-    // <active>
-    qname.localName = &ELEM_ACTIVE;
-    TRY(serialize.startElement(stream, qname, &valueType));
-    TRY(encodeBool(stream, person->active));
-    TRY(serialize.endElement(stream));
-
-    // <address> (nested - auto-call child encode)
-    TRY(encode_address(stream, &person->address));
-
-    // <tags> (unbounded - array)
-    for(size_t i = 0; i < person->tags.count; i++) {
-        qname.localName = &ELEM_TAGS;
-        TRY(serialize.startElement(stream, qname, &valueType));
-        asciiToString(person->tags.items[i], &strVal, &stream->memList, false);
-        TRY(serialize.stringData(stream, strVal));
-        TRY(serialize.endElement(stream));
-    }
-
-    // </person>
-    TRY(serialize.endElement(stream));
-
-    return EXIP_OK;
-}
-
-//==============================================================================
-// Decode functions (EXI -> C struct)
-//==============================================================================
-
-// Decode context for Address
-typedef struct {
-    Address* target;
-    const char* currentElement;
-} DecodeContext_Address;
-
-static errorCode decode_Address_startElement(QName qname, void* app_data) {
-    DecodeContext_Address* ctx = (DecodeContext_Address*)app_data;
-    ctx->currentElement = qname.localName->str;
-    return EXIP_OK;
-}
-
-static errorCode decode_Address_stringData(const String str_val, void* app_data) {
-    DecodeContext_Address* ctx = (DecodeContext_Address*)app_data;
-
-    if(ctx->currentElement == NULL) return EXIP_OK;
-
-    if(strcmp(ctx->currentElement, "street") == 0) {
-        size_t len = str_val.length < 255 ? str_val.length : 255;
-        memcpy(ctx->target->street, str_val.str, len);
-        ctx->target->street[len] = '\0';
-    }
-    else if(strcmp(ctx->currentElement, "city") == 0) {
-        size_t len = str_val.length < 255 ? str_val.length : 255;
-        memcpy(ctx->target->city, str_val.str, len);
-        ctx->target->city[len] = '\0';
-    }
-
-    return EXIP_OK;
-}
-
-static errorCode decode_Address_intData(Integer int_val, void* app_data) {
-    DecodeContext_Address* ctx = (DecodeContext_Address*)app_data;
-
-    if(ctx->currentElement && strcmp(ctx->currentElement, "zipCode") == 0) {
-        ctx->target->zipCode = (int)int_val;
-    }
-
-    return EXIP_OK;
-}
-
-errorCode decode_address(Parser* parser, Address* address) {
-    DecodeContext_Address ctx;
-    errorCode err;
-
-    ctx.target = address;
-    ctx.currentElement = NULL;
-
-    // Set up temporary handlers for this sub-element
-    ContentHandler savedHandler = parser->handler;
-
-    parser->handler.startElement = decode_Address_startElement;
-    parser->handler.stringData = decode_Address_stringData;
-    parser->handler.intData = decode_Address_intData;
-    parser->app_data = &ctx;
-
-    // Parse until we hit </address>
-    int depth = 1;
-    while(depth > 0 && err == EXIP_OK) {
-        err = parse.parseNext(parser);
-        // Track depth based on SE/EE events
-        // (simplified - real implementation needs proper depth tracking)
-    }
-
-    // Restore handlers
-    parser->handler = savedHandler;
-
-    return err;
-}
-
-// Similar implementation for decode_person(Parser*, Person*)...
-// Complex types auto-call child decode_<type>() for nested structures
-
-//==============================================================================
-// High-level document functions
-//==============================================================================
-
-errorCode encode_person_document(const char* filename, const Person* person,
-                                  EXIPSchema* schema) {
-    errorCode err;
-    EXIStream stream;
-    BinaryBuffer buffer;
-    char buf[4096];
-    FILE* outfile;
-
-    // Open output file
-    outfile = fopen(filename, "wb");
-    if(!outfile) return EXIP_UNEXPECTED_ERROR;
-
-    // Initialize buffer
-    buffer.buf = buf;
-    buffer.bufLen = sizeof(buf);
-    buffer.bufContent = 0;
-    buffer.ioStrm.readWriteToStream = (size_t (*)(void*, size_t, void*))fwrite;
-    buffer.ioStrm.stream = outfile;
-
-    // Initialize stream
-    serialize.initHeader(&stream);
-    stream.header.has_cookie = true;
-    stream.header.has_options = true;
-    if(schema != NULL) {
-        SET_STRICT(stream.header.opts.enumOpt);
-    }
-
-    err = serialize.initStream(&stream, buffer, schema);
-    if(err != EXIP_OK) {
-        fclose(outfile);
-        return err;
-    }
-
-    // Encode document
-    err = serialize.exiHeader(&stream);
-    if(err != EXIP_OK) goto cleanup;
-
-    err = serialize.startDocument(&stream);
-    if(err != EXIP_OK) goto cleanup;
-
-    err = person.encode_person(&stream, person_data);
-    if(err != EXIP_OK) goto cleanup;
-
-    err = serialize.endDocument(&stream);
-
-cleanup:
-    serialize.closeEXIStream(&stream);
-    fclose(outfile);
-    return err;
-}
-
-static errorCode decode_person_document_impl(const char* filename, Person* person_data,
-                                  EXIPSchema* schema) {
-    errorCode err;
-    Parser parser;
-    BinaryBuffer buffer;
-    char buf[4096];
-    FILE* infile;
-
-    // Open input file
-    infile = fopen(filename, "rb");
-    if(!infile) return EXIP_UNEXPECTED_ERROR;
-
-    // Read file into buffer
-    buffer.bufContent = fread(buf, 1, sizeof(buf), infile);
-    buffer.buf = buf;
-    buffer.bufLen = buffer.bufContent;
-    buffer.ioStrm.readWriteToStream = NULL;
-    buffer.ioStrm.stream = NULL;
-    fclose(infile);
-
-    // Initialize parser
-    err = parse.initParser(&parser, buffer, person);
-    if(err != EXIP_OK) return err;
-
-    // Parse header
-    err = parse.parseHeader(&parser, false);
-    if(err != EXIP_OK) {
-        parse.destroyParser(&parser);
-        return err;
-    }
-
-    // Set schema
-    err = parse.setSchema(&parser, schema);
-    if(err != EXIP_OK) {
-        parse.destroyParser(&parser);
-        return err;
-    }
-
-    // Decode document
-    err = person.decode_person(&parser, person_data);
-
-    parse.destroyParser(&parser);
-    return err;
-}
-
-//==============================================================================
-// Vtable definitions (const, stored in ROM)
-//==============================================================================
-
-const struct PersonOps person = {
-    .init = init_person_impl,
-    .destroy = destroy_person_impl,
-    .encode_person = encode_person_impl,
-    .decode_person = decode_person_impl,
-    .encodeDocument = encode_person_document_impl,
-    .decodeDocument = decode_person_document_impl
-};
-
-const struct AddressOps address = {
-    .init = init_address_impl,
-    .destroy = destroy_address_impl,
-    .encode_address = encode_address_impl,
-    .decode_address = decode_address_impl
-};
-```
-
-### Usage Example
 
 ```c
 #include "person.h"
@@ -2784,6 +2016,223 @@ EXIP has stub functions for typed-to-string conversions (see [UNIMPLEMENTED_FEAT
 
 These would return **EXIP `String` types**, not C strings. Generated code currently uses `snprintf()` instead, which works but is repetitive. Implementing these functions would clean up generated code but isn't essential.
 
+## Proof-of-Concept: Hand-Coded Prototype
+
+The EXIP repository already contains a **working prototype** that demonstrates the target code generation approach:
+
+**Location:** `examples/simpleEncoding/`
+- **[exipe_data.h](../examples/simpleEncoding/exipe_data.h)** - Clean C struct definitions
+- **[exipe_data.c](../examples/simpleEncoding/exipe_data.c)** - Constructor functions
+- **[encodeTestEXI.c](../examples/simpleEncoding/encodeTestEXI.c)** - Manual encoding (what `exipb` would generate)
+
+**Schemas:** Based on `exipe-test.xsd`, `exipe-test-nested.xsd`, `exipe-test-types.xsd`
+
+### What the Prototype Demonstrates
+
+**exipe_data.h shows target struct layout:**
+```c
+// Fixed-size arrays for bounded strings
+typedef struct {
+    char content[256];       // Text content
+    char version[32];        // @version attribute
+    int8_t testByte;         // @testByte attribute (optional)
+    bool hasTestByte;        // Presence flag
+} EXIPEncoder;
+
+// Discriminated union for xs:choice
+typedef enum {
+    BASIC_TYPE_NONE,
+    BASIC_TYPE_BOOL,
+    BASIC_TYPE_INT
+} BasicTypeChoice;
+
+typedef struct {
+    BasicTypeChoice choiceType;
+    union {
+        bool boolValue;
+        int intValue;
+    } choice;
+    int id;  // Attribute
+} BasicType;
+
+// Nested structs
+typedef struct {
+    EXIPEncoder encoder;        // Nested complex type
+    char description[256];
+    TestSetup testSetup;        // Another nested type
+    BasicType typeTest;         // Choice type
+    TypesTest extendedTypeTest; // Optional nested type
+    bool hasExtendedTypeTest;   // Presence flag
+} MultipleXSDsTest;
+```
+
+**exipe_data.c shows constructor pattern:**
+```c
+// Bottom-up construction
+TypesTest create_types_test(uint8_t* binaryData, size_t binaryLen, EnumType* greeting) {
+    return (TypesTest){
+        .byteTest = 11,
+        .dateTimeTest = { /* ... */ },
+        .binaryTest = binaryData,
+        .binaryTestLen = (binaryData != NULL) ? binaryLen : 0,
+        .enumTest = greeting ? *greeting : 0,
+        .hasEnumTest = (greeting != NULL)
+    };
+}
+
+// Compose parent from child structs
+MultipleXSDsTest create_test_data(TypesTest typesTest) {
+    return (MultipleXSDsTest){
+        .encoder = { /* ... */ },
+        .typeTest = { /* ... */ },
+        .extendedTypeTest = typesTest,
+        .hasExtendedTypeTest = true
+    };
+}
+```
+
+**encodeTestEXI.c shows manual encoding (283 lines):**
+```c
+errorCode encode(MultipleXSDsTest* testData, EXIPSchema* schemaPtr, FILE *outfile, ...) {
+    // Manual EXIP serialization calls (what exipb would auto-generate)
+    TRY_CATCH_ENCODE(serialize.startElement(&testStrm, qname, &valueType));
+    TRY_CATCH_ENCODE(serialize.attribute(&testStrm, qname, true, &valueType));
+    TRY_CATCH_ENCODE(serialize.intData(&testStrm, testData->encoder.testByte));
+    // ... 280 more lines of manual serialize.* calls
+}
+```
+
+### How the Prototype Maps to This Vision
+
+| Vision Doc Feature | Prototype Status | Design Evolution |
+|-------------------|------------------|------------------|
+| **Fixed-size char arrays** | ✅ Implemented (`char[256]`) | Same approach |
+| **Constructor pattern** | ✅ Implemented (`create_*()`) | Same approach |
+| **Discriminated unions** | ✅ Implemented (`BasicTypeChoice` + union) | Same approach, more examples |
+| **Nested structs** | ✅ Implemented (by value) | Same approach |
+| **Optional fields** | ✅ `bool has_*` flags | **CHANGED: Now `OptionalT` wrappers** |
+| **DateTime** | ✅ Custom struct | Same approach |
+| **Enum mapping** | ✅ C enum + string table | Same approach |
+| **Validation** | ❌ Not implemented | **NEW: `validate_*()` functions** |
+| **Encode functions** | ❌ Hand-written 283 lines | **NEW: Auto-generate `encode_*()`** |
+| **Decode functions** | ❌ Doesn't exist | **NEW: Auto-generate `decode_*()`** |
+
+### Key Design Changes Since Prototype
+
+**1. Optional Fields: `bool has_*` → `OptionalT` wrappers**
+
+**Prototype approach:**
+```c
+typedef struct {
+    int8_t testByte;
+    bool hasTestByte;  // Separate flag
+} EXIPEncoder;
+
+// Usage
+if (encoder.hasTestByte) {
+    printf("Byte: %d\n", encoder.testByte);
+}
+```
+
+**New vision approach:**
+```c
+typedef struct {
+    int32_t value;
+    bool exists;
+} OptionalInt8;
+
+typedef struct {
+    OptionalInt8 testByte;  // Wrapped
+} EXIPEncoder;
+
+// Usage - uniform pattern
+if (encoder.testByte.exists) {
+    printf("Byte: %d\n", encoder.testByte.value);
+}
+```
+
+**Why the change:**
+- ✅ Uniform access pattern (`.exists`, `.value` everywhere)
+- ✅ Type-safe (can't forget to check exists)
+- ✅ Self-documenting (type shows optionality)
+- ❌ Tradeoff: Extra indirection for non-strings
+
+**2. Constructor Parameters: Pointer-or-NULL → Optional wrappers**
+
+**Prototype approach:**
+```c
+TypesTest create_types_test(EnumType* greeting) {
+    return (TypesTest){
+        .enumTest = greeting ? *greeting : 0,
+        .hasEnumTest = (greeting != NULL)
+    };
+}
+
+// Usage - awkward
+EnumType g = HELLO;
+TypesTest t = create_types_test(&g);      // Take address
+TypesTest t2 = create_types_test(NULL);   // NULL magic
+```
+
+**New vision approach:**
+```c
+TypesTest create_types_test(OptionalEnumType greeting) {
+    return (TypesTest){
+        .enumTest = greeting  // Just assign wrapper
+    };
+}
+
+// Usage - explicit
+TypesTest t = create_types_test(SOME(EnumType, HELLO));
+TypesTest t2 = create_types_test(NONE(EnumType));
+```
+
+**Why the change:**
+- ✅ No pointer-or-NULL magic
+- ✅ Explicit presence (SOME/NONE)
+- ✅ No address-of operator needed
+
+**3. Validation Layer (NEW)**
+
+The prototype has **no validation** - it's up to application code. The vision adds:
+
+```c
+// Generated validation function (NEW)
+errorCode validate_Person(const Person* person) {
+#if EXIP_VALIDATION_MODE >= 2
+    if (person->age < 0 || person->age > 150) return EXIP_INVALID_EXI_INPUT;
+    if (strlen(person->name) > 64) return EXIP_INVALID_EXI_INPUT;
+#endif
+    return EXIP_OK;
+}
+
+// Called automatically during encode
+errorCode encode_Person(EXIStream* strm, const Person* person) {
+    TRY(validate_Person(person));  // NEW
+    TRY(bind_Person(strm, person));
+    return EXIP_OK;
+}
+```
+
+**4. Auto-Generated Encode/Decode (NEW)**
+
+The prototype's `encodeTestEXI.c` contains 283 lines of **manual** `serialize.*()` calls. The vision automates this:
+
+- **Prototype:** Hand-write every `serialize.startElement()`, `serialize.attribute()`, etc.
+- **Vision:** `exipb` generates all encoding/decoding functions from schema
+
+### Using the Prototype as Reference
+
+When implementing `exipb`:
+
+1. **Start with struct generation** - `exipe_data.h` shows the target layout
+2. **Add constructors** - `exipe_data.c` shows the pattern
+3. **Generate encode functions** - Automate what `encodeTestEXI.c` does manually
+4. **Add decode functions** - Mirror encode pattern but use `parse.*()` API
+5. **Add validation** - New feature not in prototype
+
+The prototype proves the **struct design works**. The vision adds **automation** (codegen) and **safety** (validation).
+
 ## Challenges
 
 1. **Complex XSD Features** - Some advanced XSD features are hard to map to C
@@ -2792,12 +2241,6 @@ These would return **EXIP `String` types**, not C strings. Generated code curren
 4. **Large Schemas** - Code size could be significant for huge schemas
 5. **Circular References** - Need forward declarations and careful ordering
 6. **Type Conversions** - Schema-less mode requires string conversions for all typed fields
-
-## Similar Projects
-
-- **protobuf-c** - Protocol Buffers C code generator (good reference)
-- **Fast Infoset** - Java binding generator (conceptual reference)
-- **OpenC2** - EXI-based C code generation (commercial)
 
 ## Next Steps
 
@@ -2812,13 +2255,20 @@ These would return **EXIP `String` types**, not C strings. Generated code curren
 
 ## Related Documents
 
-- [UNIFIED_DECODING_PATTERNS.md](UNIFIED_DECODING_PATTERNS.md) - Manual decoding patterns
-- [DECODING_TO_STRUCT.md](DECODING_TO_STRUCT.md) - Hand-written struct decoding
-- [ARCHITECTURE.md](ARCHITECTURE.md) - EXIP architecture
-- [DECODING_PATTERNS.md](DECODING_PATTERNS.md) - Decoding patterns and memory management
+### Background: Manual Patterns (What exipb Automates)
+
+These documents describe **hand-written** patterns used before `exipb`:
+
+- [DECODING_PATTERNS.md](DECODING_PATTERNS.md) - Manual schema/schemaless decoding handlers
+- [MEMORY_MANAGEMENT_PATTERNS.md](MEMORY_MANAGEMENT_PATTERNS.md) - Manual memory management patterns
+
+**Key insight:** Manual code must handle schema vs schemaless modes separately with duplicate logic and string conversions. **`exipb` generates code that automatically works in both modes.**
+
+### Implementation References
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) - EXIP architecture overview
 - [SCHEMA_GRAMMAR_GENERATION.md](SCHEMA_GRAMMAR_GENERATION.md) - Schema-informed grammar generation
 - [EXI_DATA_TYPE_ENCODING.md](EXI_DATA_TYPE_ENCODING.md) - EXI type encoding details
-- [BINARY_ENCODING_DESIGN.md](../BINARY_ENCODING_DESIGN.md) - Base64/hex encoding design for schemaless mode
 - [src/grammarGen/](../../src/grammarGen/) - Existing schema processing code
 
 ---
@@ -3091,9 +2541,10 @@ printf("Name: %s, Age: %d\n", person.name, person.age);
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
 │  Binding Layer (Generated by exipb)                         │
-│  - bind_person_impl() - validates + encodes struct          │
-│  - unbind_person_impl() - parses + assembles struct         │
-│  - extract_Address() - internal assembly helpers            │
+│  - validate_Person() - validation (ifdef-able)              │
+│  - bind_Person() - validates + encodes struct               │
+│  - unbind_Person() - parses + populates struct              │
+│  (Nested types call their own bind/unbind recursively)      │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -3123,11 +2574,11 @@ errorCode encode_Person(EXIStream* strm, const Person* person) {
 #endif
 
     // Call internal binding implementation
-    return bind_person_impl(strm, person);
+    return bind_Person(strm, person);
 }
 
 // Generated binding layer
-static errorCode bind_person_impl(EXIStream* strm, const Person* person) {
+static errorCode bind_Person(EXIStream* strm, const Person* person) {
     QName qname;
     EXITypeClass valueType;
 
@@ -3141,91 +2592,96 @@ static errorCode bind_person_impl(EXIStream* strm, const Person* person) {
     TRY(serialize.stringData(strm, ...));
 
     // Nested struct - recursive bind
-    TRY(bind_address_impl(strm, &person->address));
+    TRY(bind_Address(strm, &person->address));
 
     TRY(serialize.endElement(strm));
     return EXIP_OK;
 }
 ```
 
-**Decode implementation** - `decode()` calls `unbind()` which uses `extract()` helpers:
+**Decode implementation** - `decode()` calls `unbind()` which recursively calls nested type unbind functions:
 
 ```c
 // User-facing API
 errorCode decode_Person(EXIStream* strm, Person* person) {
     // Call internal unbinding implementation
-    return unbind_person_impl(strm, person);
+    return unbind_Person(strm, person);
 }
 
 // Generated binding layer
-static errorCode unbind_person_impl(EXIStream* strm, Person* person) {
-    // Parse events depth-first, extract fields as they arrive
+static errorCode unbind_Person(EXIStream* strm, Person* person) {
+    // Parse events depth-first, populate fields as they arrive
     while (next_event(strm)) {
         if (SE "name") {
-            TRY(extract_string(strm, person->name, sizeof(person->name)));
+            // Parse string directly with validation
+            String nameStr;
+            TRY(parse.stringData(strm, &nameStr));
+#ifdef EXIP_VALIDATION_MODE >= 2
+            if (nameStr.length > sizeof(person->name) - 1) {
+                return EXIP_INVALID_EXI_INPUT;
+            }
+#endif
+            memcpy(person->name, nameStr.str, nameStr.length);
+            person->name[nameStr.length] = '\0';
         }
         else if (SE "address") {
-            // Nested struct - recursive extract
-            TRY(extract_Address(strm, &person->address));
+            // Nested struct - call its unbind function recursively
+            TRY(unbind_Address(strm, &person->address));
         }
     }
     return EXIP_OK;
 }
 
-// Internal assembly helper (not exposed to user)
-static errorCode extract_Address(EXIStream* strm, Address* addr) {
+// Address unbind (same pattern as Person)
+static errorCode unbind_Address(EXIStream* strm, Address* addr) {
     while (next_event(strm) != EE) {
-        if (SE "street") TRY(extract_string(strm, addr->street, sizeof(addr->street)));
-        if (SE "city") TRY(extract_string(strm, addr->city, sizeof(addr->city)));
-        if (SE "zipCode") TRY(extract_int(strm, &addr->zipCode));
+        if (SE "street") {
+            String str;
+            TRY(parse.stringData(strm, &str));
+            memcpy(addr->street, str.str, str.length);
+            addr->street[str.length] = '\0';
+        }
+        if (SE "city") {
+            String str;
+            TRY(parse.stringData(strm, &str));
+            memcpy(addr->city, str.str, str.length);
+            addr->city[str.length] = '\0';
+        }
+        if (SE "zipCode") {
+            TRY(parse.intData(strm, &addr->zipCode));
+        }
     }
-    return EXIP_OK;
-}
-
-// Low-level extract helper with validation
-static errorCode extract_string(EXIStream* strm, char* dest, size_t maxLen) {
-    String incoming = /* parsed from EXIP handler callback */;
-
-#ifdef EXIPB_VALIDATION_STRICT
-    // Validate BEFORE copying (EXI is length-prefixed)
-    if (incoming.length > maxLen - 1) {
-        return EXIP_INVALID_EXI_INPUT;
-    }
-#endif
-
-    memcpy(dest, incoming.str, incoming.length);
-    dest[incoming.length] = '\0';
     return EXIP_OK;
 }
 ```
 
 **Validation placement:**
 
-**Encode side** - validation at high level (`encode()`):
+**Encode side** - validation at high level (`validate_*()` / `bind_*()`):
 - Struct already exists, validate all constraints before encoding
 - Check: ranges, string lengths, array counts
-- Single validation pass at `encode_Person()` entry
+- Single validation pass at `encode_Person()` entry (calls `validate_Person()`)
 
-**Decode side** - validation at low level (`extract_*()` helpers):
+**Decode side** - validation inline during unbind:
 - Data arrives incrementally from stream
-- Validate each piece immediately before copying/allocating
-- EXI length-prefixed → validate-then-allocate pattern
+- Validate each piece immediately before copying to struct
+- EXI length-prefixed → validate-then-copy pattern
 - Security boundary - validates at lowest level, can't bypass
 
 **Why different levels?**
 - **Encode**: Struct complete, validate everything upfront at API boundary
 - **Decode**: Data arrives piece-by-piece, validate each field as parsed
-- **EXI advantage**: Length-prefixed means we validate BEFORE allocation
-- **Security**: Decode validation in `extract_*` can't be bypassed
+- **EXI advantage**: Length-prefixed means we validate BEFORE copying
+- **Security**: Inline validation during unbind can't be bypassed
 
 **Naming rationale:**
-- **`encode`/`decode`** - matches Java marshall/unmarshall concept, user-facing API
-- **`bind`/`unbind`** - binding layer, generated by exipb, internal implementation
+- **`encode`/`decode`** - user-facing API
+- **`validate`/`bind`/`unbind`** - binding layer, generated by exipb (may be inlined later)
 - **`serialize.*`/`parse.*`** - existing EXIP core API, lowest level
 
 **Pattern summary:**
-- **Encode**: User calls `create_` (bottom-up) → `encode()` validates → `bind()` encodes via `serialize.*`
-- **Decode**: User calls `decode()` → `unbind()` parses via `parse.*` → `extract_*()` validates + assembles
+- **Encode**: User calls `create_*()` (bottom-up) → `encode()` calls `validate()` → `bind()` encodes via `serialize.*`
+- **Decode**: User calls `decode()` → `unbind()` parses via `parse.*` and populates struct directly
 - **Single pass** - no intermediate storage, validation inline with encoding/parsing
 - **Minimal memory** - validate before allocate, only valid data stored
 
