@@ -591,52 +591,123 @@ for (size_t i = 0; i < 2; i++) {
 
 #### When to Generate Tagged Unions (Decision Rules)
 
-**Use tagged union pattern (discriminator + union) when:**
+The code generation pattern depends on whether the **element declaration** allows runtime type substitution.
 
-1. **Element declared with polymorphic type** - element type is a base type (abstract or non-abstract) and derived types can substitute at runtime via `xsi:type`
-   ```xml
-   <xs:element name="shape" type="Shape"/>  <!-- Shape has derived types -->
-   <xs:element name="vehicle" type="Vehicle"/>  <!-- Vehicle has extensions -->
-   ```
+**Pattern 1: Tagged Union (Polymorphic Elements)**
 
-2. **XSD `<choice>` element** - multiple possible element types, exactly one present
-   ```xml
-   <xs:choice>
-     <xs:element name="text" type="xs:string"/>
-     <xs:element name="image" type="ImageType"/>
-   </xs:choice>
-   ```
+Use when element type is a base type (abstract or non-abstract) with derived types that can substitute at runtime via `xsi:type`.
 
-3. **Substitution groups** - element has substitutable alternatives
-   ```xml
-   <xs:element name="vehicle" type="VehicleType"/>
-   <xs:element name="car" type="CarType" substitutionGroup="vehicle"/>
-   ```
+```xml
+<!-- Type definitions -->
+<xs:complexType name="Person">
+  <xs:sequence>
+    <xs:element name="name" type="xs:string"/>
+    <xs:element name="age" type="xs:int"/>
+  </xs:sequence>
+</xs:complexType>
 
-**Do NOT use tagged union when:**
+<xs:complexType name="Employee">
+  <xs:complexContent>
+    <xs:extension base="Person">
+      <xs:sequence>
+        <xs:element name="employeeId" type="xs:int"/>
+      </xs:sequence>
+    </xs:extension>
+  </xs:complexContent>
+</xs:complexType>
 
-1. **Element declared with concrete derived type** - type is fixed at compile time
-   ```xml
-   <xs:element name="myCar" type="Car"/>  <!-- Always Car, never Vehicle -->
-   ```
-   Generate: `typedef struct { /* Car fields only */ } Car;`
+<!-- Element declared with BASE type - polymorphic! -->
+<xs:element name="person" type="Person"/>
+<!-- Runtime can be: <person xsi:type="Employee"> -->
+```
 
-2. **Simple sequence with no inheritance** - plain struct
-   ```xml
-   <xs:complexType name="Address">
-     <xs:sequence>
-       <xs:element name="street" type="xs:string"/>
-       <xs:element name="city" type="xs:string"/>
-     </xs:sequence>
-   </xs:complexType>
-   ```
-   Generate: `typedef struct { char* street; char* city; } Address;`
+**Generated C - Tagged union with common fields at top level:**
+```c
+typedef enum {
+    PERSON_BASE,        // Non-abstract base is valid
+    PERSON_EMPLOYEE
+} PersonType;
 
-3. **Extension with no polymorphism** - flatten inheritance
-   ```xml
-   <xs:element name="employee" type="Employee"/>  <!-- Employee extends Person -->
-   ```
-   Generate: `typedef struct { /* Person fields + Employee fields */ } Employee;`
+typedef struct {
+    PersonType type;    // Discriminator first
+    
+    // Common fields - directly accessible
+    char name[256];
+    int age;
+    
+    // Variant-specific fields in union
+    union {
+        struct {} base;                    // No extra fields
+        struct { int employeeId; } employee;
+    };
+} Person;
+
+// Usage - common fields always accessible
+Person p;
+p.type = PERSON_EMPLOYEE;
+p.name = "Alice";                  // Direct access
+p.age = 30;
+p.employee.employeeId = 12345;     // Through union
+```
+
+**Pattern 2: First-Member Embedding (Concrete Elements)**
+
+Use when element is declared with a concrete derived type - no runtime polymorphism.
+
+```xml
+<!-- Same type definitions as above -->
+
+<!-- Element declared with DERIVED type - concrete! -->
+<xs:element name="employee" type="Employee"/>
+<!-- Always Employee, never plain Person -->
+```
+
+**Generated C - First-member embedding with base field:**
+```c
+typedef struct {
+    char name[256];
+    int age;
+} Person;
+
+typedef struct {
+    Person base;        // First member - enables safe upcasting
+    int employeeId;
+} Employee;
+
+// Usage
+Employee emp;
+emp.base.name = "Alice";           // Through base
+emp.base.age = 30;
+emp.employeeId = 12345;            // Direct
+
+// Safe upcast (addresses are identical)
+Person* p = (Person*)&emp;
+p->name = "Bob";                   // Modifies emp.base.name
+```
+
+**Why `base` instead of `person`?** The field name `person` implies composition ("Employee has-a Person"), but XSD extension is inheritance ("Employee is-a Person"). Using `base` clarifies the inheritance relationship and matches both the IR's first-member embedding pattern and XSD's `<extension base="...">` terminology.
+
+**Deep inheritance chains:** If you encounter `mgr.base.base.base.name` access patterns, that indicates poor schema design. Deep non-polymorphic inheritance (3+ levels without runtime type substitution) should be refactored to use composition (separate types) or role-based design instead of inheritance chains.
+
+**Other cases requiring tagged unions:**
+- **`<choice>` elements** - Multiple element types, exactly one present at runtime
+- **Substitution groups** - Element has substitutable alternatives via `substitutionGroup`
+
+**Abstract vs non-abstract:**
+- **Abstract base**: Enum excludes base variant (abstract types can't be instantiated)
+  ```c
+  typedef enum {
+      SHAPE_CIRCLE,      // No SHAPE_BASE
+      SHAPE_RECTANGLE
+  } ShapeType;
+  ```
+- **Non-abstract base**: Enum includes base variant (base type itself is valid)
+  ```c
+  typedef enum {
+      PERSON_BASE,       // Person itself is valid
+      PERSON_EMPLOYEE
+  } PersonType;
+  ```
 
 **Key distinction - abstract vs non-abstract:**
 
