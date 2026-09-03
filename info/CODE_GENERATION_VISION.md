@@ -589,6 +589,76 @@ for (size_t i = 0; i < 2; i++) {
 }
 ```
 
+#### When to Generate Tagged Unions (Decision Rules)
+
+**Use tagged union pattern (discriminator + union) when:**
+
+1. **Element declared with polymorphic type** - element type is a base type (abstract or non-abstract) and derived types can substitute at runtime via `xsi:type`
+   ```xml
+   <xs:element name="shape" type="Shape"/>  <!-- Shape has derived types -->
+   <xs:element name="vehicle" type="Vehicle"/>  <!-- Vehicle has extensions -->
+   ```
+
+2. **XSD `<choice>` element** - multiple possible element types, exactly one present
+   ```xml
+   <xs:choice>
+     <xs:element name="text" type="xs:string"/>
+     <xs:element name="image" type="ImageType"/>
+   </xs:choice>
+   ```
+
+3. **Substitution groups** - element has substitutable alternatives
+   ```xml
+   <xs:element name="vehicle" type="VehicleType"/>
+   <xs:element name="car" type="CarType" substitutionGroup="vehicle"/>
+   ```
+
+**Do NOT use tagged union when:**
+
+1. **Element declared with concrete derived type** - type is fixed at compile time
+   ```xml
+   <xs:element name="myCar" type="Car"/>  <!-- Always Car, never Vehicle -->
+   ```
+   Generate: `typedef struct { /* Car fields only */ } Car;`
+
+2. **Simple sequence with no inheritance** - plain struct
+   ```xml
+   <xs:complexType name="Address">
+     <xs:sequence>
+       <xs:element name="street" type="xs:string"/>
+       <xs:element name="city" type="xs:string"/>
+     </xs:sequence>
+   </xs:complexType>
+   ```
+   Generate: `typedef struct { char* street; char* city; } Address;`
+
+3. **Extension with no polymorphism** - flatten inheritance
+   ```xml
+   <xs:element name="employee" type="Employee"/>  <!-- Employee extends Person -->
+   ```
+   Generate: `typedef struct { /* Person fields + Employee fields */ } Employee;`
+
+**Key distinction - abstract vs non-abstract:**
+
+- **Abstract base** (e.g., `Shape abstract="true"`): Enum has NO base variant
+  ```c
+  typedef enum {
+      SHAPE_TYPE_CIRCLE,    // No SHAPE_TYPE_BASE - abstract can't be instantiated
+      SHAPE_TYPE_RECTANGLE
+  } ShapeType;
+  ```
+
+- **Non-abstract base** (e.g., `Vehicle`): Enum INCLUDES base variant
+  ```c
+  typedef enum {
+      VEHICLE_TYPE_BASE,    // Vehicle itself is valid
+      VEHICLE_TYPE_CAR,
+      VEHICLE_TYPE_TRUCK
+  } VehicleType;
+  ```
+
+**Rule of thumb:** If the element type allows runtime substitution (xsi:type, substitution groups, choice), generate tagged union. Otherwise, generate flat struct.
+
 **Type safety guarantees:**
 - ✅ **Explicit type tag** - `shape->type` makes runtime type visible and required
 - ✅ **Exhaustive switch checking** - compiler warns if case is missing (-Wswitch)
