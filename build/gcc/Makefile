@@ -74,6 +74,7 @@ else
 	ifeq ($(UNAME_S), Darwin)
 		DYNAMIC_LIB_EXT = dylib
 		LINK_FLAGS = -Wl,-install_name
+		CFLAGS += -Wno-gnu-zero-variadic-macro-arguments
 		ifeq ($(UNAME_P), arm)
 			INCDIRS += -I/opt/homebrew/include
 			LDFLAGS += -L/opt/homebrew/lib

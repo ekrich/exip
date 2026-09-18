@@ -8,7 +8,8 @@ ARCHIVER = ar
 DEBUGGING = -O0 -g #-fno-stack-protector
 
 # Warning flags
-WARNING = -Wpacked -Wall -Wextra
+WARNING = -Wpacked -Wall -Wextra -Wpedantic -Wconversion -Wshadow \
+          -Wstrict-prototypes -Wmissing-prototypes -Wdeprecated
 
 # Add additional CFLAGS if any
 ADDITIONAL_CFLAGS = -std=c11
