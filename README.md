@@ -38,7 +38,7 @@ The library is highly portable C code and supports the platforms using CI as sho
 * macOS system compiler `gcc` is aliased to `clang`.
 * `clang` should also work on Linux.
 * Windows default creates a 32bit x86 executable.
-* We now use C99 standard since we refactored to use `bool`.
+* We use C11 standard for `bool` and anonymous unions.
 * Contiki-ng build uses the C11 standard.
 
 ## Licenses
