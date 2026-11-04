@@ -879,6 +879,13 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
 	UnsignedInteger tmpVar = 0;
+
+	// Untrusted input: a value outside of any element (e.g. a CH event at
+	// document level) has no QName and so no local value partition.
+	if(qnameID.uriId >= strm->schema->uriTable.count ||
+		qnameID.lnId >= strm->schema->uriTable.uri[qnameID.uriId].lnTable.count)
+		return EXIP_INVALID_EXI_INPUT;
+
 	TRY(decodeUnsignedInteger(strm, &tmpVar));
 
 	if(tmpVar == 0) // "local" value partition table hit
@@ -889,9 +896,13 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 		VxTable* vxTable;
 
 		vxTable = GET_LN_URI_QNAME(strm->schema->uriTable, qnameID).vxTable;
-		assert(vxTable);
+		// Untrusted input: a local hit needs an existing, non-empty local table.
+		if(vxTable == NULL || vxTable->count == 0)
+			return EXIP_INVALID_EXI_INPUT;
 		vxBits = getBitsNumber(vxTable->count - 1);
 		TRY(decodeNBitUnsignedInteger(strm, vxBits, &vxEntryId));
+		if(vxEntryId >= vxTable->count || vxTable->vx[vxEntryId].globalId >= strm->valueTable.count)
+			return EXIP_INVALID_EXI_INPUT;
 
 		*value = strm->valueTable.value[vxTable->vx[vxEntryId].globalId].valueStr;
 #else
@@ -904,8 +915,13 @@ errorCode decodeStringValue(EXIStream* strm, QNameID qnameID, String* value)
 		unsigned long valueEntryID = 0;
 		unsigned char valueBits;
 
+		// Untrusted input: the index must point into the global value table.
+		if(strm->valueTable.count == 0)
+			return EXIP_INVALID_EXI_INPUT;
 		valueBits = getBitsNumber(strm->valueTable.count - 1);
 		TRY(decodeNBitUnsignedInteger(strm, valueBits, &valueEntryID));
+		if(valueEntryID >= strm->valueTable.count)
+			return EXIP_INVALID_EXI_INPUT;
 
 		*value = strm->valueTable.value[valueEntryID].valueStr;
 	}
@@ -937,7 +953,8 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 	{
 		case EVENT_SE_ALL:
 			strm->gStack->currNonTermID = GET_PROD_NON_TERM(prodHit->content);
-			assert(strm->context.isNilType == false);
+			if(strm->context.isNilType) // content after xsi:nil="true"
+				return EXIP_INVALID_EXI_INPUT;
 
 			TRY(decodeSEWildcardEvent(strm, handler, nonTermID_out, app_data));
 		break;
@@ -949,7 +966,8 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 			EXIGrammar* elemGrammar = NULL;
 
 			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">SE(qname) event: \n"));
-			assert(strm->context.isNilType == false);
+			if(strm->context.isNilType) // content after xsi:nil="true"
+				return EXIP_INVALID_EXI_INPUT;
 
 			qname.uri = &(strm->schema->uriTable.uri[prodHit->qnameId.uriId].uriStr);
 			qname.localName = &(GET_LN_URI_QNAME(strm->schema->uriTable, prodHit->qnameId).lnStr);
@@ -1013,7 +1031,8 @@ errorCode decodeEventContent(EXIStream* strm, Production* prodHit, ContentHandle
 		case EVENT_CH:
 		{
 			DEBUG_MSG(INFO, DEBUG_CONTENT_IO, (">CH event:\n"));
-			assert(strm->context.isNilType == false);
+			if(strm->context.isNilType) // content after xsi:nil="true"
+				return EXIP_INVALID_EXI_INPUT;
 			TRY(decodeValueItem(strm, prodHit->typeId, handler, nonTermID_out, strm->gStack->currQNameID, app_data));
 		}
 		break;
@@ -1235,7 +1254,8 @@ errorCode decodeValueItem(EXIStream* strm, Index typeId, ContentHandler* handler
 		case VALUE_TYPE_QNAME:
 		{
 			// Only allowed if the current production is AT(xsi:type)
-			assert(localQNameID.uriId == XML_SCHEMA_INSTANCE_ID && localQNameID.lnId == XML_SCHEMA_INSTANCE_TYPE_ID);
+			if(localQNameID.uriId != XML_SCHEMA_INSTANCE_ID || localQNameID.lnId != XML_SCHEMA_INSTANCE_TYPE_ID)
+				return EXIP_INVALID_EXI_INPUT;
 			TRY(decodeQNameValue(strm, handler, nonTermID_out, app_data));
 		}
 		break;

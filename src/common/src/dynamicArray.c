@@ -15,6 +15,7 @@
 
 #include "dynamicArray.h"
 #include "memManagement.h"
+#include <string.h>
 
 /**
  * Used for fixing portability issue due to padding in DynArray derived structures such as
@@ -46,6 +47,7 @@ errorCode createDynArray(DynArray* dynArray, size_t entrySize, uint16_t chunkEnt
 	*count = 0;
 	dynArray->chunkEntries = chunkEntries;
 	dynArray->arrayEntries = chunkEntries;
+	dynArray->heapAllocated = 1;
 
 	return EXIP_OK;
 }
@@ -71,12 +73,26 @@ errorCode addEmptyDynEntry(DynArray* dynArray, void** entry, Index* entryID)
 			*base = EXIP_MALLOC(dynArray->entrySize * addedEntries);
 			if(*base == NULL)
 				return EXIP_MEMORY_ALLOCATION_ERROR;
+			dynArray->heapAllocated = 1;
+		}
+		else if(!dynArray->heapAllocated)
+		{
+			// Static array (e.g. a string table of a static grammar): it was
+			// not allocated by EXIP_MALLOC, so it must be copied instead of
+			// reallocated.
+			void* heapBase = EXIP_MALLOC(dynArray->entrySize * (*count + addedEntries));
+			if(heapBase == NULL)
+				return EXIP_MEMORY_ALLOCATION_ERROR;
+			memcpy(heapBase, *base, dynArray->entrySize * (*count));
+			*base = heapBase;
+			dynArray->heapAllocated = 1;
 		}
 		else
 		{
-			*base = EXIP_REALLOC(*base, dynArray->entrySize * (*count + addedEntries));
-			if(*base == NULL)
+			void* newBase = EXIP_REALLOC(*base, dynArray->entrySize * (*count + addedEntries));
+			if(newBase == NULL)
 				return EXIP_MEMORY_ALLOCATION_ERROR;
+			*base = newBase;
 		}
 
 		dynArray->arrayEntries = dynArray->arrayEntries + addedEntries;
@@ -133,5 +149,8 @@ errorCode delDynEntry(DynArray* dynArray, Index entryID)
 void destroyDynArray(DynArray* dynArray)
 {
 	void** base = &((OuterDynamicArray *)dynArray)->base;
-	EXIP_MFREE(*base);
+	if(dynArray->heapAllocated)
+		EXIP_MFREE(*base);
+	*base = NULL;
+	dynArray->heapAllocated = 0;
 }
