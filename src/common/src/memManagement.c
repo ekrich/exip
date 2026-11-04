@@ -63,6 +63,22 @@ void freeAllMem(EXIStream* strm)
 		{
 		Index g;
 		DynGrammarRule* tmp_rule;
+		Index u, l;
+
+		// String table entries that survive the stream (the ones of a static
+		// schema) may point to the built-in grammars freed below. Unlink them,
+		// otherwise the next stream that uses the same schema follows a
+		// dangling grammar.
+		for(u = 0; u < strm->schema->uriTable.count; u++)
+		{
+			for(l = 0; l < strm->schema->uriTable.uri[u].lnTable.count; l++)
+			{
+				Index* elemGr = &strm->schema->uriTable.uri[u].lnTable.ln[l].elemGrammar;
+				if(*elemGr >= strm->schema->staticGrCount && *elemGr < strm->schema->grammarTable.count)
+					*elemGr = INDEX_MAX;
+			}
+		}
+
 		// Explicitly free the memory for any build-in grammars
 		for(g = strm->schema->staticGrCount; g < strm->schema->grammarTable.count; g++)
 		{

@@ -2632,6 +2632,140 @@ static size_t readFileInputStream(void* buf, size_t readSize, void* stream)
 	return fread(buf, 1, readSize, infile);
 }
 
+/* BEGIN: Malformed input tests */
+
+#define MALFORMED_RANDOM_RUNS 50000
+
+static errorCode decodeMalformed(char* data, size_t len, EXIPSchema* schema)
+{
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	Parser testParser;
+	BinaryBuffer buffer;
+
+	buffer.buf = data;
+	buffer.bufLen = len;
+	buffer.bufContent = len;
+	buffer.ioStrm.readWriteToStream = NULL;
+	buffer.ioStrm.stream = NULL;
+
+	tmp_err_code = initParser(&testParser, buffer, NULL);
+	if(tmp_err_code != EXIP_OK)
+		return tmp_err_code;
+
+	tmp_err_code = parseHeader(&testParser, false);
+	if(tmp_err_code == EXIP_OK)
+		tmp_err_code = setSchema(&testParser, schema);
+	while(tmp_err_code == EXIP_OK)
+		tmp_err_code = parseNext(&testParser);
+
+	destroyParser(&testParser);
+	return tmp_err_code;
+}
+
+/**
+ * Decodes corrupted copies of a valid EXI file: every single bit flip, every
+ * truncation and random multi-byte corruptions. Errors are expected, a crash
+ * fails the whole test binary. All streams reuse the same schema object, so
+ * the last check verifies that malformed streams leave it intact.
+ */
+static void decodeCorruptedCopies(const char* exifname, EXIPSchema* schema)
+{
+	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
+	char exipath[MAX_PATH_LEN + 100];
+	size_t pathlen = strlen(dataDir);
+	BinaryBuffer valid;
+	char* corrupted;
+	size_t i;
+	uint32_t rnd = 0x20305005;
+
+	memcpy(exipath, dataDir, pathlen);
+	exipath[pathlen] = '/';
+	memcpy(&exipath[pathlen+1], exifname, strlen(exifname)+1);
+	tmp_err_code = loadSchemaFile(exipath, &valid);
+	fail_unless(tmp_err_code == EXIP_OK, "Unable to load file %s", exipath);
+
+	tmp_err_code = decodeMalformed(valid.buf, valid.bufContent, schema);
+	fail_unless(tmp_err_code == EXIP_PARSING_COMPLETE, "Valid input %s returns %d", exifname, tmp_err_code);
+
+	corrupted = malloc(valid.bufContent);
+	fail_unless(corrupted != NULL, "Memory allocation error");
+
+	for(i = 0; i < valid.bufContent * 8; i++)
+	{
+		memcpy(corrupted, valid.buf, valid.bufContent);
+		corrupted[i / 8] = (char) (corrupted[i / 8] ^ (0x80 >> (i % 8)));
+		decodeMalformed(corrupted, valid.bufContent, schema);
+	}
+
+	for(i = 0; i < valid.bufContent; i++)
+		decodeMalformed(valid.buf, i, schema);
+
+	for(i = 0; i < MALFORMED_RANDOM_RUNS; i++)
+	{
+		unsigned int changes;
+
+		memcpy(corrupted, valid.buf, valid.bufContent);
+		rnd ^= rnd << 13; rnd ^= rnd >> 17; rnd ^= rnd << 5;
+		for(changes = 1 + rnd % 4; changes > 0; changes--)
+		{
+			rnd ^= rnd << 13; rnd ^= rnd >> 17; rnd ^= rnd << 5;
+			corrupted[rnd % valid.bufContent] = (char) (rnd >> 24);
+		}
+		decodeMalformed(corrupted, valid.bufContent, schema);
+	}
+
+	tmp_err_code = decodeMalformed(valid.buf, valid.bufContent, schema);
+	fail_unless(tmp_err_code == EXIP_PARSING_COMPLETE,
+				"Valid input %s returns %d after malformed inputs", exifname, tmp_err_code);
+
+	free(corrupted);
+	freeBinaryBuffers(&valid, 1);
+}
+
+START_TEST (test_malformed_schemaless)
+{
+	decodeCorruptedCopies("xsWhitespace/whitespace-instance.xml.exi", NULL);
+}
+END_TEST
+
+START_TEST (test_malformed_schema_informed)
+{
+	EXIPSchema schema;
+	char* acceptance[1] = {"testStates/acceptance-xsd.exi"};
+	char* simpleContent[1] = {"simpleContentExt/test.xsd.exi"};
+
+	parseSchema(acceptance, 1, &schema);
+	decodeCorruptedCopies("testStates/acceptance_a_01.exi", &schema);
+	destroySchema(&schema);
+
+	parseSchema(simpleContent, 1, &schema);
+	decodeCorruptedCopies("simpleContentExt/test.xml.exi", &schema);
+	destroySchema(&schema);
+}
+END_TEST
+
+/* The EXI options document in this header adds a URI to the string table of
+ * the static options grammar beyond its static capacity. */
+START_TEST (test_malformed_header_options)
+{
+	unsigned char header[] = {
+		0xbb, 0x80, 0x29, 0xff, 0x8e, 0x55, 0x09, 0xaf, 0xa0, 0xf9, 0x9a, 0xed, 0x42, 0x4e,
+		0xb8, 0x33, 0x43, 0xd7, 0xd8, 0xa5, 0x8e, 0xe3, 0x66, 0x88, 0x9d, 0x74, 0x9e, 0x59,
+		0x5d, 0x77, 0xb3, 0x84, 0x4b, 0xb7, 0x0e, 0x72, 0xc4, 0x6f, 0x79, 0x19, 0x6f, 0x39,
+		0x8d, 0xcc, 0x71, 0xef, 0x08, 0x50, 0xac, 0x75, 0xff, 0x48, 0x02, 0x6a, 0x70
+	};
+	errorCode tmp_err_code;
+
+	tmp_err_code = decodeMalformed((char*) header, sizeof(header), NULL);
+	fail_unless(tmp_err_code != EXIP_PARSING_COMPLETE, "Malformed header options are accepted");
+
+	tmp_err_code = decodeMalformed((char*) header, sizeof(header), NULL);
+	fail_unless(tmp_err_code != EXIP_PARSING_COMPLETE, "Malformed header options are accepted");
+}
+END_TEST
+
+/* END: Malformed input tests */
+
 static void parseSchema(char** xsdList, int count, EXIPSchema* schema)
 {
 	errorCode tmp_err_code = EXIP_UNEXPECTED_ERROR;
@@ -2690,6 +2824,14 @@ Suite* exip_suite(void)
 		tcase_add_test (tc_Schema, test_non_blocking_streaming_bytealigned);
 		tcase_add_test (tc_Schema, test_various_senml);
 		suite_add_tcase (s, tc_Schema);
+	}
+	{
+		/* Malformed input test case */
+		TCase *tc_Malformed = tcase_create ("Malformed input");
+		tcase_add_test (tc_Malformed, test_malformed_header_options);
+		tcase_add_test (tc_Malformed, test_malformed_schemaless);
+		tcase_add_test (tc_Malformed, test_malformed_schema_informed);
+		suite_add_tcase (s, tc_Malformed);
 	}
 
 	return s;
